@@ -28,7 +28,10 @@ class CapellaWrapper:
     def create_packages(self, packages: set[str]) -> None:
         """Create packages in Capella model."""
         for package_name in packages:
-            self.data.packages.create("DataPkg", name=package_name)
+            try:
+                self.data.packages.by_name(package_name)
+            except KeyError:
+                self.data.packages.create("DataPkg", name=package_name)
 
     def create_classes(
         self,
@@ -36,19 +39,19 @@ class CapellaWrapper:
         package_name: str,
     ):
         """Create classes in Capella model."""
+        package = self.data.packages.by_name(package_name)
         for class_name, info in classes.items():
             description, _ = info
-            self.data.packages.by_name(package_name).classes.create(
-                name=class_name, description=description
-            )
+            package.classes.create(name=class_name, description=description)
 
     def create_types(
         self, types: dict[str, tuple[str, list]], package_name: str
     ):
         """Create types in Capella model."""
+        package = self.data.packages.by_name(package_name)
         for type_name, info in types.items():
             description, properties = info
-            type = self.data.packages.by_name(package_name).datatypes.create(
+            type = package.datatypes.create(
                 "Enumeration", name=type_name, description=description
             )
             for prop in properties:
@@ -64,6 +67,7 @@ class CapellaWrapper:
 
     def create_basic_types(self, basic_types: set[str], package_name: str):
         """Create basic types in Capella model."""
+        package = self.data.packages.by_name(package_name)
         for basic_type in basic_types:
             if basic_type in ["string", "char"]:
                 type = "StringType"
@@ -71,9 +75,7 @@ class CapellaWrapper:
                 type = "BooleanType"
             else:
                 type = "NumericType"
-            self.data.packages.by_name(package_name).datatypes.create(
-                type, name=basic_type
-            )
+            package.datatypes.create(type, name=basic_type)
 
     def create_composition(
         self,
