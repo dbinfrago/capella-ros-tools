@@ -34,20 +34,20 @@ class Msg2Capella:
 
         overlap = func[0](messages, current_root)
 
-        if overlap:
-            if self.overlap == "abort":
-                click.echo(
-                    "Items already exist. Use --overlap=overwrite to overwrite."
+        if overlap and self.overlap == "abort":
+            click.echo(
+                "Items already exist. Use --overlap=overwrite to overwrite."
+            )
+            raise click.Abort()
+        for cls in overlap:
+            if self.overlap == "overwrite" or (
+                self.overlap == "ask"
+                and click.confirm(
+                    f"{cls.name} already exists. Do you want to overwrite?"
                 )
-                raise click.Abort()
-            if self.overlap == "overwrite":
-                func[1](overlap, current_root)
-            elif self.overlap == "ask":
-                for cls in overlap:
-                    if click.confirm(
-                        f"{cls.name} already exists. Do you want to overwrite?"
-                    ):
-                        func[1]([cls], current_root)
+            ):
+                func[1]([cls], current_root)
+                func[0]({cls.name: messages[cls.name]}, current_root)
 
         for pkg_name, (new_messages, new_packages) in packages.items():
             new_root = self.serializer.data.packages.by_name(pkg_name)

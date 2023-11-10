@@ -202,21 +202,111 @@
           id="bd10fade-2ac9-41bf-a42b-05cbb751d274" name="Interfaces"/>
       <ownedDataPkg xsi:type="org.polarsys.capella.core.data.information:DataPkg"
           id="4ada90cb-13d8-4140-b92f-d8206a56bdae" name="Data">
-        <ownedClasses id="3259ff13-fd43-49dd-bc9f-2ee77b71cc55" name="UInt64MultiArray"
+        <ownedAssociations id="e59e1d70-33d3-4c39-afc1-0b5e783d2412" navigableMembers="#922be465-af53-42b6-a084-220c5195a449"
+            xsi:type="org.polarsys.capella.core.data.information:Association">
+          <ownedMembers id="8c7bb91b-6854-4efd-8f29-41aabafc7a2c" abstractType="#74cad8af-42d6-4018-8cb8-48faa5bd3508"
+              aggregationKind="ASSOCIATION" xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="1f12d3b9-2308-42ba-a5b1-58b0215b8789" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="678c3377-ac0f-405c-800a-4e9a81536a1d" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedMembers>
+        </ownedAssociations>
+        <ownedAssociations id="4c637540-0efc-4e2d-bb66-1d73d51418b6" navigableMembers="#9be17831-3fef-41b0-9e60-f7f7c9785d24"
+            xsi:type="org.polarsys.capella.core.data.information:Association">
+          <ownedMembers id="c15e9e0d-f31a-4577-a1c4-88ff1baf96a8" abstractType="#50c62fcc-c176-4d58-855d-2a6dbae2ef47"
+              aggregationKind="ASSOCIATION" xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="d3dd7861-22c8-4b9d-a965-31228434f383" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="36fab63e-2b0a-4b64-ba9b-842eba2599ed" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedMembers>
+        </ownedAssociations>
+        <ownedClasses id="74cad8af-42d6-4018-8cb8-48faa5bd3508" name="UInt64MultiArray"
             description="Copyright DB Netz AG and contributors&#xA;SPDX-License-Identifier: Apache-2.0"
-            xsi:type="org.polarsys.capella.core.data.information:Class"/>
-        <ownedClasses id="b1b7fff7-29a6-475c-b2a5-0f68c6dbc8e1" name="MultiArrayLayout"
+            xsi:type="org.polarsys.capella.core.data.information:Class">
+          <ownedFeatures id="922be465-af53-42b6-a084-220c5195a449" name="layout" abstractType="#50c62fcc-c176-4d58-855d-2a6dbae2ef47"
+              aggregationKind="COMPOSITION" description="specification of data layout"
+              xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="73edaf06-abae-4fbe-81fc-96779981060c" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="77ec61a4-e2be-4310-94f4-4967a0dad114" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedFeatures>
+          <ownedFeatures id="7b05385f-dc24-4926-b19c-679e528bcb89" name="data" abstractType="#80c47907-accf-481e-a5e9-c0b8f66fe463"
+              aggregationKind="COMPOSITION" description="array of data" xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="2cb52f5d-8df8-403d-9b4a-d35108a02c62" value="0" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="d54e2fd0-8c56-4646-b414-570c2cd2ada1" value="*" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedFeatures>
+        </ownedClasses>
+        <ownedClasses id="50c62fcc-c176-4d58-855d-2a6dbae2ef47" name="MultiArrayLayout"
             description="Copyright DB Netz AG and contributors&#xA;SPDX-License-Identifier: Apache-2.0"
-            xsi:type="org.polarsys.capella.core.data.information:Class"/>
+            xsi:type="org.polarsys.capella.core.data.information:Class">
+          <ownedFeatures id="9be17831-3fef-41b0-9e60-f7f7c9785d24" name="dim" abstractType="#bad23d52-7a7b-4356-8e14-98297b196f16"
+              aggregationKind="COMPOSITION" description="Array of dimension properties"
+              xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="1dee0821-b398-4983-b1a7-3ecc30af3fb2" value="0" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="1e2aa8ed-c645-41a4-8bcc-c3d6c7c38c6c" value="*" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedFeatures>
+          <ownedFeatures id="c8ee63d4-9f78-4422-97a3-c7b5a9873c6b" name="data_offset"
+              abstractType="#dc69adb1-9a90-4fc7-9cd5-746204dd36b8" aggregationKind="COMPOSITION"
+              description="cf. ObjectTypes, OBJECT_MOTION_TYPE_XXX" xsi:type="org.polarsys.capella.core.data.information:Property">
+            <ownedMinCard id="a3984753-5717-4edd-b2a0-b7359cbe67a6" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            <ownedMaxCard id="82417d71-f349-4cfa-9838-3afa4f3d4440" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+          </ownedFeatures>
+        </ownedClasses>
         <ownedDataPkgs id="ce4f7f9b-0901-4481-83d8-04e255f17687" name="sub_msgs" xsi:type="org.polarsys.capella.core.data.information:DataPkg">
-          <ownedClasses id="e1132d4b-22a7-4586-8303-363439ed88a3" name="MultiArrayDimension"
+          <ownedClasses id="bad23d52-7a7b-4356-8e14-98297b196f16" name="MultiArrayDimension"
               description="Copyright DB Netz AG and contributors&#xA;SPDX-License-Identifier: Apache-2.0"
-              xsi:type="org.polarsys.capella.core.data.information:Class"/>
+              xsi:type="org.polarsys.capella.core.data.information:Class">
+            <ownedFeatures id="339802aa-361d-4abd-9758-676d0e35ae85" name="label"
+                abstractType="#bf2b60f2-40f6-4e4b-8250-2c367e39094b" aggregationKind="COMPOSITION"
+                description="label of given dimension" xsi:type="org.polarsys.capella.core.data.information:Property">
+              <ownedMinCard id="0236c44a-1471-42e5-9f3b-4bb0efce5038" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+              <ownedMaxCard id="63a50fb5-ad2a-4192-86be-310692b96817" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedFeatures>
+            <ownedFeatures id="11822ae5-ce84-4a68-beb8-be61b22c93f8" name="size" abstractType="#0287566e-0171-438f-8383-57239944e605"
+                aggregationKind="COMPOSITION" description="size of given dimension (in type units)"
+                xsi:type="org.polarsys.capella.core.data.information:Property">
+              <ownedMinCard id="46e621e8-00cd-4a23-a7e0-59b248041754" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+              <ownedMaxCard id="6b99c9d4-66b4-440b-8736-cc5d6aa1d101" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedFeatures>
+            <ownedFeatures id="b789143c-26f7-4703-b9a8-3c4e020d29e3" name="stride"
+                abstractType="#0287566e-0171-438f-8383-57239944e605" aggregationKind="COMPOSITION"
+                description="stride of given dimension" xsi:type="org.polarsys.capella.core.data.information:Property">
+              <ownedMinCard id="a5585b9a-9e5b-445b-a307-fac3eb5c5a84" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+              <ownedMaxCard id="c6eb6b04-4c81-4035-a838-cd1a0efa48e5" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedFeatures>
+          </ownedClasses>
         </ownedDataPkgs>
         <ownedDataPkgs id="32a19632-30f8-443b-9e30-36ee23726324" name="ros_interfaces"
             xsi:type="org.polarsys.capella.core.data.information:DataPkg"/>
         <ownedDataPkgs id="bca4f223-25e5-4163-a7b5-6187ee138563" name="basic_types"
-            xsi:type="org.polarsys.capella.core.data.information:DataPkg"/>
+            xsi:type="org.polarsys.capella.core.data.information:DataPkg">
+          <ownedDataTypes id="80c47907-accf-481e-a5e9-c0b8f66fe463" name="uint64"
+              xsi:type="org.polarsys.capella.core.data.information.datatype:NumericType"/>
+          <ownedDataTypes id="bf2b60f2-40f6-4e4b-8250-2c367e39094b" name="string"
+              xsi:type="org.polarsys.capella.core.data.information.datatype:StringType"/>
+          <ownedDataTypes id="0287566e-0171-438f-8383-57239944e605" name="uint32"
+              xsi:type="org.polarsys.capella.core.data.information.datatype:NumericType"/>
+        </ownedDataPkgs>
+        <ownedDataPkgs id="c123006a-d406-4903-84f8-da90cda7417e" name="types" xsi:type="org.polarsys.capella.core.data.information:DataPkg">
+          <ownedDataTypes id="1b962b85-393f-46aa-ae12-e7fb368ecbcd" description="SPDX-FileCopyrightText: Copyright DB Netz AG&#xA;SPDX-License-Identifier: Apache-2.0"
+              xsi:type="org.polarsys.capella.core.data.information.datatype:Enumeration"/>
+          <ownedDataTypes id="dc69adb1-9a90-4fc7-9cd5-746204dd36b8" name="OBJECT_MOTION_TYPE"
+              description="SPDX-FileCopyrightText: Copyright DB Netz AG&#xA;SPDX-License-Identifier: Apache-2.0"
+              xsi:type="org.polarsys.capella.core.data.information.datatype:Enumeration">
+            <ownedLiterals id="8962f10f-1a5b-4ea5-a084-b71b92fbdf3d" name="UNDEFINED"
+                description="SPDX-FileCopyrightText: Copyright DB Netz AG&#xA;SPDX-License-Identifier: Apache-2.0"
+                xsi:type="org.polarsys.capella.core.data.information.datavalue:EnumerationLiteral">
+              <domainValue id="c3a89d92-f5ac-45b3-9515-ba3413c1846a" value="0" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedLiterals>
+            <ownedLiterals id="25222b56-e2ca-4ffa-96c9-b823066564c2" name="STATIC"
+                description="SPDX-FileCopyrightText: Copyright DB Netz AG&#xA;SPDX-License-Identifier: Apache-2.0"
+                xsi:type="org.polarsys.capella.core.data.information.datavalue:EnumerationLiteral">
+              <domainValue id="f9967889-a9ec-417a-a931-f87498c28416" value="1" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedLiterals>
+            <ownedLiterals id="98789413-3750-4217-bba9-79301237590e" name="DYNAMIC"
+                description="SPDX-FileCopyrightText: Copyright DB Netz AG&#xA;SPDX-License-Identifier: Apache-2.0"
+                xsi:type="org.polarsys.capella.core.data.information.datavalue:EnumerationLiteral">
+              <domainValue id="bd98d138-d752-496b-8356-814fca771443" value="2" xsi:type="org.polarsys.capella.core.data.information.datavalue:LiteralNumericValue"/>
+            </ownedLiterals>
+          </ownedDataTypes>
+        </ownedDataPkgs>
       </ownedDataPkg>
       <ownedLogicalComponentPkg xsi:type="org.polarsys.capella.core.data.la:LogicalComponentPkg"
           id="a4f76d7e-fd81-45a9-9f18-b12272aeccb5" name="Structure">
