@@ -37,7 +37,7 @@ class ParseMessageDef(MessageDef):
         description = "\n".join(l.lstrip("#").strip() for l in lines[:i])
         props = []
         for line in lines[i:]:
-            for prop_type_raw, prop_name, comment in RE_COMMENT.findall(line):
+            for prop_type_raw, prop_name, comment in RE_TNC.findall(line):
                 p = prop_type_raw.split("[", 1)
                 min_card = "0" if len(p) > 1 else "1"
                 max_card = p[1].replace("]", "") if len(p) > 1 else "1"

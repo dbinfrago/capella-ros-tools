@@ -6,7 +6,7 @@
 # to inner most.
 
 MultiArrayDimension[] dim # Array of dimension properties
-uint32 data_offset        # padding elements at front of data
+uint8 data_offset        # cf. ObjectTypes, OBJECT_MOTION_TYPE_XXX
 
 # Accessors should ALWAYS be written in terms of dimension stride
 # and specified outer-most dimension first.
