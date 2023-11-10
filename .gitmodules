@@ -1,6 +1,9 @@
-[submodule "std_msgs"]
-	path = rosidl2capella/ros/std_msgs
-	url = https://github.com/ros/std_msgs.git
-[submodule "common_msgs"]
-	path = rosidl2capella/ros/common_msgs
-	url = https://github.com/ros/common_msgs.git
+# Copyright DB Netz AG and contributors
+# SPDX-License-Identifier: CC0-1.0
+
+[submodule "rosidl2capella/ros_interfaces/common_interfaces"]
+	path = rosidl2capella/ros_interfaces/common_interfaces
+	url = https://github.com/ros2/common_interfaces.git
+[submodule "rosidl2capella/ros_interfaces/rcl_interfaces"]
+	path = rosidl2capella/ros_interfaces/rcl_interfaces
+	url = https://github.com/ros2/rcl_interfaces.git

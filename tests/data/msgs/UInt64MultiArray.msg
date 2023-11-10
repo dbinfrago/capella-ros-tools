@@ -1,3 +1,6 @@
+# Copyright DB Netz AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Please look at the MultiArrayLayout message definition for
 # documentation on all multiarrays.
 
