@@ -11,6 +11,11 @@ from . import BASIC_TYPES, ROS_INTERFACES, BaseCapella, MsgProp
 class SerializeCapella(BaseCapella):
     """Serializer for Capella model."""
 
+    def __init__(self, path_to_capella_model: str, layer: str) -> None:
+        super().__init__(path_to_capella_model, layer)
+        self.create_packages({BASIC_TYPES}, self.data)
+        self.basic_types = self.data.packages.by_name(BASIC_TYPES)
+
     def create_packages(self, packages: set[str], package: t.Any) -> None:
         """Create packages in Capella model."""
         for package_name in packages:
@@ -61,10 +66,13 @@ class SerializeCapella(BaseCapella):
                     property = type.owned_literals.create(
                         "EnumerationLiteral",
                         name=prop.name,
-                        description=description,
+                        description=prop.comment,
                     )
+                    self.create_basic_types({prop.type})
                     property.value = capellambse.new_object(
-                        "LiteralNumericValue", value=float(prop.value)
+                        "LiteralNumericValue",
+                        value=float(prop.value),
+                        type=self.basic_types.datatypes.by_name(prop.type),
                     )
         return overlap
 
@@ -76,14 +84,12 @@ class SerializeCapella(BaseCapella):
             except KeyError:
                 pass
 
-    def create_basic_types(
-        self, basic_types: set[str], package: t.Any
-    ) -> list:
+    def create_basic_types(self, basic_types: set[str]) -> list:
         """Create basic types in Capella model."""
         overlap = []
         for basic_type in basic_types:
             try:
-                overlap.append(package.datatypes.by_name(basic_type))
+                overlap.append(self.basic_types.datatypes.by_name(basic_type))
             except KeyError:
                 if basic_type in ["string", "char"]:
                     type = "StringType"
@@ -91,7 +97,7 @@ class SerializeCapella(BaseCapella):
                     type = "BooleanType"
                 else:
                     type = "NumericType"
-                package.datatypes.create(type, name=basic_type)
+                self.basic_types.datatypes.create(type, name=basic_type)
         return overlap
 
     def create_composition(
@@ -154,9 +160,7 @@ class SerializeCapella(BaseCapella):
         except KeyError:
             pass
         try:
-            return self.data.packages.by_name(BASIC_TYPES).datatypes.by_name(
-                type_name
-            )
+            return self.basic_types.datatypes.by_name(type_name)
         except KeyError:
             return None
 

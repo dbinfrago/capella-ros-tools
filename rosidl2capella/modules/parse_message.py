@@ -7,13 +7,9 @@ from pathlib import Path
 
 from . import EnumValue, MessageDef, MessagesPkg, MsgProp
 
-RE_TNC = re.compile(
-    r"^([A-Za-z0-9\[\]\/_]+).*?([A-Za-z0-9_]+)(?:.*?# ([^\n]+))?"
-)
-RE_ENUM = re.compile(
-    r"^([A-Za-z0-9]+).*?([A-Za-z0-9_]+).*?= ([0-9]+)(?:.*?# ([^\n]+))?"
-)
-RE_COMMENT = re.compile(r"cf. ([a-zA-Z0-9_]+)(?:, ([a-zA-Z0-9_]+))?")
+RE_TNC = re.compile(r"^([A-Za-z0-9\[\]\/_]+)\s+(\w+)(?:\s+#\s*(.+))?$")
+RE_ENUM = re.compile(r"^(\w+)\s+(\w+)\s*=\s*(\d+)\s*(?:#\s*(.+))?$")
+RE_COMMENT = re.compile(r"cf.\s+(\w+)(?:,\s+(\w+))?")
 
 
 class ParseMessageDef(MessageDef):
