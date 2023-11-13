@@ -3,7 +3,7 @@
 """Class definition for Capella model parser."""
 import typing as t
 
-from . import BaseCapella, EnumValue, MsgProp
+from . import ROS_INTERFACES, BaseCapella, EnumValue, MsgProp
 
 
 class ParseCapella(BaseCapella):
@@ -20,8 +20,12 @@ class ParseCapella(BaseCapella):
             props = [
                 MsgProp(
                     prop.name,
-                    prop.type.name,
-                    "",
+                    prop.type.name
+                    if prop.type.__class__.__name__ != "Enumeration"
+                    else "uint8",
+                    prop.type.parent.name
+                    if prop.type.parent.parent.name == ROS_INTERFACES
+                    else "",
                     prop.min_card.value,
                     prop.max_card.value,
                     prop.description,
@@ -38,7 +42,7 @@ class ParseCapella(BaseCapella):
             props = [
                 EnumValue(
                     prop.name,
-                    prop.type.name,
+                    prop.value.type.name if prop.value.type else "uint8",
                     prop.value.value,
                     prop.description,
                 )

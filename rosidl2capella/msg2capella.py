@@ -7,7 +7,7 @@ from pathlib import Path
 import click
 
 import rosidl2capella
-from rosidl2capella.modules import BASIC_TYPES, ROS_INTERFACES
+from rosidl2capella.modules import ROS_INTERFACES
 from rosidl2capella.modules.parse_message import ParseMessagesPkg
 from rosidl2capella.modules.serialize_capella import SerializeCapella
 
@@ -32,7 +32,10 @@ class Msg2Capella:
             )
         )
 
-        overlap = func[0](messages, current_root)
+        overlap = func[0](
+            {msg_name: msg.as_struct for msg_name, msg in messages.items()},
+            current_root,
+        )
 
         if overlap and self.overlap == "abort":
             click.echo(
@@ -47,32 +50,29 @@ class Msg2Capella:
                 )
             ):
                 func[1]([cls], current_root)
-                func[0]({cls.name: messages[cls.name]}, current_root)
+                func[0]({cls.name: messages[cls.name].as_struct}, current_root)
 
-        for pkg_name, (new_messages, new_packages) in packages.items():
-            new_root = self.serializer.data.packages.by_name(pkg_name)
-            self.add_objects(new_messages, new_packages, new_root)
+        for pkg_name, pkg in packages.items():
+            new_root = current_root.packages.by_name(pkg_name)
+            self.add_objects(pkg.messages, pkg.packages, new_root)
 
     def add_relations(self, messages, packages, current_root):
         """Add relations to capella model."""
         if current_root.name == "types":
             return
-        for class_name, (_, props) in messages.items():
-            for prop in props:
+        for class_name, cls in messages.items():
+            for prop in cls.props:
                 if not self.serializer.create_composition(
                     class_name, prop, current_root
                 ):
                     while not self.serializer.create_attribute(
                         class_name, prop, current_root
                     ):
-                        self.serializer.create_basic_types(
-                            {prop.type},
-                            self.serializer.data.packages.by_name(BASIC_TYPES),
-                        )
+                        self.serializer.create_basic_types({prop.type})
 
-        for pkg_name, (new_messages, new_packages) in packages.items():
-            new_root = self.serializer.data.packages.by_name(pkg_name)
-            self.add_relations(new_messages, new_packages, new_root)
+        for pkg_name, pkg in packages.items():
+            new_root = current_root.packages.by_name(pkg_name)
+            self.add_relations(pkg.messages, pkg.packages, new_root)
 
 
 @click.command()
@@ -96,7 +96,6 @@ class Msg2Capella:
     "path-to-capella-model",
     type=click.Path(
         exists=True,
-        file_okay=False,
         readable=True,
         resolve_path=True,
         path_type=str,
@@ -125,18 +124,16 @@ def msg2capella(
 
     ros_interfaces = ParseMessagesPkg.from_pkg_folders(
         Path(__file__).joinpath("ros_interfaces")
-    ).as_structs
+    )
 
-    messages, packages = ParseMessagesPkg.from_msg_folder(
-        path_to_msgs_root
-    ).as_structs
-    packages |= {ROS_INTERFACES: ros_interfaces} | {BASIC_TYPES: ({}, {})}
+    msg = ParseMessagesPkg.from_msg_folder(path_to_msgs_root)
+    msg.packages |= {ROS_INTERFACES: ros_interfaces}
 
     current_root = converter.serializer.data
 
-    converter.add_objects(messages, packages, current_root)
+    converter.add_objects(msg.messages, msg.packages, current_root)
 
-    converter.add_relations(messages, packages, current_root)
+    converter.add_relations(msg.messages, msg.packages, current_root)
 
     if debug:
         click.echo(converter.serializer.data)

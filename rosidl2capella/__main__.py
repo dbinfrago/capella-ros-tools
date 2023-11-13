@@ -4,7 +4,9 @@
 import click
 
 import rosidl2capella
-from rosidl2capella.msg2capella import msg2capella
+from rosidl2capella.capella2msg import capella2msg
+
+# from rosidl2capella.msg2capella import msg2capella
 
 
 @click.command()
@@ -18,4 +20,5 @@ def main():
 
 
 if __name__ == "__main__":
-    msg2capella()
+    # msg2capella()
+    capella2msg()
