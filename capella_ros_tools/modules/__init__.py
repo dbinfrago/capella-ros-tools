@@ -1,6 +1,7 @@
 # Copyright DB Netz AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """The capella ros-tools modules package."""
+import typing as t
 from collections import namedtuple
 
 import capellambse
@@ -9,10 +10,24 @@ ROS_INTERFACES = "ros_interfaces"
 BASIC_TYPES = "basic_types"
 
 
-EnumValue = namedtuple("EnumValue", ["name", "type", "value", "comment"])
-MsgProp = namedtuple(
-    "MsgProp", ["name", "type", "typedir", "min", "max", "comment"]
-)
+class EnumProp(t.NamedTuple):
+    """Enum property."""
+
+    name: str
+    type: str
+    value: str
+    comment: str
+
+
+class MsgProp(t.NamedTuple):
+    """Message property."""
+
+    name: str
+    type: str
+    typedir: str
+    min: str
+    max: str
+    comment: str
 
 
 class BaseCapella:

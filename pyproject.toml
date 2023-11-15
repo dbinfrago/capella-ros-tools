@@ -8,10 +8,10 @@ build-backend = "setuptools.build_meta"
 [project]
 dynamic = ["version"]
 
-name = "rosidl2capella"
-description = "Tool for parsing ROS IDL (.msg files) and converting them to Capella model."
+name = "capella-ros-tools"
+description = "Tools for using ROS with Capella"
 readme = "README.md"
-requires-python = ">=3, <3.11"
+requires-python = ">=3.10, <3.12"
 license = { text = "Apache-2.0" }
 authors = [
   { name = "DB Netz AG" },
@@ -24,15 +24,15 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
-]
+  ]
 dependencies = [
   "click",
   "capellambse @ git+https://github.com/DSD-DBS/py-capellambse.git@roletag-create",
 ]
 
 [project.urls]
-Homepage = "https://github.com/DSD-DBS/rosidl2capella"
-Documentation = "https://dsd-dbs.github.io/rosidl2capella"
+Homepage = "https://github.com/DSD-DBS/capella-ros-tools"
+Documentation = "https://dsd-dbs.github.io/capella-ros-tools"
 
 [project.optional-dependencies]
 docs = [
@@ -54,7 +54,7 @@ target-version = ["py310"]
 [tool.coverage.run]
 branch = true
 command_line = "-m pytest"
-source = ["rosidl2capella"]
+source = ["capella_ros_tools"]
 
 [tool.coverage.report]
 exclude_also = [
@@ -195,7 +195,7 @@ zip-safe = false
 "*" = ["py.typed"]
 
 [tool.setuptools.packages.find]
-include = ["rosidl2capella", "rosidl2capella.*"]
+include = ["capella_ros_tools", "capella_ros_tools.*"]
 
 [tool.setuptools_scm]
 # This section must exist for setuptools_scm to work

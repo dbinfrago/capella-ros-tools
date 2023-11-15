@@ -5,7 +5,7 @@ import os
 import re
 from pathlib import Path
 
-from . import EnumValue, MessageDef, MessagesPkg, MsgProp
+from . import EnumProp, MessageDef, MessagesPkg, MsgProp
 
 RE_TNC = re.compile(r"^([A-Za-z0-9\[\]\/_]+)\s+(\w+)(?:\s+#\s*(.+))?$")
 RE_ENUM = re.compile(r"^(\w+)\s+(\w+)\s*=\s*(\d+)\s*(?:#\s*(.+))?$")
@@ -87,7 +87,7 @@ class ParseMessageDef(MessageDef):
                 else file.stem
             )
             props = [
-                EnumValue(prop[0].replace(commonprefix, ""), *prop[1:])
+                EnumProp(prop[0].replace(commonprefix, ""), *prop[1:])
                 for prop in props
             ]
             out.append(cls(name, description, props))
