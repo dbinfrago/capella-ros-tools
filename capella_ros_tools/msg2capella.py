@@ -6,10 +6,10 @@ from pathlib import Path
 
 import click
 
-import rosidl2capella
-from rosidl2capella.modules import ROS_INTERFACES
-from rosidl2capella.modules.parse_message import ParseMessagesPkg
-from rosidl2capella.modules.serialize_capella import SerializeCapella
+import capella_ros_tools
+from capella_ros_tools.modules import ROS_INTERFACES
+from capella_ros_tools.modules.parse_message import ParseMessagesPkg
+from capella_ros_tools.modules.serialize_capella import SerializeCapella
 
 
 class Msg2Capella:
@@ -77,8 +77,8 @@ class Msg2Capella:
 
 @click.command()
 @click.version_option(
-    version=rosidl2capella.__version__,
-    prog_name="rosidl2capella",
+    version=capella_ros_tools.__version__,
+    prog_name="capella-ros-tools",
     message="%(prog)s %(version)s",
 )
 @click.argument(

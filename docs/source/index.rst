@@ -2,8 +2,8 @@
    Copyright DB Netz AG and contributors
    SPDX-License-Identifier: Apache-2.0
 
-Welcome to rosidl2capella's documentation!
-==========================================
+Welcome to capella-ros-tools's documentation!
+=============================================
 
 .. toctree::
    :maxdepth: 2

@@ -3,31 +3,31 @@
  ~ SPDX-License-Identifier: Apache-2.0
  -->
 
-# rosidl2capella
+# capella-ros-tools
 
-![image](https://github.com/DSD-DBS/rosidl2capella/actions/workflows/build-test-publish.yml/badge.svg)
-![image](https://github.com/DSD-DBS/rosidl2capella/actions/workflows/lint.yml/badge.svg)
+![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
+![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
 
-Tool for parsing ROS IDL (.msg files) and converting them to Capella model.
+Tools for using ROS with Capella
 
 # Documentation
 
-Read the [full documentation on Github pages](https://dsd-dbs.github.io/rosidl2capella).
+Read the [full documentation on Github pages](https://dsd-dbs.github.io/capella-ros-tools).
 
 # Installation
 
 You can install the latest released version directly from PyPI.
 
 ```sh
-pip install rosidl2capella
+pip install capella-ros-tools
 ```
 
 To set up a development environment, clone the project and install it into a
 virtual environment.
 
 ```sh
-git clone https://github.com/DSD-DBS/rosidl2capella
-cd rosidl2capella
+git clone --recurse-submodules https://github.com/DSD-DBS/capella-ros-tools
+cd capella-ros-tools
 python -m venv .venv
 
 source .venv/bin/activate.sh  # for Linux / Mac

@@ -39,4 +39,4 @@ jobs:
           python -m pip install pylint
       - name: Run pylint
         run: |-
-          pylint -dfixme rosidl2capella || exit $(($? & ~24))
+          pylint -dfixme capella_ros_tools || exit $(($? & ~24))
