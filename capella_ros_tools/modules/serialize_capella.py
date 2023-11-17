@@ -162,19 +162,18 @@ class SerializeCapella(BaseCapella):
         try:
             return self.basic_types.datatypes.by_name(type_name)
         except KeyError:
-            return None
+            self.create_basic_types({type_name})
+            return self.basic_types.datatypes.by_name(type_name)
 
     def create_attribute(
         self,
         class_name: str,
         prop: MsgProp,
         package: t.Any,
-    ) -> bool:
+    ) -> None:
         """Create attribute in Capella model."""
         superclass = package.classes.by_name(class_name)
         property_type = self._find_type(prop.type, package)
-        if not property_type:
-            return False
         try:
             p = superclass.owned_properties.by_name(prop.name)
             superclass.owned_properties.remove(p)
@@ -192,7 +191,6 @@ class SerializeCapella(BaseCapella):
         attribute.max_card = capellambse.new_object(
             "LiteralNumericValue", value=float(prop.max or "inf")
         )
-        return True
 
     def save_changes(self) -> None:
         """Save changes to Capella model."""
