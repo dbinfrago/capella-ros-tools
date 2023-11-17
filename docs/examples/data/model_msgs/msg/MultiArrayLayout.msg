@@ -1,6 +1,6 @@
 # Copyright DB Netz AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # The multiarray declares a generic multi-dimensional array of a
 # particular data type.  Dimensions are ordered from outer most
 # to inner most.

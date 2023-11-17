@@ -80,12 +80,10 @@ class ParseMessageDef(MessageDef):
                 for line in lines
                 for (t, n, v, c) in RE_ENUM.findall(line)
             ]
+            if not props:
+                continue
             commonprefix = os.path.commonprefix([prop[0] for prop in props])
-            name = (
-                commonprefix.rpartition("_")[0]
-                if len(blocks) > 1
-                else file.stem
-            )
+            name = commonprefix.rpartition("_")[0]
             props = [
                 EnumProp(prop[0].replace(commonprefix, ""), *prop[1:])
                 for prop in props
@@ -127,7 +125,7 @@ class ParseMessagesPkg(MessagesPkg):
     def from_pkg_folders(cls, path_to_root: Path):
         """Create package from package folder."""
         out = cls({}, {})
-        for dir in path_to_root.rglob("**/msg/"):
+        for dir in path_to_root.rglob("msg/"):
             out.packages[dir.parent.name] = ParseMessagesPkg.from_msg_folder(
                 dir
             )
