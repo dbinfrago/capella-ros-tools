@@ -27,7 +27,7 @@ classifiers = [
   ]
 dependencies = [
   "click",
-  "capellambse @ git+https://github.com/DSD-DBS/py-capellambse.git@roletag-create",
+  "capellambse",
 ]
 
 [project.urls]
