@@ -1,0 +1,92 @@
+<!--
+ ~ Copyright DB Netz AG and contributors
+ ~ SPDX-License-Identifier: Apache-2.0
+ -->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" href="/static/icons/favicon.ico" />
+        <title>{{ element.name }} - Overview</title>
+        <link
+            href="{{ url_for('static', path='/styles.css') }}"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <main>
+            <h1>
+                {{ element.name }}
+                <span style="font-size: 70%">({{ element.xtype }})</span>
+            </h1>
+            <table>
+                <tr>
+                    <td>uuid</td>
+                    <td>{{ element.uuid }}</td>
+                </tr>
+                <tr>
+                    <td>parent</td>
+                    <td>{{ element.parent._short_html_() }}</td>
+                </tr>
+                <tr>
+                    <td>classes</td>
+                    <td>
+                        <ol>
+                            {% for cls in element.classes %}
+                            <li>
+                                <a href="/class/{{ cls.uuid }}"
+                                    >{{ cls._short_html_() }}</a
+                                >
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <td>datatypes</td>
+                    <td>
+                        <ol>
+                            {% for datatype in element.datatypes %} {% if
+                            get_type(datatype.xtype) != 'Enumeration' %}
+                            <li>
+                                <a href="/enum/{{ datatype.uuid }}"
+                                    >{{ datatype._short_html_() }}</a
+                                >
+                            </li>
+                            {% endif %} {% endfor %}
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <td>enumeration</td>
+                    <td>
+                        <ol>
+                            {% for enum in element.enumerations %}
+                            <li>
+                                <a href="/enum/{{ enum.uuid }}"
+                                    >{{ enum._short_html_() }}</a
+                                >
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <td>packages</td>
+                    <td>
+                        <ol>
+                            {% for pkg in element.packages %}
+                            <li>
+                                <a href="/package/{{ pkg.uuid }}"
+                                    >{{ pkg._short_html_() }}</a
+                                >
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </td>
+                </tr>
+            </table>
+        </main>
+    </body>
+</html>

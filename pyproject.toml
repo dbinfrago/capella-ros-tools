@@ -9,9 +9,9 @@ build-backend = "setuptools.build_meta"
 dynamic = ["version"]
 
 name = "capella-ros-tools"
-description = "Tools for using ROS with Capella"
+description = "API and scripts to parse .msg files and convert them to Capella"
 readme = "README.md"
-requires-python = ">=3.10, <3.12"
+requires-python = ">=3.9, <3.12"
 license = { text = "Apache-2.0" }
 authors = [
   { name = "DB Netz AG" },
@@ -23,11 +23,16 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
-  ]
+  "Programming Language :: Python :: 3.11",
+]
 dependencies = [
   "click",
-  "capellambse",
+  "capellambse @ git+https://github.com/DSD-DBS/py-capellambse.git@more-filepath-props",
+  "capellambse_context_diagrams",
+  "fastapi",
+  "uvicorn[standard]",
 ]
 
 [project.urls]
@@ -49,7 +54,7 @@ test = [
 
 [tool.black]
 line-length = 79
-target-version = ["py310"]
+target-version = ["py39"]
 
 [tool.coverage.run]
 branch = true

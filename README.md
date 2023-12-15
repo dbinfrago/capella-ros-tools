@@ -8,7 +8,7 @@
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
 
-Tools for using ROS with Capella
+API and scripts to parse .msg files and convert them to Capella
 
 # Documentation
 
@@ -26,7 +26,7 @@ To set up a development environment, clone the project and install it into a
 virtual environment.
 
 ```sh
-git clone --recurse-submodules https://github.com/DSD-DBS/capella-ros-tools
+git clone https://github.com/DSD-DBS/capella-ros-tools
 cd capella-ros-tools
 python -m venv .venv
 
