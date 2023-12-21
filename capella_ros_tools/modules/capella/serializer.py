@@ -42,7 +42,9 @@ class CapellaModel(BaseCapellaModel):
         overlap = []
         for cls in classes:
             try:
-                overlap.append(package.classes.by_name(cls.name))
+                overlap.append(
+                    self.model.search("Class", below=package).by_name(cls.name)
+                )
                 logger.info("Class %s already exists.", cls.name)
             except KeyError:
                 package.classes.create(
@@ -81,7 +83,11 @@ class CapellaModel(BaseCapellaModel):
         overlap = []
         for enum in enums:
             try:
-                overlap.append(package.datatypes.by_name(enum.name))
+                overlap.append(
+                    self.model.search("Enumeration", below=package).by_name(
+                        enum.name
+                    )
+                )
                 logger.info("Enum %s already exists.", enum.name)
             except KeyError:
                 type = package.datatypes.create(
@@ -146,9 +152,7 @@ class CapellaModel(BaseCapellaModel):
             try:
                 type_package = self.data.packages.by_name(prop.type_pkg_name)
             except KeyError:
-                type_package = (
-                    package.parent if package is not self.data else package
-                )
+                type_package = package
 
             try:
                 partclass = self.model.search(
@@ -177,12 +181,17 @@ class CapellaModel(BaseCapellaModel):
                 continue
             except KeyError:
                 pass
+
+            try:
+                type_package = package.parent.packages.by_name("types")
+            except KeyError:
+                type_package = package
             try:
                 property_type = self.model.search(
                     "Enumeration", below=type_package
                 ).by_name(prop.type_name)
             except KeyError:
-                property_type = self._find_type(prop.type_name, type_package)
+                property_type = self._find_type(prop.type_name, package)
 
             attribute = self._create_composition(
                 superclass, prop, property_type

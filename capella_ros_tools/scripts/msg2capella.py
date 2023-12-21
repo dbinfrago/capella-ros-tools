@@ -94,14 +94,7 @@ class Converter:
     ):
         packages = [p.name for p in current_pkg_def.packages]
         self.model.create_packages(packages, current_root)
-        classes = [
-            ClassDef(c.name, [], "\n".join(c.annotations))
-            for c in current_pkg_def.messages
-            if c.fields
-        ]
-        overlap = self.model.create_classes(classes, current_root)
-        self._resolve_overlap(overlap, self.model.delete_classes, current_root)
-        self.model.create_classes(classes, current_root)
+
         enums = [
             EnumDef(
                 e.name,
@@ -123,6 +116,15 @@ class Converter:
         overlap = self.model.create_enums(enums, current_root)
         self._resolve_overlap(overlap, self.model.delete_enums, current_root)
         self.model.create_enums(enums, current_root)
+
+        classes = [
+            ClassDef(c.name, [], "\n".join(c.annotations))
+            for c in current_pkg_def.messages
+            if c.fields
+        ]
+        overlap = self.model.create_classes(classes, current_root)
+        self._resolve_overlap(overlap, self.model.delete_classes, current_root)
+        self.model.create_classes(classes, current_root)
 
         for new_pkg_def in current_pkg_def.packages:
             new_root = current_root.packages.by_name(new_pkg_def.name)

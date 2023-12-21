@@ -41,12 +41,12 @@ PRIMITIVE_TYPES = [
 
 
 VALID_MESSAGE_NAME_PATTERN = "[A-Z][A-Za-z0-9]*"
-VALID_CONSTANT_NAME_PATTERN = "[A-Z][A-Z0-9_]*?[A-Z0-9]*"
+VALID_CONSTANT_NAME_PATTERN = "[A-Z][A-Z0-9_]*[A-Z0-9]*"
 VALID_REF_COMMENT_PATTERN = re.compile(
     r"cf\.\s*"
     rf"({VALID_MESSAGE_NAME_PATTERN})"
     r"(?:,\s*"
-    rf"({VALID_CONSTANT_NAME_PATTERN}_XXX))?"
+    rf"({VALID_CONSTANT_NAME_PATTERN}))?"
 )
 
 
@@ -214,18 +214,27 @@ def _process_enums(msg):
     for enum in msg.enums:
         _rename_enum(enum)
 
-    to_delete = set()
+    to_delete = []
     for i, enum in enumerate(msg.enums):
-        # combine enums with the same name
-        if i in to_delete:
+        # combine enums with the same name or have just 1 value
+        if enum in to_delete:
             continue
+
+        try:
+            if len(enum.values) == 1:
+                msg.enums[i + 1].values = enum.values + msg.enums[i + 1].values
+                to_delete.append(enum)
+                continue
+        except IndexError:
+            pass
+
         indeces = [
             i
             for i, other_enum in enumerate(msg.enums)
             if other_enum.name is enum.name and other_enum is not enum
         ]
         for i in indeces:
-            to_delete.add(i)
+            to_delete.append(msg.enums[i])
             for value in msg.enums[i].values:
                 enum.values.append(
                     ConstantDef(
@@ -236,8 +245,8 @@ def _process_enums(msg):
                     )
                 )
 
-    for i in to_delete:
-        del msg.enums[i]
+    for enum in to_delete:
+        msg.enums.remove(enum)
 
     for enum in msg.enums:
         match_name = [
@@ -282,7 +291,11 @@ def _process_comments(instance):
         # reference to enum
         ref_file_name, ref_common_prefix = match.groups()
         instance.type.name = (
-            _get_enum_identifier(ref_common_prefix[:-4])
+            _get_enum_identifier(
+                ref_common_prefix[:-4]
+                if ref_common_prefix.endswith("_XXX")
+                else ref_common_prefix
+            )
             if ref_common_prefix
             else ref_file_name
         )
