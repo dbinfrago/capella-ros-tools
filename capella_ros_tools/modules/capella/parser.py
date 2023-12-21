@@ -19,30 +19,6 @@ class CapellaModel(BaseCapellaModel):
         for cls in package.classes:
             props = []
             for prop in cls.owned_properties:
-                type: t.Any
-                if prop.type.__class__.__name__ == "Enumeration":
-                    type = EnumDef(
-                        prop.type.name,
-                        [
-                            EnumValue(
-                                literal.value.type.name,
-                                literal.name,
-                                literal.value.value,
-                                literal.description,
-                            )
-                            for literal in prop.type.owned_literals
-                        ],
-                        prop.type.description,
-                    )
-                elif prop.type.__class__.__name__ == "Class":
-                    type = ClassDef(
-                        prop.type.name,
-                        [],
-                        prop.type.description,
-                    )
-                else:
-                    type = prop.type.name
-
                 type_pkg_name = prop.type.parent.name
                 if type_pkg_name in [
                     "Predefined Types",
@@ -52,9 +28,9 @@ class CapellaModel(BaseCapellaModel):
 
                 props.append(
                     ClassProperty(
-                        prop.name,
-                        type,
+                        prop.type.name,
                         type_pkg_name,
+                        prop.name,
                         prop.min_card.value,
                         prop.max_card.value,
                         prop.description,
@@ -68,3 +44,24 @@ class CapellaModel(BaseCapellaModel):
                 )
             )
         return classes
+
+    def get_enums(self, package: t.Any) -> list[EnumDef]:
+        """Get enums in Capella model."""
+        enums = []
+        for enum in package.enumerations:
+            enums.append(
+                EnumDef(
+                    enum.name,
+                    [
+                        EnumValue(
+                            literal.value.type.name,
+                            literal.name,
+                            literal.value.value,
+                            literal.description,
+                        )
+                        for literal in enum.owned_literals
+                    ],
+                    enum.description,
+                )
+            )
+        return enums
