@@ -23,9 +23,9 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
 @click.option(
     "--exists-action",
     "action",
-    type=click.Choice(["k", "o", "a"], case_sensitive=False),
+    type=click.Choice(["k", "o", "a", "c"], case_sensitive=False),
     default="c" if sys.stdin.isatty() else "a",
-    help="Default action when an element already exists: (k)eep, (o)verwrite, (a)bort.",
+    help="Default action when an element already exists: (c)heck, (k)eep, (o)verwrite, (a)bort.",
 )
 @click.option("--port", "-p", type=int, help="Port for HTML display.")
 @click.option(
@@ -43,7 +43,7 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
     nargs=2,
     type=(
         click.Choice(["capella", "messages"]),
-        click.Path(exists=True, path_type=Path),
+        click.Path(path_type=Path),
     ),
     required=True,
     help="Output file type and path.",
