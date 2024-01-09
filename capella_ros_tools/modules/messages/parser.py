@@ -318,7 +318,7 @@ class MessagePkgDef(BaseMessagePkgDef):
 
     @classmethod
     def from_pkg_folder(cls, root_dir: t.Any, root_dir_name: str = "root"):
-        """Create MessagePkgDef from a folder of messagefolders."""
+        """Create MessagePkgDef from a folder of message folders."""
         out = cls("", [], [])
         for dir in root_dir.rglob("msg"):
             out.packages.append(

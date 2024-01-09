@@ -27,6 +27,12 @@ from capella_ros_tools.snapshot import app
     default="c" if sys.stdin.isatty() else "a",
     help="Default action when an element already exists: (c)heck, (k)eep, (o)verwrite, (a)bort.",
 )
+@click.option(
+    "--no-deps",
+    "no_deps",
+    is_flag=True,
+    help="Don’t install message dependencies.",
+)
 @click.option("--port", type=int, help="Port for HTML display.")
 @click.option(
     "-i",
@@ -53,12 +59,6 @@ from capella_ros_tools.snapshot import app
     type=click.Choice(["oa", "sa", "la", "pa"], case_sensitive=True),
     required=True,
     help="Layer to use.",
-)
-@click.option(
-    "--no-deps",
-    "no_deps",
-    is_flag=True,
-    help="Don’t install message dependencies.",
 )
 def cli(
     in_: tuple[str, str],
@@ -87,14 +87,13 @@ def cli(
 
     input: t.Any = Path(input_path)
 
-    input = (
-        input
-        if input.exists()
-        else capellambse.filehandler.get_filehandler(input_path)
-    )
+    if not input.exists() and input_type == "messages":
+        input = capellambse.filehandler.get_filehandler(input_path).rootdir
+    elif not input.exists() and input_type == "capella":
+        input = capellambse.filehandler.get_filehandler(input_path)
 
     msg_path, capella_path, convert_class = (
-        (input.rootdir, output, msg2capella.Converter)
+        (input, output, msg2capella.Converter)
         if input_type == "messages"
         else (output, input, capella2msg.Converter)
     )

@@ -13,25 +13,25 @@ This section contains a collection of examples that demonstrate how to use the l
 Using the CLI
 =============
 
-Importing ROS2 Messages:
+Import ROS2 Messages:
 ------------------------
 .. code-block:: bash
 
    $ python -m capella_ros_tools -i messages docs/source/examples/data/example_msgs -o capella docs/source/examples/data/empty_project_52 -l la --port 5000 --exists-action=k --no-deps
 
-Exporting Capella Models
-------------------------
-.. code-block:: bash
-
-   $ python -m capella_ros_tools -i capella docs/source/examples/data/melody_model_60 -l la -o messages docs/source/examples/data/example_msgs --port 5000
-
 Import ROS2 Messages from Git Repository:
 ------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools -i messages git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss -o capella docs/source/examples/data/empty_project_52 -l la --port 5000 --exists-action=k --no-deps
+   $ python -m capella_ros_tools -i messages git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss -o capella docs/source/examples/data/empty_project_52 -l la --port 5000 --exists-action=k
 
-Export Capella Models from Git Repository:
+Export Capella Model
+---------------------
+.. code-block:: bash
+
+   $ python -m capella_ros_tools -i capella docs/source/examples/data/melody_model_60 -l la -o messages docs/source/examples/data/example_msgs --port 5000
+
+Export Capella Model from Git Repository:
 ------------------------
 .. code-block:: bash
 
