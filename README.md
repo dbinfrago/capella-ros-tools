@@ -1,5 +1,5 @@
 <!--
- ~ Copyright DB Netz AG and contributors
+ ~ Copyright DB InfraGO AG and contributors
  ~ SPDX-License-Identifier: Apache-2.0
  -->
 
@@ -8,7 +8,7 @@
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
 
-API and scripts to parse .msg files and convert them to Capella
+Tool for converting ROS messages from and to Capella models.
 
 # Documentation
 
@@ -48,7 +48,7 @@ look at our [guidelines for contributors](CONTRIBUTING.md) for details.
 This project is compliant with the
 [REUSE Specification Version 3.0](https://git.fsfe.org/reuse/docs/src/commit/d173a27231a36e1a2a3af07421f5e557ae0fec46/spec.md).
 
-Copyright DB Netz AG, licensed under Apache 2.0 (see full text in
+Copyright DB InfraGO AG, licensed under Apache 2.0 (see full text in
 [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt))
 
 Dot-files are licensed under CC0-1.0 (see full text in

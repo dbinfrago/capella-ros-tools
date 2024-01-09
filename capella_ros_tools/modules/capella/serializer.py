@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Serializer for Capella model."""
 import logging
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class CapellaModel(BaseCapellaModel):
-    """Capella model definition for serializing model."""
+    """Capella model definition for serialized model."""
 
     def create_packages(
         self, packages: list[str], package: t.Any = None
@@ -108,15 +108,15 @@ class CapellaModel(BaseCapellaModel):
 
         return overlap
 
-    def delete_enums(self, types: list, package: t.Any = None) -> None:
-        """Delete types in Capella model."""
+    def delete_enums(self, enums: list, package: t.Any = None) -> None:
+        """Delete enums in Capella model."""
         if package is None:
             package = self.data
 
-        for type in types:
+        for enum in enums:
             try:
-                package.datatypes.remove(type)
-                logger.info("Deleted %s.", type.name)
+                package.datatypes.remove(enum)
+                logger.info("Deleted %s.", enum.name)
             except ValueError:
                 pass
 
@@ -171,10 +171,10 @@ class CapellaModel(BaseCapellaModel):
                     type=superclass,
                     kind="ASSOCIATION",
                     min_card=capellambse.new_object(
-                        "LiteralNumericValue", value=1
+                        "LiteralNumericValue", value="1"
                     ),
                     max_card=capellambse.new_object(
-                        "LiteralNumericValue", value=1
+                        "LiteralNumericValue", value="1"
                     ),
                 )
                 self._set_cardinality(composition, prop)

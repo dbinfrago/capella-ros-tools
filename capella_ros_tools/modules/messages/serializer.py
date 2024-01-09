@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Serializer for IDL messages."""
 from pathlib import Path
@@ -10,7 +10,7 @@ from capella_ros_tools.modules.messages import (
 
 
 class MessageDef(BaseMessageDef):
-    """Message definition for a ROS message."""
+    """Definition of a message for serialized messages."""
 
     def to_msg_file(self, msg_file: Path):
         """Write message to file."""
@@ -39,7 +39,7 @@ class MessageDef(BaseMessageDef):
                 f"{(field.type.pkg_name + '/') if field.type.pkg_name else ''}"
             )
             msg_string += f"{field.type.name}"
-            if field.type.array_size == float("inf"):
+            if field.type.array_size == "*":
                 msg_string += "[]"
             elif field.type.array_size:
                 msg_string += f"[{field.type.array_size}]"
@@ -51,10 +51,10 @@ class MessageDef(BaseMessageDef):
 
 
 class MessagePkgDef(BaseMessagePkgDef):
-    """Message package definition for ROS message package."""
+    """Definition of message package for serialized messages."""
 
     def to_msg_folder(self, msg_pkg_dir: Path):
-        """Write message package to folder."""
+        """Write messages and packages to a folder of .msg files."""
         msg_pkg_dir.mkdir(parents=True, exist_ok=True)
         for msg in self.messages:
             msg.to_msg_file(msg_pkg_dir / f"{msg.name}.msg")
@@ -62,7 +62,7 @@ class MessagePkgDef(BaseMessagePkgDef):
             pkg.to_msg_folder(msg_pkg_dir / pkg.name)
 
     def to_pkg_folder(self, pkg_dir: Path):
-        """Write packages to folder."""
+        """Write packages to a folder of message folders."""
         pkg_dir.mkdir(parents=True, exist_ok=True)
         for pkg in self.packages:
             pkg.to_msg_folder(pkg_dir / pkg.name / "msg")

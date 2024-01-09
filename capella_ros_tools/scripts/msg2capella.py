@@ -1,6 +1,6 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Convert ROS messages to Capella data.""" ""
+"""Import ROS messages into Capella."""
 import typing as t
 
 import capellambse
@@ -42,7 +42,7 @@ MSG_TYPE_TO_CAPELLA = {
 
 
 class Converter:
-    """Converts ROS messages to Capella data."""
+    """Converter class for importing ROS messages into Capella."""
 
     def __init__(
         self,
@@ -102,7 +102,7 @@ class Converter:
                     EnumValue(
                         MSG_TYPE_TO_CAPELLA.get(v.type.name) or v.type.name,
                         v.name,
-                        int(v.value),
+                        v.value,
                         "\n".join(v.annotations),
                     )
                     for v in e.values
@@ -143,8 +143,8 @@ class Converter:
                             or f.type.name,
                             f.type.pkg_name,
                             f.name,
-                            min_card=0 if f.type.array_size else 1,
-                            max_card=f.type.array_size or 1,
+                            min_card="0" if f.type.array_size else "1",
+                            max_card=f.type.array_size or "1",
                             description="\n".join(f.annotations),
                         )
                         for f in msg.fields
@@ -159,7 +159,7 @@ class Converter:
             self._add_relations(new_pkg_def, new_root)
 
     def convert(self) -> None:
-        """Convert ROS messages to Capella data."""
+        """Start conversion."""
         current_root = self.model.data
 
         if not self.no_deps:

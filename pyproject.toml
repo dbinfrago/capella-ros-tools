@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 
 [build-system]
@@ -9,12 +9,12 @@ build-backend = "setuptools.build_meta"
 dynamic = ["version"]
 
 name = "capella-ros-tools"
-description = "API and scripts to parse .msg files and convert them to Capella"
+description = "Tool for converting ROS messages from and to Capella models."
 readme = "README.md"
-requires-python = ">=3.9, <3.12"
+requires-python = ">=3.10, <3.13"
 license = { text = "Apache-2.0" }
 authors = [
-  { name = "DB Netz AG" },
+  { name = "DB InfraGO AG" },
 ]
 keywords = []
 classifiers = [
@@ -23,9 +23,9 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
   "click",
@@ -53,7 +53,7 @@ test = [
 
 [tool.black]
 line-length = 79
-target-version = ["py39"]
+target-version = ["py310"]
 
 [tool.coverage.run]
 branch = true
@@ -203,3 +203,4 @@ include = ["capella_ros_tools", "capella_ros_tools.*"]
 
 [tool.setuptools_scm]
 # This section must exist for setuptools_scm to work
+local_scheme = "no-local-version"

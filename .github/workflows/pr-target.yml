@@ -1,0 +1,81 @@
+# SPDX-FileCopyrightText: Copyright DB InfraGO AG and the capellambse contributors
+# SPDX-License-Identifier: CC0-1.0
+
+name: Conventional Commits
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the base branch
+        # Commitlint will use the configuration that is checked out; i.e. in
+        # this case it will use the config from the PR's base branch, which
+        # must have already been approved by someone with repo write access.
+        #
+        # Because commitlint accepts arbitrary JavaScript as configuration,
+        # this is necessary to prevent code injection attacks. Combined with
+        # the `pull-requests: write` permission needed for posting comments,
+        # this could potentially allow an attacker to merge any code into any
+        # branch.
+        #
+        # However, it also means that (good) pull requests intended to change
+        # or extend the config will be validated against the old config, which
+        # may cause false errors.
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Pull the PR
+        run: git fetch origin +${{ github.event.pull_request.head.sha }}
+
+      - name: Install commitlint
+        run: npm install -g @commitlint/cli
+
+      - name: Validate commit messages
+        id: conventional-commits
+        continue-on-error: true
+        env:
+          SHA_FROM: ${{ github.event.pull_request.base.sha }}
+          SHA_TO: ${{ github.event.pull_request.head.sha }}
+        run: |
+          delim="_EOF_$(uuidgen)"
+          echo "validation-result<<$delim" >> "$GITHUB_OUTPUT"
+          r=0
+          commitlint --from "$SHA_FROM" --to "$SHA_TO" >> "$GITHUB_OUTPUT" 2>&1 || r=$?
+          echo "$delim" >> "$GITHUB_OUTPUT"
+          exit $r
+
+      - name: Post comment if validation failed
+        if: steps.conventional-commits.outcome == "failure"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TEXT: |-
+            The pull request does not conform to the conventional commit specification. Please ensure that your commit messages follow the spec:
+
+            <https://www.conventionalcommits.org/>
+
+            We also strongly recommend that you set up your development environment with pre-commit, as described in our [CONTRIBUTING guidelines](https://github.com/DSD-DBS/py-capellambse/blob/master/CONTRIBUTING.rst). This will run all the important checks right before you commit your changes, and avoids lengthy CI wait time and round trips.
+
+            The following commits failed to validate:
+
+            ```
+            ${{ steps.conventional-commits.outputs.validation-result }}
+            ```
+
+            Here are some examples of valid commit messages:
+
+            ```
+            feat(model): Add realized_states to State and Mode
+            fix(aird): Fix ZeroDivisionError with zero-sized circles
+            docs(readme): Update project description
+            ```
+        run: 'gh pr comment "$PR_NUMBER" -F - <<< "$TEXT"'

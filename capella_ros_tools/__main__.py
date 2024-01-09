@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Main entry point into capella_ros_tools."""
 
@@ -10,8 +10,8 @@ import capellambse
 import click
 
 import capella_ros_tools
-from capella_ros_tools.display import app
 from capella_ros_tools.scripts import capella2msg, msg2capella
+from capella_ros_tools.snapshot import app
 
 
 @click.command()
@@ -27,9 +27,8 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
     default="c" if sys.stdin.isatty() else "a",
     help="Default action when an element already exists: (c)heck, (k)eep, (o)verwrite, (a)bort.",
 )
-@click.option("--port", "-p", type=int, help="Port for HTML display.")
+@click.option("--port", type=int, help="Port for HTML display.")
 @click.option(
-    "--in",
     "-i",
     "in_",
     nargs=2,
@@ -38,8 +37,8 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
     help="Input file type and path.",
 )
 @click.option(
-    "--out",
     "-o",
+    "out",
     nargs=2,
     type=(
         click.Choice(["capella", "messages"]),
@@ -49,8 +48,8 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
     help="Output file type and path.",
 )
 @click.option(
-    "--layer",
     "-l",
+    "layer",
     type=click.Choice(["oa", "sa", "la", "pa"], case_sensitive=True),
     required=True,
     help="Layer to use.",
@@ -91,16 +90,18 @@ def cli(
     input = (
         input
         if input.exists()
-        else capellambse.filehandler.get_filehandler(input_path).rootdir
+        else capellambse.filehandler.get_filehandler(input_path)
     )
 
     msg_path, capella_path, convert_class = (
-        (input, output, msg2capella.Converter)
+        (input.rootdir, output, msg2capella.Converter)
         if input_type == "messages"
         else (output, input, capella2msg.Converter)
     )
 
-    converter = convert_class(msg_path, capella_path, layer, action, no_deps)
+    converter: t.Any = convert_class(
+        msg_path, capella_path, layer, action, no_deps
+    )
     converter.convert()
 
     if port:

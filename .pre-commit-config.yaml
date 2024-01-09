@@ -1,11 +1,11 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: CC0-1.0
 
 default_install_hook_types: [commit-msg, pre-commit]
 default_stages: [commit, merge-commit]
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.4.0
+      rev: v4.5.0
       hooks:
           - id: check-added-large-files
           - id: check-ast
@@ -26,11 +26,11 @@ repos:
           - id: fix-byte-order-marker
           - id: trailing-whitespace
     - repo: https://github.com/psf/black-pre-commit-mirror
-      rev: 23.9.1
+      rev: 23.12.1
       hooks:
           - id: black
     - repo: https://github.com/PyCQA/isort
-      rev: 5.12.0
+      rev: 5.13.2
       hooks:
           - id: isort
     - repo: https://github.com/PyCQA/docformatter
@@ -47,11 +47,11 @@ repos:
             additional_dependencies:
                 - pydocstyle[toml]
     - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v1.5.1
+      rev: v1.8.0
       hooks:
           - id: mypy
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.4.2
+      rev: v1.5.4
       hooks:
           - id: insert-license
             name: Insert license headers (shell-style comments)
@@ -98,6 +98,6 @@ repos:
       hooks:
           - id: reuse
     - repo: https://github.com/qoomon/git-conventional-commits
-      rev: v2.6.5
+      rev: v2.6.7
       hooks:
           - id: conventional-commits

@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Parser for IDL messages."""
 import os
@@ -51,7 +51,7 @@ VALID_REF_COMMENT_PATTERN = re.compile(
 
 
 class TypeDef(BaseTypeDef):
-    """Type definition for a field or constant in a message."""
+    """Type definition for a field or constant in a parsed message."""
 
     def __init__(self, type_string: str) -> None:
         super().__init__(type_string)
@@ -61,13 +61,12 @@ class TypeDef(BaseTypeDef):
             index = type_string.rindex("[")
             array_size_string = type_string[index + 1 : -1]
             if array_size_string:
-                array_size_string = array_size_string.lstrip(
+                self.array_size = array_size_string.lstrip(
                     ARRAY_UPPER_BOUND_TOKEN
                 )
-                self.array_size = float(array_size_string)
             else:
                 # dynamic array
-                self.array_size = float("inf")
+                self.array_size = "*"
 
             type_string = type_string[:index]
 
@@ -83,7 +82,7 @@ class TypeDef(BaseTypeDef):
 
 
 def _extract_file_level_comments(message_string: str):
-    """Extract comments at the beginning of the message file."""
+    """Extract comments at the beginning of the message."""
     lines = message_string.splitlines()
     if lines and not lines[0].strip():
         lines = lines[1:]
@@ -100,18 +99,18 @@ def _extract_file_level_comments(message_string: str):
 
 
 class MessageDef(BaseMessageDef):
-    """Message definition for a ROS message."""
+    """Definition of a message for parsed messages."""
 
     @classmethod
     def from_msg_file(cls, msg_file: t.Any):
-        """Create a message definition from a message file."""
+        """Create message definition from a .msg file."""
         msg_name = msg_file.stem
         message_string = msg_file.read_text()
         return cls.from_msg_string(msg_name, message_string)
 
     @classmethod
     def from_msg_string(cls, msg_name: str, message_string: str):
-        """Create a message definition from a message string."""
+        """Create message definition from a message string."""
         message_comments, lines = _extract_file_level_comments(message_string)
         msg = cls(msg_name, [], [], message_comments)
         last_element: t.Any = msg
@@ -207,7 +206,7 @@ def _rename_enum(enum: EnumDef):
 
 
 def _process_enums(msg):
-    """Condense enums and renames them if necessary."""
+    """Condense enums and rename them if necessary."""
     if len(msg.enums) == 0:
         return
 
@@ -270,7 +269,7 @@ def _process_enums(msg):
 
 
 def _process_comments(instance):
-    """Condense comment lines and extracts special annotations."""
+    """Condense comment lines and extract special annotations."""
     lines = instance.annotations
     if not lines:
         return
@@ -302,11 +301,11 @@ def _process_comments(instance):
 
 
 class MessagePkgDef(BaseMessagePkgDef):
-    """Message package definition for ROS message package."""
+    """Definition of a message package for parsed messages."""
 
     @classmethod
     def from_msg_folder(cls, package_name: str, msg_pkg_dir: t.Any):
-        """Create a message package definition from folder."""
+        """Create MessagePkgDef from a folder of .msg files."""
         msg_pkg = cls(package_name, [], [])
         for msg_file in msg_pkg_dir.iterdir():
             if msg_file.suffix == ".msg":
@@ -319,7 +318,7 @@ class MessagePkgDef(BaseMessagePkgDef):
 
     @classmethod
     def from_pkg_folder(cls, root_dir: t.Any, root_dir_name: str = "root"):
-        """Create a package package definition from a package folder."""
+        """Create MessagePkgDef from a folder of messagefolders."""
         out = cls("", [], [])
         for dir in root_dir.rglob("msg"):
             out.packages.append(

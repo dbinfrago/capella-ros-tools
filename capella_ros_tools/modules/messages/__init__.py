@@ -1,22 +1,26 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-"""IDL Message definition.""" ""
+"""The messages module."""
+
 import typing as t
 
 
 class BaseTypeDef:
-    """Type definition for a field or constant in a message."""
+    """Base type definition for a field or constant in a message."""
 
     def __init__(
         self,
         name: str,
-        array_size: float | None = None,
+        array_size: str | None = None,
         pkg_name: str | None = None,
     ) -> None:
         self.name = name
         """Name of the type."""
         self.array_size = array_size
-        """Max size of the array."""
+        """Max size of the array.
+
+        None:   type is not an array
+        """
         self.pkg_name = pkg_name
         """Name of the package the type is defined in.
 
@@ -62,7 +66,7 @@ class EnumDef:
 
 
 class BaseMessageDef:
-    """Definition of a message."""
+    """Base definition of a message."""
 
     def __init__(
         self,
@@ -85,7 +89,8 @@ class BaseMessageDef:
         )
         for field in self.fields:
             fragments.append(
-                f'<li>{field.type.pkg_name+"/" if field.type.pkg_name else ""}{field.type.name}{"[]" if field.type.array_size == float("inf") else f"[{field.type.array_size}]" if field.type.array_size else ""} {field.name}<br>'
+                f"<li>{field.type.pkg_name+'/' if field.type.pkg_name else ''}"
+                f"{field.type.name}{'[]' if field.type.array_size == '*' else f'[{field.type.array_size}]' if field.type.array_size else ''} {field.name}<br>"
                 + "<br>".join(field.annotations)
                 + "</li>"
             )
@@ -109,7 +114,7 @@ class BaseMessageDef:
 
 
 class BaseMessagePkgDef:
-    """Definition of a message package."""
+    """Base definition of a message package."""
 
     def __init__(self, name: str, messages: list, packages: list):
         self.name = name
@@ -117,4 +122,10 @@ class BaseMessagePkgDef:
         self.packages = packages
 
     def _repr_html_(self):
-        return f'<h1>{self.name}</h1><h2>Messages</h2><ol>{"".join([f"<li>{msg.name}</li>" for msg in self.messages])}</ol><h2>Packages</h2><ol>{"".join([f"<li>{pkg.name}</li>" for pkg in self.packages])}</ol>'
+        return (
+            f"<h1>{self.name}</h1><h2>Messages</h2><ol>"
+            f"{''.join([f'<li>{msg.name}</li>' for msg in self.messages])}"
+            "</ol><h2>Packages</h2><ol>"
+            f"{''.join([f'<li>{pkg.name}</li>' for pkg in self.packages])}"
+            "</ol>"
+        )

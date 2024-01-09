@@ -1,6 +1,7 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Capella model definition."""
+"""The capella module."""
+
 import typing as t
 
 import capellambse
@@ -11,7 +12,7 @@ class EnumValue(t.NamedTuple):
 
     type: str
     name: str
-    value: int
+    value: str
     description: str
 
 
@@ -29,8 +30,8 @@ class ClassProperty(t.NamedTuple):
     type_name: str
     type_pkg_name: str
     name: str
-    min_card: float
-    max_card: float
+    min_card: str
+    max_card: str
     description: str
 
 
@@ -43,7 +44,7 @@ class ClassDef(t.NamedTuple):
 
 
 class BaseCapellaModel:
-    """Base class for capella model."""
+    """Base class for Capella model."""
 
     def __init__(
         self,
