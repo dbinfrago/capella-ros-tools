@@ -49,18 +49,27 @@ class CapellaModel(BaseCapellaModel):
         """Get enums in Capella model."""
         enums = []
         for enum in package.enumerations:
+            values = []
+            for literal in enum.owned_literals:
+                try:
+                    type_name = literal.value.type.name
+                    literal_value = literal.value.value
+                except AttributeError:
+                    type_name = ""
+                    literal_value = ""
+
+                values.append(
+                    EnumValue(
+                        type_name,
+                        literal.name,
+                        literal_value,
+                        literal.description,
+                    )
+                )
             enums.append(
                 EnumDef(
                     enum.name,
-                    [
-                        EnumValue(
-                            literal.value.type.name,
-                            literal.name,
-                            literal.value.value,
-                            literal.description,
-                        )
-                        for literal in enum.owned_literals
-                    ],
+                    values,
                     enum.description,
                 )
             )

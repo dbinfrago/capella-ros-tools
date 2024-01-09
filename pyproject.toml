@@ -41,9 +41,14 @@ Documentation = "https://dsd-dbs.github.io/capella-ros-tools"
 [project.optional-dependencies]
 docs = [
   "furo",
-  "sphinx",
+  "ipython",
+  "nbsphinx",
   "sphinx-copybutton",
   "tomli; python_version<'3.11'",
+  "jinja2",
+  "pyyaml>=6.0",
+  "sphinx!=7.2.0,!=7.2.1,!=7.2.2",
+  "sphinx-argparse-cli",
 ]
 
 test = [

@@ -91,13 +91,14 @@ class Converter:
                             [
                                 ConstantDef(
                                     BaseTypeDef(
-                                        CAPELLA_TYPE_TO_MSG[value.type]
+                                        CAPELLA_TYPE_TO_MSG.get(value.type)
+                                        or "uint8"
                                     ),
                                     value.name,
-                                    str(value.value),
+                                    value.value or str(i),
                                     value.description.split("\n"),
                                 )
-                                for value in enum.values
+                                for i, value in enumerate(enum.values)
                             ],
                             [],
                         )
