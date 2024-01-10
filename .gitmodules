@@ -1,9 +1,0 @@
-# Copyright DB Netz AG and contributors
-# SPDX-License-Identifier: CC0-1.0
-
-[submodule "common_interfaces"]
-	path = capella_ros_tools/msg_to_capella/ros_interfaces/common_interfaces
-	url = https://github.com/ros2/common_interfaces.git
-[submodule "rcl_interfaces"]
-	path = capella_ros_tools/msg_to_capella/ros_interfaces/rcl_interfaces
-	url = https://github.com/ros2/rcl_interfaces.git

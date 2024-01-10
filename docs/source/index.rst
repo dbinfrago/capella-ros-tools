@@ -3,15 +3,12 @@
    SPDX-License-Identifier: Apache-2.0
 
 
-*****************************
+***********************************************
 Welcome to the Capella ROS Tools documentation!
-*****************************
+***********************************************
 
 Overview
 ========
-
-.. image:: https://img.shields.io/badge/license-Apache%202-blue.svg
-   :target:
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
@@ -42,8 +39,8 @@ If you want a quickstart at how to use this tool, head right into the
 
 
 .. toctree::
+   :maxdepth: 3
    :caption: Examples
-   :titlesonly:
 
    howtos/howtos
 
