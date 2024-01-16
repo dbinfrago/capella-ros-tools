@@ -46,6 +46,12 @@ If you want a quickstart at how to use this tool, head right into the
 
 .. toctree::
    :maxdepth: 3
+   :caption: ROS2 Messages Layout
+
+   messages/messages
+
+.. toctree::
+   :maxdepth: 3
    :caption: API reference
 
    code/modules

@@ -14,18 +14,40 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
 from capella_ros_tools.snapshot import app
 
 
-@click.command()
+@click.group(context_settings={"default_map": {}})
 @click.version_option(
     version=capella_ros_tools.__version__,
     prog_name="capella-ros-tools",
     message="%(prog)s %(version)s",
 )
+def cli():
+    """CLI for capella-ros-tools."""
+
+
+@cli.command("import")
+@click.argument(
+    "msg_path", type=str, required=True, help="Path to ROS messages."
+)
+@click.argument(
+    "capella_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to Capella model.",
+)
+@click.argument(
+    "layer",
+    type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
+    required=True,
+    help="Layer of Capella data package.",
+)
 @click.option(
     "--exists-action",
     "action",
-    type=click.Choice(["k", "o", "a", "c"], case_sensitive=False),
-    default="c" if sys.stdin.isatty() else "a",
-    help="Default action when an element already exists: (c)heck, (k)eep, (o)verwrite, (a)bort.",
+    type=click.Choice(
+        ["skip", "replace", "abort", "ask"], case_sensitive=False
+    ),
+    default="ask" if sys.stdin.isatty() else "abort",
+    help="Default action when an element already exists.",
 )
 @click.option(
     "--no-deps",
@@ -34,77 +56,56 @@ from capella_ros_tools.snapshot import app
     help="Don’t install message dependencies.",
 )
 @click.option("--port", type=int, help="Port for HTML display.")
-@click.option(
-    "-i",
-    "in_",
-    nargs=2,
-    type=(click.Choice(["capella", "messages"]), str),
-    required=True,
-    help="Input file type and path.",
-)
-@click.option(
-    "-o",
-    "out",
-    nargs=2,
-    type=(
-        click.Choice(["capella", "messages"]),
-        click.Path(path_type=Path),
-    ),
-    required=True,
-    help="Output file type and path.",
-)
-@click.option(
-    "-l",
-    "layer",
-    type=click.Choice(["oa", "sa", "la", "pa"], case_sensitive=True),
-    required=True,
-    help="Layer to use.",
-)
-def cli(
-    in_: tuple[str, str],
-    out: tuple[str, str],
+def import_msg(
+    msg_path: t.Any,
+    capella_path: Path,
     layer: str,
     action: str,
-    port: int,
     no_deps: bool,
+    port: int,
 ):
-    """Convert between Capella and ROS message definitions."""
-    input_type, input_path = in_
-    output_type, output = out
+    """Import ROS messages into Capella data package."""
 
-    if input_type == output_type:
-        raise click.UsageError(
-            "Input and output must be different file types."
-        )
-    if "capella" not in (input_type, output_type):
-        raise click.UsageError(
-            "Either input or output must be a capella file."
-        )
-    if "messages" not in (input_type, output_type):
-        raise click.UsageError(
-            "Either input or output must be a messages file."
-        )
+    if not Path(msg_path).exists():
+        msg_path = capellambse.filehandler.get_filehandler(msg_path).rootdir
 
-    input: t.Any = Path(input_path)
-
-    if not input.exists() and input_type == "messages":
-        input = capellambse.filehandler.get_filehandler(input_path).rootdir
-    elif not input.exists() and input_type == "capella":
-        input = capellambse.filehandler.get_filehandler(input_path)
-
-    msg_path, capella_path, convert_class = (
-        (input, output, msg2capella.Converter)
-        if input_type == "messages"
-        else (output, input, capella2msg.Converter)
-    )
-
-    converter: t.Any = convert_class(
+    converter: t.Any = msg2capella.Converter(
         msg_path, capella_path, layer, action, no_deps
     )
     converter.convert()
 
     if port:
         app.start(converter.model.model, layer, port)
+
+
+@cli.command("export")
+@click.argument("capella_path", type=str, required=True)
+@click.argument(
+    "layer",
+    type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
+    required=True,
+)
+@click.argument("msg_path", type=click.Path(path_type=Path), required=True)
+@click.option(
+    "--exists-action",
+    "action",
+    type=click.Choice(
+        ["keep", "overwrite", "abort", "ask"], case_sensitive=False
+    ),
+    default="ask" if sys.stdin.isatty() else "abort",
+    help="Default action when an element already exists.",
+)
+def export_capella(
+    capella_path: t.Any,
+    msg_path: Path,
+    layer: str,
+):
+    """Export Capella data package to ROS messages."""
+    if not Path(capella_path).exists():
+        capella_path = capellambse.filehandler.get_filehandler(capella_path)
+
+    converter: t.Any = capella2msg.Converter(capella_path, msg_path, layer)
+    converter.convert()
 
 
 if __name__ == "__main__":

@@ -26,18 +26,7 @@ MSG_TYPE_TO_CAPELLA = {
     "bool": "Boolean",
     "byte": "Byte",
     "char": "Char",
-    "int8": "Short",
-    "uint8": "UnsignedShort",
-    "int16": "Integer",
-    "uint16": "UnsignedInteger",
-    "int32": "Long",
-    "uint32": "UnsignedLong",
-    "int64": "LongLong",
-    "uint64": "UnsignedLongLong",
-    "float32": "Float",
-    "float64": "Double",
     "string": "String",
-    "wstring": "Char",
 }
 
 
@@ -58,20 +47,20 @@ class Converter:
         self.no_deps = no_deps
 
     def _resolve_overlap(self, overlap, deletion_func, current_root):
-        if not overlap or self.action == "k":
+        if not overlap or self.action == "skip":
             return
-        if self.action == "a":
+        if self.action == "abort":
             click.echo(
                 f"{len(overlap)} elements already exist."
-                " Use --exists-action=o to overwrite."
+                " Use --exists-action=replace to replace."
             )
             raise click.Abort()
-        elif self.action == "o":
+        elif self.action == "replace":
             deletion_func(overlap, current_root)
-        elif self.action == "c":
+        elif self.action == "ask":
             for i, cls in enumerate(overlap):
                 confirm = click.prompt(
-                    f"{cls.name} already exists. " "Do you want to overwrite?",
+                    f"{cls.name} already exists. Overwrite? [y]es / [Y]es to all / [n]o / [N]o to all",
                     type=click.Choice(
                         ["y", "Y", "n", "N"],
                         case_sensitive=True,
@@ -95,33 +84,46 @@ class Converter:
         packages = [p.name for p in current_pkg_def.packages]
         self.model.create_packages(packages, current_root)
 
-        enums = [
-            EnumDef(
-                e.name,
-                [
-                    EnumValue(
-                        MSG_TYPE_TO_CAPELLA.get(v.type.name) or v.type.name,
-                        v.name,
-                        v.value,
-                        "\n".join(v.annotations),
+        classes = []
+        enums = []
+        for msg in current_pkg_def.messages:
+            if msg.fields:
+                class_description = "\n".join(msg.annotations)
+                class_def = ClassDef(
+                    msg.name,
+                    [],
+                    class_description,
+                )
+                classes.append(class_def)
+
+            for enum in msg.enums:
+                if not enum.values:
+                    continue
+                values = []
+                for value in enum.values:
+                    value_type = MSG_TYPE_TO_CAPELLA.get(
+                        value.type.name, value.type.name
                     )
-                    for v in e.values
-                ],
-                "\n".join(e.annotations),
-            )
-            for msg in current_pkg_def.messages
-            for e in msg.enums
-            if e.values
-        ]
+                    value_description = "\n".join(value.annotations)
+                    value_def = EnumValue(
+                        value_type,
+                        value.name,
+                        value.value,
+                        value_description,
+                    )
+                    values.append(value_def)
+                enum_description = "\n".join(enum.annotations)
+                enum_def = EnumDef(
+                    enum.name,
+                    values,
+                    enum_description,
+                )
+                enums.append(enum_def)
+
         overlap = self.model.create_enums(enums, current_root)
         self._resolve_overlap(overlap, self.model.delete_enums, current_root)
         self.model.create_enums(enums, current_root)
 
-        classes = [
-            ClassDef(c.name, [], "\n".join(c.annotations))
-            for c in current_pkg_def.messages
-            if c.fields
-        ]
         overlap = self.model.create_classes(classes, current_root)
         self._resolve_overlap(overlap, self.model.delete_classes, current_root)
         self.model.create_classes(classes, current_root)
@@ -134,25 +136,29 @@ class Converter:
         for msg in current_pkg_def.messages:
             if not msg.fields:
                 continue
-            self.model.create_properties(
-                ClassDef(
-                    name=msg.name,
-                    properties=[
-                        ClassProperty(
-                            MSG_TYPE_TO_CAPELLA.get(f.type.name)
-                            or f.type.name,
-                            f.type.pkg_name,
-                            f.name,
-                            min_card="0" if f.type.array_size else "1",
-                            max_card=f.type.array_size or "1",
-                            description="\n".join(f.annotations),
-                        )
-                        for f in msg.fields
-                    ],
-                    description="\n".join(msg.annotations),
-                ),
-                current_root,
+            properties = []
+            for field in msg.fields:
+                field_type = MSG_TYPE_TO_CAPELLA.get(
+                    field.type.name, field.type.name
+                )
+                field_min = "0" if field.type.array_size else "1"
+                field_max = field.type.array_size or "1"
+                field_description = "\n".join(field.annotations)
+                property_def = ClassProperty(
+                    field_type,
+                    field.type.pkg_name,
+                    field.name,
+                    field_min,
+                    field_max,
+                    field_description,
+                )
+                properties.append(property_def)
+            class_def = ClassDef(
+                msg.name,
+                properties,
+                "",
             )
+            self.model.create_properties(class_def, current_root)
 
         for new_pkg_def in current_pkg_def.packages:
             new_root = current_root.packages.by_name(new_pkg_def.name)

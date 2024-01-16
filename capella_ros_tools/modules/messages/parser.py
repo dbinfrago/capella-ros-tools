@@ -41,7 +41,7 @@ PRIMITIVE_TYPES = [
 
 
 VALID_MESSAGE_NAME_PATTERN = "[A-Z][A-Za-z0-9]*"
-VALID_CONSTANT_NAME_PATTERN = "[A-Z][A-Z0-9_]*[A-Z0-9]*"
+VALID_CONSTANT_NAME_PATTERN = "[A-Z](?:[A-Z0-9_]*[A-Z0-9])?"
 VALID_REF_COMMENT_PATTERN = re.compile(
     r"cf\.\s*"
     rf"({VALID_MESSAGE_NAME_PATTERN})"
@@ -248,23 +248,20 @@ def _process_enums(msg):
         msg.enums.remove(enum)
 
     for enum in msg.enums:
-        match_name = [
-            i
-            for i, field in enumerate(msg.fields)
-            if _get_enum_identifier(field.name) == enum.name
-        ]
-        match_type = [
-            i
-            for i, field in enumerate(msg.fields)
-            if field.type.name == enum.values[0].type.name
-        ]
-        if match_name:
-            msg.fields[match_name[0]].type.name = enum.name
-        elif match_type:
-            field = msg.fields[match_type[0]]
-            field.type.name = msg.name + _get_enum_identifier(field.name)
-            enum.name = field.type.name
-        elif not enum.name or len(msg.enums) == 1:
+        for field in msg.fields:
+            if enum.name == _get_enum_identifier(field.name):
+                # enum name is the same as the field name
+                field.type.name = enum.name
+                return
+
+        for field in msg.fields:
+            if field.type.name == enum.values[0].type.name:
+                # enum type is the same as the field type
+                field.type.name = msg.name + _get_enum_identifier(field.name)
+                enum.name = field.type.name
+                return
+
+        if not enum.name or len(msg.enums) == 1:
             enum.name = msg.name + "Type" if msg.fields else msg.name
 
 

@@ -17,25 +17,25 @@ Import ROS2 Messages:
 ---------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools -i messages docs/source/examples/data/example_msgs -o capella docs/source/examples/data/empty_project_52 -l la --port 5000 --exists-action=k --no-deps
+   $ python -m capella_ros_tools import docs/source/examples/data/example_msgs docs/source/examples/data/empty_project_52 la --exists-action=keep --port=5000 --no-deps
 
 Import ROS2 Messages from Git Repository:
 -----------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools -i messages git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss -o capella docs/source/examples/data/empty_project_52 -l la --port 5000 --exists-action=k
+   $ python -m capella_ros_tools import git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss docs/source/examples/data/empty_project_52 la --exists-action=keep --port=5000
 
 Export Capella Model (experimental):
 ------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools -i capella docs/source/examples/data/melody_model_60 -l la -o messages docs/source/examples/data/example_msgs --port 5000
+   $ python -m capella_ros_tools export docs/source/examples/data/melody_model_60 la docs/source/examples/data/example_msgs
 
 Export Capella Model from Git Repository (experimental):
 --------------------------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools -i capella git+https://github.com/DSD-DBS/coffee-machine -l la -o messages docs/source/examples/data/coffee_msgs --port 5000
+   $ python -m capella_ros_tools export git+https://github.com/DSD-DBS/coffee-machine la docs/source/examples/data/coffee_msgs
 
 
 Using the Python API

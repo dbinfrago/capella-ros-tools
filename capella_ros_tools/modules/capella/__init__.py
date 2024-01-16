@@ -48,7 +48,7 @@ class BaseCapellaModel:
 
     def __init__(
         self,
-        path_to_capella_model: str,
+        path_to_capella_model: t.Any,
         layer: str,
     ) -> None:
         self.model = capellambse.MelodyModel(path_to_capella_model)

@@ -65,12 +65,23 @@ class CapellaModel(BaseCapellaModel):
             except ValueError:
                 pass
 
-    def _find_type(self, type_name: str, package: t.Any) -> t.Any:
+    def _find_or_create_type(self, type_name: str, package: t.Any) -> t.Any:
         """Find type in Capella model."""
         try:
             return self.predef_types.by_name(type_name)
         except KeyError:
-            self.create_basic_types([type_name], package)
+            pass
+        try:
+            return package.datatypes.by_name(type_name)
+        except KeyError:
+            type_name_lower = type_name.lower()
+            if "char" in type_name_lower or "string" in type_name_lower:
+                type = "StringType"
+            elif "bool" in type_name_lower or "boolean" in type_name_lower:
+                type = "BooleanType"
+            else:
+                type = "NumericType"
+            package.datatypes.create(type, name=type_name)
             return package.datatypes.by_name(type_name)
 
     def create_enums(
@@ -102,7 +113,7 @@ class CapellaModel(BaseCapellaModel):
                     property.value = capellambse.new_object(
                         "LiteralNumericValue",
                         value=prop.value,
-                        type=self._find_type(prop.type, package),
+                        type=self._find_or_create_type(prop.type, package),
                     )
                 logger.info("Created enum %s.", enum.name)
 
@@ -119,27 +130,6 @@ class CapellaModel(BaseCapellaModel):
                 logger.info("Deleted %s.", enum.name)
             except ValueError:
                 pass
-
-    def create_basic_types(
-        self, basic_types: list[str], package: t.Any = None
-    ) -> list:
-        """Create basic types in Capella model."""
-        if package is None:
-            package = self.data
-
-        overlap = []
-        for basic_type in basic_types:
-            try:
-                overlap.append(package.datatypes.by_name(basic_type))
-            except KeyError:
-                if "char" in basic_type or "string" in basic_type:
-                    type = "StringType"
-                elif "bool" in basic_type or "boolean" in basic_type:
-                    type = "BooleanType"
-                else:
-                    type = "NumericType"
-                package.datatypes.create(type, name=basic_type)
-        return overlap
 
     def create_properties(self, cls: ClassDef, package: t.Any):
         """Create properties for class in Capella model."""
@@ -191,7 +181,9 @@ class CapellaModel(BaseCapellaModel):
                     "Enumeration", below=type_package
                 ).by_name(prop.type_name)
             except KeyError:
-                property_type = self._find_type(prop.type_name, package)
+                property_type = self._find_or_create_type(
+                    prop.type_name, package
+                )
 
             attribute = self._create_composition(
                 superclass, prop, property_type
