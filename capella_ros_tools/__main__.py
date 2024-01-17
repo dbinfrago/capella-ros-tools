@@ -14,7 +14,7 @@ from capella_ros_tools.scripts import capella2msg, msg2capella
 from capella_ros_tools.snapshot import app
 
 
-@click.group(context_settings={"default_map": {}})
+@click.group()
 @click.version_option(
     version=capella_ros_tools.__version__,
     prog_name="capella-ros-tools",
@@ -25,20 +25,16 @@ def cli():
 
 
 @cli.command("import")
-@click.argument(
-    "msg_path", type=str, required=True, help="Path to ROS messages."
-)
+@click.argument("msg_path", type=str, required=True)
 @click.argument(
     "capella_path",
     type=click.Path(path_type=Path),
     required=True,
-    help="Path to Capella model.",
 )
 @click.argument(
     "layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
-    help="Layer of Capella data package.",
 )
 @click.option(
     "--exists-action",
@@ -86,25 +82,16 @@ def import_msg(
     required=True,
 )
 @click.argument("msg_path", type=click.Path(path_type=Path), required=True)
-@click.option(
-    "--exists-action",
-    "action",
-    type=click.Choice(
-        ["keep", "overwrite", "abort", "ask"], case_sensitive=False
-    ),
-    default="ask" if sys.stdin.isatty() else "abort",
-    help="Default action when an element already exists.",
-)
 def export_capella(
     capella_path: t.Any,
-    msg_path: Path,
     layer: str,
+    msg_path: Path,
 ):
     """Export Capella data package to ROS messages."""
     if not Path(capella_path).exists():
         capella_path = capellambse.filehandler.get_filehandler(capella_path)
 
-    converter: t.Any = capella2msg.Converter(capella_path, msg_path, layer)
+    converter: t.Any = capella2msg.Converter(msg_path, capella_path, layer)
     converter.convert()
 
 

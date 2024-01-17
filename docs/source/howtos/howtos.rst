@@ -29,7 +29,7 @@ Export Capella Model (experimental):
 ------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools export docs/source/examples/data/melody_model_60 la docs/source/examples/data/example_msgs
+   $ python -m capella_ros_tools export docs/source/examples/data/melody_model_60 la docs/source/examples/data/melody_msgs
 
 Export Capella Model from Git Repository (experimental):
 --------------------------------------------------------

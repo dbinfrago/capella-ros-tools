@@ -39,8 +39,8 @@ class Converter:
 
     def __init__(
         self,
-        capella_path: t.Any,
         msg_path: t.Any,
+        capella_path: t.Any,
         layer: str,
     ) -> None:
         self.msg_path = msg_path

@@ -163,11 +163,12 @@ class MessageDef(BaseMessageDef):
                 # line contains a constant
                 value = value.lstrip()
                 if not isinstance(last_element, ConstantDef):
-                    msg.enums.append(EnumDef("", [], current_comments))
+                    msg.enums.append(EnumDef("", [], []))
                 msg.enums[-1].values.append(
                     ConstantDef(TypeDef(type_string), name, value, [comment])
                 )
                 last_element = msg.enums[-1].values[-1]
+                msg.enums[-1].annotations += current_comments
             else:
                 # line contains a field
                 msg.fields.append(
@@ -254,7 +255,6 @@ def _process_enums(msg):
                 field.type.name = enum.name
                 return
 
-        for field in msg.fields:
             if field.type.name == enum.values[0].type.name:
                 # enum type is the same as the field type
                 field.type.name = msg.name + _get_enum_identifier(field.name)
