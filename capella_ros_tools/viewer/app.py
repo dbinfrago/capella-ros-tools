@@ -1,24 +1,24 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-"""FastAPI app for viewing current snapshot of a Capella model."""
+"""Web view of Capella data package."""
 
+import pathlib
 import typing as t
-from pathlib import Path
 
+import fastapi
 import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi import responses, staticfiles, templating
 
-PATH = Path(__file__).parent
+PATH = pathlib.Path(__file__).parent
 
 
-app = FastAPI(title="Capella ROS Tools")
+app = fastapi.FastAPI(title="Capella JSON Tools")
 app.mount(
-    "/static", StaticFiles(directory=PATH.joinpath("static")), name="static"
+    "/static",
+    staticfiles.StaticFiles(directory=PATH.joinpath("static")),
+    name="static",
 )
-templates = Jinja2Templates(directory=PATH.joinpath("templates"))
+templates = templating.Jinja2Templates(directory=PATH.joinpath("templates"))
 
 
 def get_type(xtype: str) -> str:
@@ -29,8 +29,8 @@ def get_type(xtype: str) -> str:
 templates.env.globals.update(get_type=get_type)
 
 
-@app.get("/", response_class=HTMLResponse)
-def root(request: Request):
+@app.get("/", response_class=responses.HTMLResponse)
+def root(request: fastapi.Request):
     """Display root data package."""
     element = app.state.data_package
     context = {
@@ -42,8 +42,8 @@ def root(request: Request):
     return response
 
 
-@app.get("/{type}/{uuid}", response_class=HTMLResponse)
-def view(request: Request, type: str, uuid: str):
+@app.get("/{type}/{uuid}.html", response_class=responses.HTMLResponse)
+def view(request: fastapi.Request, type: str, uuid: str):
     """Display element by uuid."""
     element = app.state.model.by_uuid(uuid)
     template = type + ".html"

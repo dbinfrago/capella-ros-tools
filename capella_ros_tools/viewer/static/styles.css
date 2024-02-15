@@ -77,15 +77,18 @@ a {
 a:hover {
     border-bottom-color: var(--color-accent-hover);
 }
+strong {
+    font-weight: 500;
+}
+.description {
+    display: flex;
+    flex-direction: column;
+}
 
-span {
+.description > p {
     white-space: pre-wrap;
     display: inline-flex;
     opacity: 0.75;
-}
-
-strong {
-    font-weight: 500;
 }
 
 main {
@@ -112,13 +115,16 @@ aside > div {
 
 table {
     border-spacing: 0 1.5rem;
+    table-layout: fixed;
+    width: 100%;
 }
+
 tr > td:first-child {
     font-weight: bold;
     text-align: right;
     padding-right: 2rem;
     white-space: nowrap;
-    width: 1%;
+    width: 8em;
 }
 
 tr > td:last-child {
@@ -131,7 +137,6 @@ ol {
 }
 ol > li {
     list-style: none;
-    display: flex;
 }
 ol > li:before {
     content: "[" counter(list) "] ";

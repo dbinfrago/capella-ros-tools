@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 dynamic = ["version"]
 
 name = "capella-ros-tools"
-description = "Tool for converting ROS messages from and to Capella models."
+description = "Tools for importing ROS .msg files into Capella data package and vice versa."
 readme = "README.md"
 requires-python = ">=3.10, <3.13"
 license = { text = "Apache-2.0" }
@@ -29,8 +29,8 @@ classifiers = [
 ]
 dependencies = [
   "click",
-  "capellambse @ git+https://github.com/DSD-DBS/py-capellambse.git@more-filepath-props",
-  "capellambse_context_diagrams @ git+https://github.com/DSD-DBS/capellambse-context-diagrams.git@add-context-to-tree",
+  "capellambse",
+  "capellambse_context_diagrams",
   "fastapi",
   "uvicorn[standard]",
 ]

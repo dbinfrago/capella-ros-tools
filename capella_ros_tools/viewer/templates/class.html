@@ -9,17 +9,13 @@
         <meta charset="UTF-8" />
         <link rel="icon" href="/static/icons/favicon.ico" />
         <title>{{ element.name }} - Overview</title>
-        <link
-            href="{{ url_for('static', path='/styles.css') }}"
-            rel="stylesheet"
-        />
-        <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom-container@0.6.1"></script>
+        <link href="/static/styles.css" rel="stylesheet" />
     </head>
     <body>
         <main>
             <h1>
-                {{ element.name }}
-                <span style="font-size: 70%">({{ element.xtype }})</span>
+                <span>{{ element.name }}</span>
+                <span style="font-size: 70%">{{ element.xtype }}</span>
             </h1>
             <table>
                 <tr>
@@ -32,9 +28,7 @@
                 </tr>
                 <tr>
                     <td>description</td>
-                    <td>
-                        <span>{{ element.description }}</span>
-                    </td>
+                    <td class="description">{{ element.description }}</td>
                 </tr>
                 <tr>
                     <td>properties</td>
@@ -42,11 +36,11 @@
                         <ol>
                             {% for prop in element.properties %}
                             <li>
-                                <p>
-                                    <strong>Property</strong> "{{ prop.name
-                                    }}": {{prop.type.name}}
-                                    <span>{{ prop.description }}</span>
-                                </p>
+                                <strong>Property</strong> "{{ prop.name }}":
+                                {{prop.type.name}}
+                                <span class="description"
+                                    >{{ prop.description }}</span
+                                >
                             </li>
                             {% endfor %}
                         </ol>
@@ -91,8 +85,6 @@
                 let groupedNodes = [];
 
                 svgContainer.selectAll(".Box").each(function () {
-                    var depElements = d3.select(this).selectAll("g");
-
                     if (groupedNodes.includes(this.id)) {
                         return;
                     }
@@ -100,22 +92,18 @@
 
                     var contextGroup = svgContainer.append("g");
                     contextGroup.attr("class", "contextGroup");
-
-                    if (depElements.nodes().length == 0) {
+                    this.classList.forEach((id) => {
+                        let uuid = id.replace("context-", "");
+                        if (id == uuid) {
+                            // Not a context class
+                            return;
+                        }
+                        groupedNodes.push(uuid);
+                        let escapedUUID = escapeUUIDForCSSSelector(uuid);
                         contextGroup
                             .node()
-                            .appendChild(d3.select(this).node());
-                    } else {
-                        depElements.nodes()[0].classList.forEach((id) => {
-                            groupedNodes.push(id);
-                            let escapedUUID = escapeUUIDForCSSSelector(id);
-                            contextGroup
-                                .node()
-                                .appendChild(
-                                    d3.select("#" + escapedUUID).node()
-                                );
-                        });
-                    }
+                            .appendChild(d3.select("#" + escapedUUID).node());
+                    });
                 });
 
                 const draggableElements =
@@ -123,16 +111,9 @@
 
                 // Zoom and pan
                 svg.call(
-                    d3
-                        .zoom()
-                        .extent([
-                            [0, 0],
-                            [svg.node().clientWidth, svg.node().clientHeight],
-                        ])
-                        .scaleExtent([0.1, 10])
-                        .on("zoom", (event) => {
-                            svgContainer.attr("transform", event.transform);
-                        })
+                    d3.zoom().on("zoom", (event) => {
+                        svgContainer.attr("transform", event.transform);
+                    })
                 );
 
                 // Create an array of data with the same length as your selection

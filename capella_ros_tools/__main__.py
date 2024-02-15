@@ -1,17 +1,13 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Main entry point into capella_ros_tools."""
+"""Main entry point into Capella ROS Tools."""
 
+import pathlib
 import sys
-import typing as t
-from pathlib import Path
 
-import capellambse
 import click
 
 import capella_ros_tools
-from capella_ros_tools.scripts import capella2msg, msg2capella
-from capella_ros_tools.snapshot import app
 
 
 @click.group()
@@ -21,14 +17,18 @@ from capella_ros_tools.snapshot import app
     message="%(prog)s %(version)s",
 )
 def cli():
-    """CLI for capella-ros-tools."""
+    """Console script for Capella ROS Tools."""
 
 
 @cli.command("import")
-@click.argument("msg_path", type=str, required=True)
+@click.argument(
+    "msg_path",
+    type=click.Path(),
+    required=True,
+)
 @click.argument(
     "capella_path",
-    type=click.Path(path_type=Path),
+    type=click.Path(exists=True),
     required=True,
 )
 @click.argument(
@@ -51,48 +51,62 @@ def cli():
     is_flag=True,
     help="Don’t install message dependencies.",
 )
-@click.option("--port", type=int, help="Port for HTML display.")
-def import_msg(
-    msg_path: t.Any,
-    capella_path: Path,
+@click.option("--port", type=int, help="Open model viewer on given port.")
+def import_msgs(
+    msg_path: str,
+    capella_path: str,
     layer: str,
     action: str,
     no_deps: bool,
     port: int,
-):
-    """Import ROS messages into Capella data package."""
+) -> None:
+    """Import ROS messages into a Capella data package.
 
-    if not Path(msg_path).exists():
-        msg_path = capellambse.filehandler.get_filehandler(msg_path).rootdir
+    MSG_PATH: Path to folder with .msg files.
+    CAPELLA_PATH: Path to Capella model.
+    LAYER: Layer of Capella model to import elements to.
+    """
+    from capellambse import filehandler
 
-    converter: t.Any = msg2capella.Converter(
-        msg_path, capella_path, layer, action, no_deps
+    from capella_ros_tools.scripts import import_msgs as importer
+    from capella_ros_tools.viewer import app
+
+    msg_filehandler = filehandler.get_filehandler(msg_path).rootdir
+
+    converter = importer.Importer(
+        msg_filehandler, capella_path, layer, action, no_deps
     )
-    converter.convert()
+    converter()
 
     if port:
-        app.start(converter.model.model, layer, port)
+        app.start(converter.capella.model, layer)
 
 
 @cli.command("export")
-@click.argument("capella_path", type=str, required=True)
+@click.argument("capella_path", type=click.Path(), required=True)
 @click.argument(
     "layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
 )
-@click.argument("msg_path", type=click.Path(path_type=Path), required=True)
+@click.argument(
+    "msg_path", type=click.Path(path_type=pathlib.Path), required=True
+)
 def export_capella(
-    capella_path: t.Any,
+    capella_path: str,
     layer: str,
-    msg_path: Path,
+    msg_path: pathlib.Path,
 ):
-    """Export Capella data package to ROS messages."""
-    if not Path(capella_path).exists():
-        capella_path = capellambse.filehandler.get_filehandler(capella_path)
+    """Export Capella data package to ROS messages.
 
-    converter: t.Any = capella2msg.Converter(msg_path, capella_path, layer)
-    converter.convert()
+    CAPELLA_PATH: Path to Capella model.
+    LAYER: Layer of Capella model to export elements from.
+    MSG_PATH: Path to output folder for .msg files.
+    """
+    from capella_ros_tools.scripts import export_capella as exporter
+
+    converter = exporter.Exporter(capella_path, layer, msg_path)
+    converter()
 
 
 if __name__ == "__main__":

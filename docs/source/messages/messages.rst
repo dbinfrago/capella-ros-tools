@@ -168,5 +168,5 @@ In another file
    # The property my_enum_field is of type MyEnum
    byte my_enum_field  # cf. MyEnum
 
-   # The property my_other_enum_field is of type MyEnumMyEnumValue
+   # The property my_other_enum_field is of type MyEnumValue
    uint8 my_other_enum_field    # cf. MyEnum, MY_ENUM_VALUE_XXX

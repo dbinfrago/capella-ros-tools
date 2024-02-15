@@ -9,16 +9,13 @@
         <meta charset="UTF-8" />
         <link rel="icon" href="/static/icons/favicon.ico" />
         <title>{{ element.name }} - Overview</title>
-        <link
-            href="{{ url_for('static', path='/styles.css') }}"
-            rel="stylesheet"
-        />
+        <link href="/static/styles.css" rel="stylesheet" />
     </head>
     <body>
         <main>
             <h1>
-                {{ element.name }}
-                <span style="font-size: 70%">({{ element.xtype }})</span>
+                <span>{{ element.name }}</span>
+                <span style="font-size: 70%"> ({{ element.xtype }}) </span>
             </h1>
             <table>
                 <tr>
@@ -30,12 +27,16 @@
                     <td>{{ element.parent._short_html_() }}</td>
                 </tr>
                 <tr>
+                    <td>description</td>
+                    <td class="description">{{ element.description }}</td>
+                </tr>
+                <tr>
                     <td>classes</td>
                     <td>
                         <ol>
                             {% for cls in element.classes %}
                             <li>
-                                <a href="/class/{{ cls.uuid }}"
+                                <a href="/class/{{ cls.uuid }}.html"
                                     >{{ cls._short_html_() }}</a
                                 >
                             </li>
@@ -47,24 +48,9 @@
                     <td>datatypes</td>
                     <td>
                         <ol>
-                            {% for datatype in element.datatypes %} {% if
-                            get_type(datatype.xtype) != 'Enumeration' %}
+                            {% for enum in element.datatypes %}
                             <li>
-                                <a href="/enum/{{ datatype.uuid }}"
-                                    >{{ datatype._short_html_() }}</a
-                                >
-                            </li>
-                            {% endif %} {% endfor %}
-                        </ol>
-                    </td>
-                </tr>
-                <tr>
-                    <td>enumeration</td>
-                    <td>
-                        <ol>
-                            {% for enum in element.enumerations %}
-                            <li>
-                                <a href="/enum/{{ enum.uuid }}"
+                                <a href="/enum/{{ enum.uuid }}.html"
                                     >{{ enum._short_html_() }}</a
                                 >
                             </li>
@@ -78,7 +64,7 @@
                         <ol>
                             {% for pkg in element.packages %}
                             <li>
-                                <a href="/package/{{ pkg.uuid }}"
+                                <a href="/package/{{ pkg.uuid }}.html"
                                     >{{ pkg._short_html_() }}</a
                                 >
                             </li>

@@ -19,7 +19,7 @@ Import ROS2 Messages:
 *  **<ROS_MESSAGES_PATH>**, import ROS2 messages from <ROS_MESSAGES_PATH>
 *  **<CAPELLA_MODEL_PATH>**, export to Capella model <CAPELLA_MODEL_PATH>
 *  **<CAPELLA_MODEL_LAYER>**, use Capella model layer <CAPELLA_MODEL_LAYER>
-*  **--port=<PORT>**, start Capella model server at <PORT> (optional)
+*  **--port=<PORT>**, start Capella model viewer at <PORT> (optional)
 *  **--exists-action=<EXISTS_ACTION>**, action to take if a Capella element already exists (optional)
 
    * **skip**, skip elements

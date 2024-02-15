@@ -8,7 +8,7 @@
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
 
-Tool for converting ROS messages from and to Capella models.
+Tools for importing ROS .msg files into Capella data package and vice versa.
 
 # Documentation
 
