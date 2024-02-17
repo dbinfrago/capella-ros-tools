@@ -29,6 +29,12 @@ Import ROS2 Messages:
 
 *  **--no-deps**, do not import ROS2 dependencies (e.g. std_msgs)
 
+Tip: Use the `--port` option to start the Capella model viewer at a specific port. The Capella model viewer can then be downloaded to be viewed at a later time using the following command:
+.. code-block:: bash
+
+   $ wget http://localhost:<PORT> -E -r
+
+
 Export Capella Model (experimental):
 ------------------------------------
 .. code-block:: bash
