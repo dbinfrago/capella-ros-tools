@@ -107,7 +107,7 @@ class FieldDef:
         """Return string representation of the field."""
         out = f"{self.type} {self.name}"
         if self.description:
-            out += f"   # {_cleanhtml(self.description)}"
+            out += f"    # {_cleanhtml(self.description)}"
         return out
 
 
@@ -130,7 +130,7 @@ class ConstantDef:
         """Return string representation of the constant."""
         out = f"{self.type} {self.name} = {self.value}"
         if self.description:
-            out += f"   # {_cleanhtml(self.description)}"
+            out += f"    # {_cleanhtml(self.description)}"
         return out
 
 
