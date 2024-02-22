@@ -31,8 +31,10 @@ Export Capella data package:
 
    $ python -m capella_ros_tools export tests/data/melody_model_60 la tests/data/melody_msgs
 
-Export Capella data package from Git Repository (experimental):
+Export Capella data package from Git Repository:
 --------------------------------------------------------
 .. code-block:: bash
 
    $ python -m capella_ros_tools export git+https://github.com/DSD-DBS/coffee-machine oa tests/data/coffee_msgs
+
+Note: When exporting Capella enumerations, if the enumeration values are not defined in the Capella model, the values will be set to 0, 1, 2, 3, etc. and the datatype will be set to unit8.

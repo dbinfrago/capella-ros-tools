@@ -79,7 +79,7 @@ def import_msgs(
     converter()
 
     if port:
-        app.start(converter.capella.model, layer)
+        app.start(converter.capella.model, layer, port)
 
 
 @cli.command("export")

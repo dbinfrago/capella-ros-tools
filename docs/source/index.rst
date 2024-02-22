@@ -21,7 +21,7 @@ Capella ROS Tools is a command-line application written in Python, designed to f
 * generate ROS2 message files (.msg) from Capella models
 * generate Capella elements and objects from ROS2 message files
 * support input sources through both local file paths and Git repositories
-* disply snapshots of Capella model elements in a tree structure
+* display snapshots of Capella model elements in a tree structure
 
 If you want a quickstart at how to use this tool, head right into the
 :ref:`Usage section <usage>`.
@@ -32,23 +32,23 @@ If you want a quickstart at how to use this tool, head right into the
    :caption: Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Usage
 
-   usage/usage
+   usage
 
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Examples
 
-   howtos/howtos
+   howtos
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: ROS2 Messages Layout
 
-   messages/messages
+   messages
 
 .. toctree::
    :maxdepth: 3

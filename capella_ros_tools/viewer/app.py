@@ -38,8 +38,7 @@ def root(request: fastapi.Request):
         "element": element,
         "get_type": get_type,
     }
-    response = templates.TemplateResponse("package.html", context)
-    return response
+    return templates.TemplateResponse("package.html", context)
 
 
 @app.get("/{type}/{uuid}.html", response_class=responses.HTMLResponse)
@@ -53,16 +52,14 @@ def view(request: fastapi.Request, type: str, uuid: str):
         "element": element,
         "get_type": get_type,
     }
-    response = templates.TemplateResponse(template, context)
-    return response
+    return templates.TemplateResponse(template, context)
 
 
-def start(model: t.Any, layer: str, port: int = 5000):
+def start(model: t.Any, layer: str, port: int):
     """Start the app.""" ""
     app.state.model = model
     app.state.data_package = getattr(model, layer).data_package
     uvicorn.run(
         app,
-        host="0.0.0.0",
         port=port,
     )

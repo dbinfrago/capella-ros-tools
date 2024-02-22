@@ -3,12 +3,17 @@
 """Tool for exporting a Capella data package to ROS messages."""
 import logging
 import pathlib
+import re
 
 from capellambse.model.crosslayer import information
 
 from capella_ros_tools import capella, messages
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_name(name: str) -> str:
+    return re.sub(r"\W", "", name)
 
 
 class Exporter:
@@ -41,7 +46,9 @@ class Exporter:
                     type_def, prop_obj.name, prop_obj.description
                 )
                 cls_def.fields.append(prop_def)
-            (current_path / f"{cls_obj.name}.msg").write_text(str(cls_def))
+            (current_path / f"{_clean_name(cls_obj.name)}.msg").write_text(
+                str(cls_def)
+            )
 
         for enum_obj in current_pkg.enumerations:
             enum_def = messages.EnumDef(
@@ -66,10 +73,12 @@ class Exporter:
                     lit_obj.description,
                 )
                 enum_def.literals.append(lit_def)
-            (current_path / f"{enum_obj.name}.msg").write_text(str(enum_def))
+            (current_path / f"{_clean_name(enum_obj.name)}.msg").write_text(
+                str(enum_def)
+            )
 
         for pkg_obj in current_pkg.packages:
-            pkg_path = current_path / pkg_obj.name
+            pkg_path = current_path / _clean_name(pkg_obj.name)
             pkg_path.mkdir(parents=True, exist_ok=True)
             self._handle_pkg(pkg_obj, pkg_path)
 

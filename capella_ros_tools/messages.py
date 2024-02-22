@@ -29,8 +29,7 @@ HTML_TAG_PATTERN = re.compile("<.*?>")
 
 
 def _cleanhtml(raw_html: str):
-    cleantext = re.sub(HTML_TAG_PATTERN, "", raw_html)
-    return cleantext
+    return re.sub(HTML_TAG_PATTERN, "", raw_html)
 
 
 class Range(t.NamedTuple):
@@ -49,7 +48,7 @@ class TypeDef:
         card: Range,
         range: Range | None = None,
         package: str | None = None,
-    ):
+    ) -> None:
         self.name = name
         self.card = card
         self.range = range
@@ -67,7 +66,7 @@ class TypeDef:
         return out
 
     @classmethod
-    def from_string(cls, type_str: str):
+    def from_string(cls, type_str: str) -> TypeDef:
         """Create a type definition from a string."""
         if type_str.endswith("]"):
             name, max_card = type_str.split("[")
@@ -204,14 +203,16 @@ class MessageDef:
         return out
 
     @classmethod
-    def from_file(cls, file: pathlib.Path | abc.AbstractFilePath):
+    def from_file(
+        cls, file: pathlib.Path | abc.AbstractFilePath
+    ) -> MessageDef:
         """Create message definition from a .msg file."""
         msg_name = file.stem
         msg_string = file.read_text()
         return cls.from_string(msg_name, msg_string)
 
     @classmethod
-    def from_string(cls, msg_name: str, msg_string: str):
+    def from_string(cls, msg_name: str, msg_string: str) -> MessageDef:
         """Create message definition from a string."""
         msg_comments, lines = _extract_file_level_comments(msg_string)
         msg = cls(msg_name, [], [], msg_comments)
@@ -342,7 +343,7 @@ class MessagePkgDef:
         name: str,
         messages: list[MessageDef],
         packages: list[MessagePkgDef],
-    ):
+    ) -> None:
         self.name = name
         self.messages = messages
         self.packages = packages
@@ -350,7 +351,7 @@ class MessagePkgDef:
     @classmethod
     def from_msg_folder(
         cls, pkg_name: str, msg_path: pathlib.Path | abc.AbstractFilePath
-    ):
+    ) -> MessagePkgDef:
         """Create a message package definition from a folder."""
         out = cls(pkg_name, [], [])
         for msg_file in msg_path.rglob("*.msg"):

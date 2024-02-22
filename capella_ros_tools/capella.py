@@ -6,6 +6,7 @@ import logging
 import typing as t
 
 import capellambse
+from capellambse.model import common
 from capellambse.model.crosslayer import information
 
 from capella_ros_tools import messages
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 class CapellaDataPackage:
     """Capella data package wrapper."""
 
-    def __init__(self, capella_path: str, layer: str):
+    def __init__(self, capella_path: str, layer: str) -> None:
         self.model = capellambse.MelodyModel(capella_path)
         self.data_package = getattr(self.model, layer).data_package
         try:
@@ -28,25 +29,29 @@ class CapellaDataPackage:
                 name="Data Types"
             )
 
+    def _remove_element(
+        self,
+        obj: common.GenericElement,
+        remove_from: information.DataPkg,
+        attr: str,
+    ):
+        try:
+            getattr(remove_from, attr).remove(obj)
+            logger.info("%s deleted.", obj._short_repr_())
+        except ValueError:
+            pass
+
     def remove_class(
         self, cls_obj: information.Class, remove_from: information.DataPkg
     ):
         """Remove class from Capella package."""
-        try:
-            remove_from.classes.remove(cls_obj)
-            logger.info("%s deleted.", cls_obj._short_repr_())
-        except ValueError:
-            pass
+        self._remove_element(cls_obj, remove_from, "classes")
 
     def remove_package(
         self, pkg_obj: information.DataPkg, remove_from: information.DataPkg
     ):
         """Remove package from Capella package."""
-        try:
-            remove_from.packages.remove(pkg_obj)
-            logger.info("%s deleted.", pkg_obj._short_repr_())
-        except ValueError:
-            pass
+        self._remove_element(pkg_obj, remove_from, "packages")
 
     def remove_enum(
         self,
@@ -54,11 +59,7 @@ class CapellaDataPackage:
         remove_from: information.DataPkg,
     ):
         """Remove enum from Capella package."""
-        try:
-            remove_from.datatypes.remove(enum_obj)
-            logger.info("%s deleted.", enum_obj._short_repr_())
-        except ValueError:
-            pass
+        self._remove_element(enum_obj, remove_from, "datatypes")
 
     def create_package(
         self,
@@ -182,8 +183,11 @@ class CapellaDataPackage:
                     superclass, prop, create_in
                 )
 
-            self._set_cardinality(composition, prop.type.card)
-            self._set_range(composition, prop.type.range)
+            self._set_range(
+                composition, ("min_card", "max_card"), prop.type.card
+            )
+            if prop.type.range:
+                self._set_range(composition, ("min", "max"), prop.type.range)
         logger.info("Created properties for %s.", cls_def.name)
 
     def _create_attribute(
@@ -230,28 +234,24 @@ class CapellaDataPackage:
         )
         return composition
 
-    def _set_cardinality(
-        self, composition: information.Property, card: messages.Range
-    ) -> None:
-        """Set cardinality for composition in Capella model."""
-        composition.min_card = capellambse.new_object(
-            "LiteralNumericValue", value=card.min
-        )
-        composition.max_card = capellambse.new_object(
-            "LiteralNumericValue", value=card.max
-        )
-
     def _set_range(
-        self, composition: information.Property, range: messages.Range | None
+        self,
+        composition: information.Property,
+        attrs: t.Tuple[str, str],
+        range: messages.Range,
     ) -> None:
         """Set range for composition in Capella model."""
-        if range:
-            composition.min = capellambse.new_object(
-                "LiteralNumericValue", value=range.min
-            )
-            composition.max = capellambse.new_object(
-                "LiteralNumericValue", value=range.max
-            )
+        min_attr, max_attr = attrs
+        setattr(
+            composition,
+            min_attr,
+            capellambse.new_object("LiteralNumericValue", value=range.min),
+        )
+        setattr(
+            composition,
+            max_attr,
+            capellambse.new_object("LiteralNumericValue", value=range.max),
+        )
 
     def save_changes(self) -> None:
         """Save changes to Capella model."""
