@@ -4,6 +4,7 @@
 import pathlib
 
 import pytest
+from capellambse.filehandler import abc
 
 from capella_ros_tools import data_model
 from capella_ros_tools.data_model import (
@@ -59,7 +60,9 @@ PACKAGE2_PATH = PATH.joinpath("data/data_model/example_msgs/package2")
         ),
     ],
 )
-def test_TypeDef_str(params, expected):
+def test_TypeDef_str(
+    params: tuple[str, Range, Range | None, str | None], expected: str
+):
     type_def = TypeDef(*params)
 
     assert str(type_def) == expected
@@ -86,7 +89,9 @@ def test_TypeDef_str(params, expected):
         ),
     ],
 )
-def test_TypeDef_from_string(type_str, params):
+def test_TypeDef_from_string(
+    type_str: str, params: tuple[str, Range, Range | None, str | None]
+):
     type_def = TypeDef.from_string(type_str)
     expected = TypeDef(*params)
 
@@ -97,20 +102,21 @@ def test_TypeDef_from_string(type_str, params):
     "params, expected",
     [
         (
-            ("test_type", "test_name", "test_description"),
+            (
+                TypeDef.from_string("test_type"),
+                "test_name",
+                "test_description",
+            ),
             "test_type test_name    # test_description",
         ),
         (
-            ("test_type", "test_name", ""),
+            (TypeDef.from_string("test_type"), "test_name", ""),
             "test_type test_name",
         ),
     ],
 )
-def test_FieldDef_str(params, expected):
-    type_str, name, description = params
-    type_def = TypeDef.from_string(type_str)
-
-    field_def = FieldDef(type_def, name, description)
+def test_FieldDef_str(params: tuple[TypeDef, str, str], expected: str):
+    field_def = FieldDef(*params)
 
     assert str(field_def) == expected
 
@@ -119,20 +125,22 @@ def test_FieldDef_str(params, expected):
     "params, expected",
     [
         (
-            ("test_type", "test_name", 1, "test_description"),
-            f"test_type test_name {CONSTANT_SEPARATOR} 1    # test_description",
+            (
+                TypeDef.from_string("test_type"),
+                "test_name",
+                "1",
+                "test",
+            ),
+            f"test_type test_name {CONSTANT_SEPARATOR} 1    # test",
         ),
         (
-            ("test_type", "test_name", 10, ""),
+            (TypeDef.from_string("test_type"), "test_name", "10", ""),
             f"test_type test_name {CONSTANT_SEPARATOR} 10",
         ),
     ],
 )
-def test_ConstantDef_str(params, expected):
-    type_str, name, value, description = params
-    type_def = TypeDef.from_string(type_str)
-
-    constant_def = ConstantDef(type_def, name, value, description)
+def test_ConstantDef_str(params: tuple[TypeDef, str, str, str], expected: str):
+    constant_def = ConstantDef(*params)
 
     assert str(constant_def) == expected
 
@@ -287,7 +295,9 @@ def test_MessageDef_class_enum(sample_class_enum_def):
         PACKAGE2_PATH,
     ],
 )
-def test_MessagePkgDef_from_msg_folder(msg_pkg_path):
+def test_MessagePkgDef_from_msg_folder(
+    msg_pkg_path: abc.AbstractFilePat | pathlib.Path,
+):
     message_pkg_def = MessagePkgDef.from_msg_folder("", msg_pkg_path)
 
     assert message_pkg_def.messages
