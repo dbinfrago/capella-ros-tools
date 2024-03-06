@@ -14,33 +14,24 @@ Import ROS2 Messages:
 ----------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools import <ROS_MESSAGES_PATH> <CAPELLA_MODEL_PATH> <CAPELLA_MODEL_LAYER> --port=<PORT> --exists-action=<EXISTS_ACTION> --no-deps
+   python -m capella_ros_tools import -i <INPUT> -m <MODEL> -l <LAYER> -p <PORT> --no-deps
 
-*  **<ROS_MESSAGES_PATH>**, import ROS2 messages from <ROS_MESSAGES_PATH>
-*  **<CAPELLA_MODEL_PATH>**, export to Capella model <CAPELLA_MODEL_PATH>
-*  **<CAPELLA_MODEL_LAYER>**, use Capella model layer <CAPELLA_MODEL_LAYER>
-*  **--port=<PORT>**, start Capella model viewer at <PORT> (optional)
-*  **--exists-action=<EXISTS_ACTION>**, action to take if a Capella element already exists (optional)
+*  **-i/--input**, import ROS2 messages from <INPUT>
+*  **-m/--model**, export to Capella model <CAPELLA_MODEL_PATH>
+*  **-l/--layer**, use Capella model layer <CAPELLA_MODEL_LAYER>
+*  **-p/--port**, start Capella model explorer at <PORT> (optional)
+*  **--no-deps**, do not import ROS2 dependencies (e.g. std_msgs) (flag)
 
-   * **skip**, skip elements
-   * **replace**, replace elements
-   * **abort**, abort import
-   * **ask**, ask the user (default)
-
-*  **--no-deps**, do not import ROS2 dependencies (e.g. std_msgs)
-
-Tip: Use the `--port` option to start the Capella model viewer at a specific port. The Capella model viewer can then be downloaded to be viewed at a later time using the following command:
-.. code-block:: bash
-
-   $ wget http://localhost:<PORT> -E -r
+.. note::
+   The `--port` option can be used to start the Capella model explorer on a specific port. The Capella model viewer can then be downloaded to be viewed at a later time using `wget` eg. `wget http://localhost:<PORT> -E -r`.
 
 
 Export Capella Model (experimental):
 ------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools export <CAPELLA_MODEL_PATH> <CAPELLA_MODEL_LAYER> <ROS_MESSAGES_PATH>
+   python -m capella_ros_tools export -m <MODEL> -l <LAYER> -o <OUTPUT>
 
-* **<CAPELLA_MODEL_PATH>**, import Capella model from <CAPELLA_MODEL_PATH>
-* **<CAPELLA_MODEL_LAYER>**, use Capella model layer <CAPELLA_MODEL_LAYER>
-* **<ROS_MESSAGES_PATH>**, export ROS2 messages to <ROS_MESSAGES_PATH>
+* **-m/--model**, import Capella model from <MODEL>
+* **-l/--layer**, use Capella model layer <LAYER>
+* **-o/--output**, export ROS2 messages to <OUTPUT>

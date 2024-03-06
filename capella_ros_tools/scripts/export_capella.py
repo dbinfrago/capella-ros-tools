@@ -5,7 +5,6 @@ import logging
 import pathlib
 import re
 
-import capellambse
 from capellambse.model.crosslayer import information
 
 from capella_ros_tools import data_model
@@ -17,75 +16,64 @@ def _clean_name(name: str) -> str:
     return re.sub(r"\W", "", name)
 
 
-class Exporter:
-    """Class for exporting a Capella data package as ROS messages."""
-
-    def __init__(
-        self,
-        model: capellambse.MelodyModel,
-        layer: str,
-        output_path: pathlib.Path,
-    ):
-        self._data_package = getattr(model, layer).data_package
-        output_path.mkdir(parents=True, exist_ok=True)
-        self._output_path = output_path
-
-    def _handle_pkg(
-        self,
-        current_pkg: information.DataPkg,
-        current_path: pathlib.Path,
-    ):
-        for cls_obj in current_pkg.classes:
-            cls_def = data_model.MessageDef(
-                cls_obj.name, [], [], cls_obj.description
+def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
+    """Export a Capella data package to ROS messages."""
+    for cls_obj in current_pkg.classes:
+        fields = []
+        for prop_obj in cls_obj.owned_properties:
+            type_def = data_model.TypeDef(
+                name=prop_obj.type.name,
+                card=data_model.Range(
+                    prop_obj.min_card.value, prop_obj.max_card.value
+                ),
             )
-            for prop_obj in cls_obj.owned_properties:
-                type_def = data_model.TypeDef(
-                    prop_obj.type.name,
-                    data_model.Range(
-                        prop_obj.min_card.value, prop_obj.max_card.value
-                    ),
-                )
-                prop_def = data_model.FieldDef(
-                    type_def, prop_obj.name, prop_obj.description
-                )
-                cls_def.fields.append(prop_def)
-            (current_path / f"{_clean_name(cls_obj.name)}.msg").write_text(
-                str(cls_def)
+            prop_def = data_model.FieldDef(
+                type=type_def,
+                name=prop_obj.name,
+                description=prop_obj.description,
             )
+            fields.append(prop_def)
+        cls_def = data_model.MessageDef(
+            name=cls_obj.name,
+            fields=fields,
+            enums=[],
+            description=cls_obj.description,
+        )
+        (current_path / f"{_clean_name(cls_obj.name)}.msg").write_text(
+            str(cls_def)
+        )
 
-        for enum_obj in current_pkg.enumerations:
-            enum_def = data_model.EnumDef(
-                enum_obj.name, [], enum_obj.description
+    for enum_obj in current_pkg.enumerations:
+        literals = []
+        for i, lit_obj in enumerate(enum_obj.owned_literals):
+            try:
+                type_name = lit_obj.value.type.name
+            except AttributeError:
+                type_name = "uint8"
+            try:
+                literal_value = lit_obj.value.value
+            except AttributeError:
+                literal_value = i
+            type_def = data_model.TypeDef(
+                type_name, data_model.Range("1", "1")
             )
-            for i, lit_obj in enumerate(enum_obj.owned_literals):
-                try:
-                    type_name = lit_obj.value.type.name
-                except AttributeError:
-                    type_name = "uint8"
-                try:
-                    literal_value = lit_obj.value.value
-                except AttributeError:
-                    literal_value = i
-                type_def = data_model.TypeDef(
-                    type_name, data_model.Range("1", "1")
-                )
-                lit_def = data_model.ConstantDef(
-                    type_def,
-                    lit_obj.name,
-                    literal_value,
-                    lit_obj.description,
-                )
-                enum_def.literals.append(lit_def)
-            (current_path / f"{_clean_name(enum_obj.name)}.msg").write_text(
-                str(enum_def)
+            lit_def = data_model.ConstantDef(
+                type=type_def,
+                name=lit_obj.name,
+                value=literal_value,
+                description=lit_obj.description,
             )
+            literals.append(lit_def)
+        enum_def = data_model.EnumDef(
+            name=enum_obj.name,
+            literals=literals,
+            description=enum_obj.description,
+        )
+        (current_path / f"{_clean_name(enum_obj.name)}.msg").write_text(
+            str(enum_def)
+        )
 
-        for pkg_obj in current_pkg.packages:
-            pkg_path = current_path / _clean_name(pkg_obj.name)
-            pkg_path.mkdir(parents=True, exist_ok=True)
-            self._handle_pkg(pkg_obj, pkg_path)
-
-    def __call__(self):
-        """Export the Capella data package as ROS messages."""
-        self._handle_pkg(self._data_package, self._output_path)
+    for pkg_obj in current_pkg.packages:
+        pkg_path = current_path / _clean_name(pkg_obj.name)
+        pkg_path.mkdir(parents=True, exist_ok=True)
+        export(pkg_obj, pkg_path)

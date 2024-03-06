@@ -17,24 +17,35 @@ Import ROS2 Messages:
 ---------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools import tests/data/example_msgs tests/data/empty_model la --exists-action=skip --port=5000 --no-deps
+   python -m capella_ros_tools import \
+   -i tests/data/data_model/example_msgs \
+   -m tests/data/empty_project_52 -l la \
+   --port=5000 --no-deps
 
 Import ROS2 Messages from Git Repository:
 -----------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools import git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss tests/data/empty_model la --exists-action=skip --port=5000
+   python -m capella_ros_tools import \
+   -i git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss \
+   -m tests/data/empty_project_52 -l la \
+   --port=5000
 
 Export Capella data package:
 ------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools export tests/data/melody_model_60 la tests/data/melody_msgs
+   python -m capella_ros_tools export \
+   -m tests/data/melody_model_60 -l la \
+   -o tests/data/melody_msgs
 
 Export Capella data package from Git Repository:
 --------------------------------------------------------
 .. code-block:: bash
 
-   $ python -m capella_ros_tools export git+https://github.com/DSD-DBS/coffee-machine oa tests/data/coffee_msgs
+   python -m capella_ros_tools export \
+   -m git+https://github.com/DSD-DBS/coffee-machine -l oa \
+   -o tests/data/coffee_msgs
 
-Note: When exporting Capella enumerations, if the enumeration values are not defined in the Capella model, the values will be set to 0, 1, 2, 3, etc. and the datatype will be set to unit8.
+.. note::
+   When exporting Capella enumerations, if the enumeration literal values are not defined in the Capella model, the values will be set to 0, 1, 2, 3, etc. and the value's type will be set to unit8.

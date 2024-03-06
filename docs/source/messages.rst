@@ -18,7 +18,7 @@ Class Definition
 * **Indented Comment Lines:** Comments on a line of their own but indented are added to the description of the last encountered property.
 * **Block Comments:** Comments on a line of their own and not indented are added to the description of the next properties until an empty line and the block comment has been used.
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleClass.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleClass.msg
   :language: python
 
 
@@ -33,7 +33,7 @@ Enum definition
 * **Indented Comment Lines:** Comments on a line of their own but indented are added to the description of the last encountered enum literal.
 * **Block Comments:** Comments on a line of their own and not indented are added to the description of the next/current enum definition until an empty line and the block comment has been used.
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleEnum.msg
   :language: python
 
 Enum and Class Definition
@@ -46,7 +46,7 @@ Enum and Class Definition
 * **Indented Comment Lines:** Comments on a line of their own but indented are added to the description of the last encountered property or enum literal.
 * **Block Comments:** Comments on a line of their own and not indented are added to the descriptions of the next properties or added to the descriptions of the next/current enum until an empty line and the block comment has been used.
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleClassEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package2/msg/SampleClassEnum.msg
   :language: python
 
 Referencing enums
@@ -61,7 +61,7 @@ In the Same File
 
 *  Name matching takes precedence over type matching.
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleClassEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package2/msg/SampleClassEnum.msg
   :language: python
 
 In another file
@@ -72,8 +72,8 @@ In another file
    * **cf. <File Name>:** The enum name was derived from the file name (excluding the extension).
    * **cf. <File Name>, <Common Prefix>_XXX:** The enum name was derived from the longest common prefix of all enum literals in the definition.
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleEnum.msg
   :language: python
 
-.. literalinclude:: ../../tests/data/example_msgs/msg/SampleClass.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleClass.msg
   :language: python
