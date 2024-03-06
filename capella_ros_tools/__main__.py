@@ -2,10 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Main entry point into Capella ROS Tools."""
 
+import io
 import pathlib
-import sys
 
+import capellambse
 import click
+from capellambse import cli_helpers, decl
 
 import capella_ros_tools
 
@@ -22,28 +24,19 @@ def cli():
 
 @cli.command("import")
 @click.argument(
-    "msg_path",
-    type=click.Path(),
+    "messages",
+    type=str,
     required=True,
 )
 @click.argument(
-    "capella_path",
-    type=click.Path(exists=True),
+    "model",
+    type=cli_helpers.ModelCLI(),
     required=True,
 )
 @click.argument(
     "layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
-)
-@click.option(
-    "--exists-action",
-    "action",
-    type=click.Choice(
-        ["skip", "replace", "abort", "ask"], case_sensitive=False
-    ),
-    default="ask" if sys.stdin.isatty() else "abort",
-    help="Default action when an element already exists.",
 )
 @click.option(
     "--no-deps",
@@ -53,47 +46,43 @@ def cli():
 )
 @click.option("--port", type=int, help="Open model viewer on given port.")
 def import_msgs(
-    msg_path: str,
-    capella_path: str,
+    messages: str,
+    model: capellambse.MelodyModel,
     layer: str,
-    action: str,
     no_deps: bool,
     port: int,
 ) -> None:
     """Import ROS messages into a Capella data package.
 
-    MSG_PATH: Path to folder with .msg files.
-    CAPELLA_PATH: Path to Capella model.
+    MESSAGES: File path or git URL to ROS messages.
+    MODEL: Path to Capella model.
     LAYER: Layer of Capella model to import elements to.
     """
-    from capellambse import filehandler
 
     from capella_ros_tools.scripts import import_msgs as importer
-    from capella_ros_tools.viewer import app
 
-    msg_filehandler = filehandler.get_filehandler(msg_path).rootdir
+    root_uuid = getattr(model, layer).uuid
+    types_uuid = model.sa.data_package.uuid
 
-    converter = importer.Importer(
-        msg_filehandler, capella_path, layer, action, no_deps
-    )
-    converter()
+    yml = importer.Importer(messages, no_deps)(root_uuid, types_uuid)
+    decl.apply(model, io.StringIO(yml))
 
     if port:
-        app.start(converter.capella.model, layer, port)
+        raise NotImplementedError("Open model with model explorer.")
 
 
 @cli.command("export")
-@click.argument("capella_path", type=click.Path(), required=True)
+@click.argument("model", type=cli_helpers.ModelCLI, required=True)
 @click.argument(
     "layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
 )
 @click.argument(
-    "msg_path", type=click.Path(path_type=pathlib.Path), required=True
+    "messages", type=click.Path(path_type=pathlib.Path), required=True
 )
 def export_capella(
-    capella_path: str,
+    model: capellambse.MelodyModel,
     layer: str,
     msg_path: pathlib.Path,
 ):
@@ -101,12 +90,11 @@ def export_capella(
 
     CAPELLA_PATH: Path to Capella model.
     LAYER: Layer of Capella model to export elements from.
-    MSG_PATH: Path to output folder for .msg files.
+    MESSAGES: Path to output folder for .msg files.
     """
     from capella_ros_tools.scripts import export_capella as exporter
 
-    converter = exporter.Exporter(capella_path, layer, msg_path)
-    converter()
+    exporter.Exporter(model, layer, msg_path)()
 
 
 if __name__ == "__main__":

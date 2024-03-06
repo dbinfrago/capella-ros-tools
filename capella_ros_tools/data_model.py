@@ -8,6 +8,7 @@ import os
 import pathlib
 import re
 import typing as t
+from dataclasses import dataclass
 
 from capellambse.filehandler import abc
 
@@ -19,17 +20,22 @@ UPPER_BOUND_TOKEN = "<="
 VALID_MESSAGE_NAME_PATTERN = "[A-Z][A-Za-z0-9]*"
 VALID_CONSTANT_NAME_PATTERN = "[A-Z](?:[A-Z0-9_]*[A-Z0-9])?"
 VALID_REF_COMMENT_PATTERN = re.compile(
-    r"cf\.\s*"
+    r".*cf\.\s*"
     rf"({VALID_MESSAGE_NAME_PATTERN})"
     r"(?:,\s*"
     rf"({VALID_CONSTANT_NAME_PATTERN}))?"
+    r"\s*.*"
 )
 
 HTML_TAG_PATTERN = re.compile("<.*?>")
 
 
-def _cleanhtml(raw_html: str):
+def _clean_html(raw_html: str):
     return re.sub(HTML_TAG_PATTERN, "", raw_html)
+
+
+def _clean_comment(comment: str) -> str:
+    return comment.strip(COMMENT_DELIMITER).strip()
 
 
 class Range(t.NamedTuple):
@@ -39,20 +45,14 @@ class Range(t.NamedTuple):
     max: str
 
 
+@dataclass
 class TypeDef:
     """Type definition."""
 
-    def __init__(
-        self,
-        name: str,
-        card: Range,
-        range: Range | None = None,
-        package: str | None = None,
-    ) -> None:
-        self.name = name
-        self.card = card
-        self.range = range
-        self.package = package
+    name: str
+    card: Range
+    range: Range | None = None
+    package: str | None = None
 
     def __str__(self) -> str:
         """Return string representation of the type."""
@@ -69,10 +69,10 @@ class TypeDef:
     def from_string(cls, type_str: str) -> TypeDef:
         """Create a type definition from a string."""
         if type_str.endswith("]"):
-            name, max_card = type_str.split("[")
+            name, _, max_card = type_str.partition("[")
             max_card = max_card.rstrip("]")
             if max_card.startswith(UPPER_BOUND_TOKEN):
-                range = Range("0", max_card[len(UPPER_BOUND_TOKEN) :])
+                range = Range("0", max_card.strip(UPPER_BOUND_TOKEN))
                 card = Range("1", "1")
             else:
                 range = None
@@ -83,128 +83,129 @@ class TypeDef:
             card = Range("1", "1")
             range = None
 
-        if (
-            len(name_split := name.split(PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR))
-            > 1
-        ):
-            package, name = name_split
+        if len(temp := name.split(PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR)) == 2:
+            package, name = temp
         else:
             package = None
 
         return cls(name, card, range, package)
 
 
+@dataclass
 class FieldDef:
     """Definition of a field in a ROS message."""
 
-    def __init__(self, type: TypeDef, name: str, description: str) -> None:
-        self.type = type
-        self.name = name
-        self.description = description
+    type: TypeDef
+    name: str
+    description: str
 
     def __str__(self) -> str:
         """Return string representation of the field."""
         out = f"{self.type} {self.name}"
         if self.description:
-            out += f"    # {_cleanhtml(self.description)}"
+            out += f"    # {_clean_html(self.description)}"
         return out
 
 
+@dataclass
 class ConstantDef:
     """Definition of a constant in a ROS message."""
 
-    def __init__(
-        self,
-        type: TypeDef,
-        name: str,
-        value: str,
-        description: str,
-    ) -> None:
-        self.type = type
-        self.name = name
-        self.value = value
-        self.description = description
+    type: TypeDef
+    name: str
+    value: str
+    description: str
 
     def __str__(self) -> str:
         """Return string representation of the constant."""
         out = f"{self.type} {self.name} = {self.value}"
         if self.description:
-            out += f"    # {_cleanhtml(self.description)}"
+            out += f"    # {_clean_html(self.description)}"
         return out
 
 
+@dataclass
 class EnumDef:
     """Definition of an enum in a ROS message."""
 
-    def __init__(
-        self, name: str, literals: list[ConstantDef], description: str
-    ) -> None:
-        self.name = name
-        self.literals = literals
-        self.description = description
+    name: str
+    literals: list[ConstantDef]
+    description: str
 
     def __str__(self) -> str:
         """Return string representation of the enum."""
-        out = f"\n# name: {self.name}"
-        if self.description:
-            out += f"\n# info: {_cleanhtml(self.description)}"
+        out = f"# {_clean_html(self.description)}" if self.description else ""
         for literal in self.literals:
             out += f"\n{literal}"
-        out += "\n"
         return out
+
+    def __eq__(self, other: object) -> bool:
+        """Return whether the enum is equal to another."""
+        if not isinstance(other, EnumDef):
+            return NotImplemented
+        return (
+            other.name == self.name
+            and all(literal in self.literals for literal in other.literals)
+            and other.description == self.description
+        )
 
 
 def _extract_file_level_comments(
-    message_string: str,
+    msg_string: str,
 ) -> t.Tuple[str, list[str]]:
     """Extract comments at the beginning of the message."""
-    message_string = message_string.lstrip("\n")
-    lines = message_string.splitlines()
+    lines = msg_string.lstrip("\n").splitlines()
+    lines.append("")
     file_level_comments = ""
-
-    index = 0
-    for index, line in enumerate(lines):
+    i = 0
+    for i, line in enumerate(lines):
+        line = line.strip()
         if not line.startswith(COMMENT_DELIMITER):
-            break
-        if line:
-            file_level_comments += (
-                f"{'<p>'+line.rstrip(COMMENT_DELIMITER).strip()+'</p>'}"
-            )
+            if line:
+                return "", lines
+            else:
+                break
+        file_level_comments += f"<p>{_clean_comment(line)}</p>"
 
-    file_content = lines[index:] + [""]
+    file_content = lines[i:]
     return file_level_comments, file_content
 
 
+@dataclass
 class MessageDef:
     """Definition of a ROS message."""
 
-    def __init__(
-        self,
-        name: str,
-        fields: list[FieldDef],
-        enums: list[EnumDef],
-        description: str,
-    ) -> None:
-        self.name = name
-        self.fields = fields
-        self.enums = enums
-        self.description = description
+    name: str
+    fields: list[FieldDef]
+    enums: list[EnumDef]
+    description: str
 
     def __str__(self) -> str:
         """Return string representation of the message."""
-        out = f"\n# name: {self.name}"
         if self.description:
-            out += f"\n# info: {_cleanhtml(self.description)}"
-        out += "\n"
+            out = f"# {_clean_html(self.description)}\n\n"
+        else:
+            out = ""
         for enum in self.enums:
-            out += f"{enum}"
+            out += f"{enum}\n\n"
         for field in self.fields:
-            out += f"\n{field}"
+            out += f"{field}\n"
         return out
+
+    def __eq__(self, other: object) -> bool:
+        """Return whether the message is equal to another."""
+        if not isinstance(other, MessageDef):
+            return NotImplemented
+        return (
+            other.name == self.name
+            and all(field in self.fields for field in other.fields)
+            and all(enum in self.enums for enum in other.enums)
+            and other.description == self.description
+        )
 
     @classmethod
     def from_file(
-        cls, file: pathlib.Path | abc.AbstractFilePath
+        cls, file: abc.AbstractFilePath | pathlib.Path
     ) -> MessageDef:
         """Create message definition from a .msg file."""
         msg_name = file.stem
@@ -216,60 +217,57 @@ class MessageDef:
         """Create message definition from a string."""
         msg_comments, lines = _extract_file_level_comments(msg_string)
         msg = cls(msg_name, [], [], msg_comments)
-        last_element: t.Any = msg
+        last_element: t.Any = None
         block_comments = ""
-        index = 0
+        index = -1
+        last_value = float("inf")
 
         for line in lines:
             line = line.rstrip()
             if not line:
                 # new block
-                if index == 0:
-                    continue
-                if isinstance(last_element, ConstantDef):
-                    last_element = msg.enums[-1]
-                block_comments = ""
+                if index != 0:
+                    block_comments = ""
                 continue
 
             last_index = index
             index = line.find(COMMENT_DELIMITER)
             if index == -1:
                 # no comment
-                comment = block_comments
+                comment = ""
             elif index == 0:
                 # block comment
-                if last_index != 0:
-                    # new block comment
+                if last_index > 0:
+                    # block comments were used
                     block_comments = ""
-                block_comments += (
-                    f"<p>{line[index:].rstrip(COMMENT_DELIMITER).strip()}</p>"
-                )
+                block_comments += f"<p>{_clean_comment(line)}</p>"
                 continue
             else:
-                comment = (
-                    f"<p>{line[index:].rstrip(COMMENT_DELIMITER).strip()}</p>"
-                )
+                # inline comment
+                comment = f"<p>{_clean_comment(line[index:])}</p>"
                 line = line[:index].rstrip()
                 if not line:
                     # indented comment
                     last_element.description += comment
                     continue
-                comment = block_comments + comment
 
             type_string, _, rest = line.partition(" ")
             name, _, value = rest.partition(CONSTANT_SEPARATOR)
-            name = name.rstrip()
+            name = name.strip()
+            value = value.strip()
             if value:
                 # constant
-                value = value.lstrip()
-                if not isinstance(last_element, ConstantDef):
-                    enum_def = EnumDef("", [], "")
+                if int(value) <= last_value:
+                    # new enum
+                    enum_def = EnumDef("", [], block_comments)
+                    block_comments = ""
                     msg.enums.append(enum_def)
+                last_value = int(value)
                 constant_def = ConstantDef(
                     TypeDef.from_string(type_string),
                     name,
                     value,
-                    comment,
+                    block_comments + comment,
                 )
                 msg.enums[-1].literals.append(constant_def)
                 last_element = constant_def
@@ -278,32 +276,15 @@ class MessageDef:
                 field_def = FieldDef(
                     TypeDef.from_string(type_string),
                     name,
-                    comment,
+                    block_comments + comment,
                 )
                 msg.fields.append(field_def)
                 last_element = field_def
 
         for field in msg.fields:
-            if match := VALID_REF_COMMENT_PATTERN.match(field.description):
-                ref_msg_name, ref_const_name = match.groups()
-                if ref_const_name:
-                    field.type.name = _get_enum_identifier(
-                        ref_const_name.rstrip("_XXX")
-                    )
-                else:
-                    field.type.name = ref_msg_name
+            _process_comment(field)
 
-        for i, enum in enumerate(msg.enums):
-            next_enum = msg.enums[i + 1] if i < len(msg.enums) - 1 else None
-            enum_value_type = enum.literals[0].type.name
-            if (
-                next_enum
-                and next_enum.literals[0].type.name == enum_value_type
-                and (len(enum.literals) == 1 or len(next_enum.literals) == 1)
-            ):
-                enum.literals.extend(next_enum.literals)
-                del next_enum
-
+        for enum in msg.enums:
             common_prefix = os.path.commonprefix(
                 [literal.name for literal in enum.literals]
             )
@@ -314,20 +295,36 @@ class MessageDef:
             else:
                 enum.name = msg_name if not msg.fields else msg_name + "Type"
 
-            name_matched = False
             for field in msg.fields:
                 if field.name.lower() == enum.name.lower():
+                    # name match found
                     field.type.name = enum.name
-                    name_matched = True
+                    field.type.package = "types"
                     break
-
-            if not name_matched:
+            else:
+                # no name match found
                 for field in msg.fields:
-                    if field.type.name == enum_value_type:
+                    if field.type.name == enum.literals[0].type.name:
+                        # type match found
+                        enum.name = msg_name + field.name.capitalize()
                         field.type.name = enum.name
+                        field.type.package = "types"
                         break
 
         return msg
+
+
+def _process_comment(field: FieldDef) -> None:
+    """Process comment of a field."""
+    if match := VALID_REF_COMMENT_PATTERN.match(field.description):
+        field.type.package = "types"
+        ref_msg_name, ref_const_name = match.groups()
+        if ref_const_name:
+            field.type.name = _get_enum_identifier(
+                ref_const_name.rstrip("_XXX")
+            )
+        else:
+            field.type.name = ref_msg_name
 
 
 def _get_enum_identifier(common_prefix: str) -> str:
@@ -335,22 +332,27 @@ def _get_enum_identifier(common_prefix: str) -> str:
     return "".join([x.capitalize() for x in common_prefix.split("_")])
 
 
+@dataclass
 class MessagePkgDef:
     """Definition of a ROS message package."""
 
-    def __init__(
-        self,
-        name: str,
-        messages: list[MessageDef],
-        packages: list[MessagePkgDef],
-    ) -> None:
-        self.name = name
-        self.messages = messages
-        self.packages = packages
+    name: str
+    messages: list[MessageDef]
+    packages: list[MessagePkgDef]
+
+    def __eq__(self, other: object) -> bool:
+        """Return whether the message package is equal to another."""
+        if not isinstance(other, MessagePkgDef):
+            return NotImplemented
+        return (
+            other.name == self.name
+            and all(message in self.messages for message in other.messages)
+            and all(package in self.packages for package in other.packages)
+        )
 
     @classmethod
     def from_msg_folder(
-        cls, pkg_name: str, msg_path: pathlib.Path | abc.AbstractFilePath
+        cls, pkg_name: str, msg_path: abc.AbstractFilePath | pathlib.Path
     ) -> MessagePkgDef:
         """Create a message package definition from a folder."""
         out = cls(pkg_name, [], [])

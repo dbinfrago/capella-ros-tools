@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "click",
-  "capellambse",
+  "capellambse@ git+https://github.com/DSD-DBS/py-capellambse.git@decl-sync",
   "capellambse_context_diagrams",
   "fastapi",
   "uvicorn[standard]",

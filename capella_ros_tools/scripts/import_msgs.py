@@ -4,11 +4,11 @@
 
 import logging
 
-import click
+import capellambse
+from capellambse import decl, filehandler, helpers
 from capellambse.filehandler import abc
-from capellambse.model.crosslayer import information
 
-from capella_ros_tools import capella, messages
+from capella_ros_tools import data_model
 
 ROS2_INTERFACES = {
     "common_interfaces": "git+https://github.com/ros2/common_interfaces",
@@ -26,161 +26,192 @@ class Importer:
 
     def __init__(
         self,
-        msg_path: abc.AbstractFilePath,
-        capella_path: str,
-        layer: str,
-        action: str,
+        msg_path: str,
         no_deps: bool,
     ):
-        pkg_name = msg_path.stem if msg_path.stem else "ros_msgs"
-        pkg_def = messages.MessagePkgDef.from_msg_folder(pkg_name, msg_path)
+        self.messages = data_model.MessagePkgDef("root", [], [])
+        self._promise_ids: set[str] = set()
+        self._promise_id_refs: set[str] = set()
 
-        self.messages = messages.MessagePkgDef("", [], [pkg_def])
-        self.capella = capella.CapellaDataPackage(capella_path, layer)
-        self.action = action
-
+        self._add_packages("ros_msgs", msg_path)
         if no_deps:
             return
-        from capellambse import filehandler
 
         for interface_name, interface_url in ROS2_INTERFACES.items():
-            interface_path = filehandler.get_filehandler(interface_url).rootdir
-            for dir in interface_path.rglob("msg"):
-                pkg_name = dir.parent.name or interface_name
-                pkg_def = messages.MessagePkgDef.from_msg_folder(pkg_name, dir)
-                self.messages.packages.append(pkg_def)
+            self._add_packages(interface_name, interface_url)
 
-    def _handle_objects_skip(
+    def _add_packages(self, name: str, path: str) -> None:
+        root = filehandler.get_filehandler(path).rootdir
+        for dir in root.rglob("msg"):
+            pkg_name = dir.parent.name or name
+            pkg_def = data_model.MessagePkgDef.from_msg_folder(pkg_name, dir)
+            self.messages.packages.append(pkg_def)
+
+    def _convert_datatype(self, promise_id: str) -> dict:
+        name = promise_id.split(".", 1)[-1]
+        if any(t in name for t in ["char", "str"]):
+            _type = "StringType"
+        elif any(t in name for t in ["bool", "byte"]):
+            _type = "BooleanType"
+        else:
+            _type = "NumericType"
+        yml = {
+            "promise_id": promise_id,
+            "find": {
+                "name": name,
+                "_type": _type,
+            },
+        }
+        return yml
+
+    def _convert_package(
         self,
-        elem_def_list: list,
-        attr_name: str,
-        current_root: information.DataPkg,
-    ):
-        for elem_def in elem_def_list:
-            getattr(self.capella, f"create_{attr_name}")(
-                elem_def, current_root
+        parent: decl.Promise | decl.UUIDReference,
+        pkg_def: data_model.MessagePkgDef,
+    ) -> list[dict]:
+        instructions = []
+        classes = []
+        enums = []
+        packages = []
+
+        for msg_def in pkg_def.messages:
+            if msg_def.fields:
+                classes.append(self._convert_class(pkg_def.name, msg_def))
+            for enum_def in msg_def.enums:
+                enums.append(self._convert_enum(enum_def))
+
+        for new_pkg in pkg_def.packages:
+            promise_id = f"{pkg_def.name}.{new_pkg.name}"
+            self._promise_ids.add(promise_id)
+            packages.append(
+                {
+                    "promise_id": promise_id,
+                    "find": {
+                        "name": new_pkg.name,
+                    },
+                }
+            )
+            instructions.extend(
+                self._convert_package(decl.Promise(promise_id), new_pkg)
             )
 
-    def _handle_objects_replace(
-        self,
-        elem_def_list: list,
-        attr_name: str,
-        current_root: information.DataPkg,
-    ):
-        for elem_def in elem_def_list:
-            if elem_obj := getattr(self.capella, f"create_{attr_name}")(
-                elem_def, current_root
-            ):
-                getattr(self.capella, f"remove_{attr_name}")(
-                    elem_obj, current_root
-                )
-                getattr(self.capella, f"create_{attr_name}")(
-                    elem_def, current_root
-                )
+        sync = {}
+        if classes:
+            sync["classes"] = classes
+        if enums:
+            sync["enumerations"] = enums
+        if packages:
+            sync["packages"] = packages
 
-    def _handle_objects_abort(
-        self,
-        elem_def_list: list,
-        attr_name: str,
-        current_root: information.DataPkg,
-    ):
-        for elem_def in elem_def_list:
-            if getattr(self.capella, f"create_{attr_name}")(
-                elem_def, current_root
-            ):
-                raise click.Abort()
+        if sync:
+            instructions.append(
+                {
+                    "parent": parent,
+                    "sync": sync,
+                }
+            )
 
-    def _handle_objects_ask(
-        self,
-        elem_def_list: list,
-        attr_name: str,
-        current_root: information.DataPkg,
-    ):
-        for i, elem_def in enumerate(elem_def_list):
-            if elem_obj := getattr(self.capella, f"create_{attr_name}")(
-                elem_def, current_root
-            ):
-                confirm = click.prompt(
-                    f"{elem_def.name} already exists. Overwrite? [y]es / [Y]es to all / [n]o / [N]o to all",
-                    type=click.Choice(
-                        ["y", "Y", "n", "N"],
-                        case_sensitive=True,
-                    ),
+        return instructions
+
+    def _convert_class(
+        self, pkg_name: str, msg_def: data_model.MessageDef
+    ) -> dict:
+        promise_id = f"{pkg_name}.{msg_def.name}"
+        self._promise_ids.add(promise_id)
+        props = []
+        for field_def in msg_def.fields:
+            promise_ref = (
+                f"{field_def.type.package or pkg_name}.{field_def.type.name}"
+            )
+            self._promise_id_refs.add(promise_ref)
+            prop_yml = {
+                "name": field_def.name,
+                "type": decl.Promise(promise_ref),
+                "description": field_def.description,
+                "min_card": decl.NewObject(
+                    "LiteralNumericValue", value=field_def.type.card.min
+                ),
+                "max_card": decl.NewObject(
+                    "LiteralNumericValue", value=field_def.type.card.max
+                ),
+            }
+            if field_def.type.range:
+                prop_yml["min_value"] = decl.NewObject(
+                    "LiteralNumericValue", value=field_def.type.range.min
                 )
-                if confirm == "n":
-                    continue
-                elif confirm == "N":
-                    for elem_def in elem_def_list[(i + 1) :]:
-                        getattr(self.capella, f"create_{attr_name}")(
-                            elem_def, current_root
-                        )
-                    self.action = "skip"
-                    break
-                elif confirm == "y":
-                    getattr(self.capella, f"remove_{attr_name}")(
-                        elem_obj, current_root
-                    )
-                    getattr(self.capella, f"create_{attr_name}")(
-                        elem_def, current_root
-                    )
-                elif confirm == "Y":
-                    for elem_def in elem_def_list[i:]:
-                        if elem_obj := getattr(
-                            self.capella, f"create_{attr_name}"
-                        )(elem_def, current_root):
-                            getattr(self.capella, f"remove_{attr_name}")(
-                                elem_obj, current_root
-                            )
-                            getattr(self.capella, f"create_{attr_name}")(
-                                elem_def, current_root
-                            )
-                    self.action = "replace"
-                    break
+                prop_yml["max_value"] = decl.NewObject(
+                    "LiteralNumericValue", value=field_def.type.range.max
+                )
+            props.append(prop_yml)
 
-    def _handle_objects(
-        self,
-        current_pkg_def: messages.MessagePkgDef,
-        current_root: information.DataPkg,
-    ):
-        elem_types = [
-            ("package", current_pkg_def.packages),
-            ("class", current_pkg_def.messages),
-            (
-                "enum",
-                [
-                    enum
-                    for msg in current_pkg_def.messages
-                    for enum in msg.enums
+        yml = {
+            "promise_id": promise_id,
+            "find": {
+                "name": msg_def.name,
+            },
+            "set": {
+                "description": msg_def.description,
+                "properties": props,
+            },
+        }
+        return yml
+
+    def _convert_enum(self, enum_def: data_model.EnumDef) -> dict:
+        promise_id = f"types.{enum_def.name}"
+        self._promise_ids.add(promise_id)
+        yml = {
+            "promise_id": promise_id,
+            "find": {
+                "name": enum_def.name,
+            },
+            "set": {
+                "description": enum_def.description,
+                "literals": [
+                    {
+                        "name": literal.name,
+                        "description": literal.description,
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value=literal.value
+                        ),
+                    }
+                    for literal in enum_def.literals
                 ],
-            ),
-        ]
+            },
+        }
 
-        for elem_type, elem_def_list in elem_types:
-            getattr(self, f"_handle_objects_{self.action}")(
-                elem_def_list, elem_type, current_root
+        return yml
+
+    def __call__(self, layer_data_uuid: str, sa_data_uuid) -> str:
+        """Import ROS messages into a Capella data package."""
+        instructions = self._convert_package(
+            decl.UUIDReference(helpers.UUIDString(layer_data_uuid)),
+            self.messages,
+        )
+
+        if needed_types := self._promise_id_refs - self._promise_ids:
+            datatypes = [
+                self._convert_datatype(promise_id)
+                for promise_id in needed_types
+            ]
+            instructions.extend(
+                [
+                    {
+                        "parent": decl.UUIDReference(
+                            helpers.UUIDString(sa_data_uuid)
+                        ),
+                        "sync": {
+                            "packages": [
+                                {
+                                    "promise_id": "root.DataTypes",
+                                    "find": {"name": "Data Types"},
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "parent": decl.Promise("root.DataTypes"),
+                        "sync": {"datatypes": datatypes},
+                    },
+                ]
             )
-
-        for new_pkg_def in current_pkg_def.packages:
-            new_root = current_root.packages.by_name(new_pkg_def.name)
-            self._handle_objects(new_pkg_def, new_root)
-
-    def _handle_relations(
-        self,
-        current_pkg_def: messages.MessagePkgDef,
-        current_root: information.DataPkg,
-    ):
-        for msg in current_pkg_def.messages:
-            self.capella.create_properties(msg, current_root)
-
-        for new_pkg_def in current_pkg_def.packages:
-            new_root = current_root.packages.by_name(new_pkg_def.name)
-            self._handle_relations(new_pkg_def, new_root)
-
-    def __call__(self):
-        """Convert JSON to Capella data package."""
-        current_root = self.capella.data_package
-
-        self._handle_objects(self.messages, current_root)
-        self._handle_relations(self.messages, current_root)
-
-        self.capella.save_changes()
+        return decl.dump(instructions)

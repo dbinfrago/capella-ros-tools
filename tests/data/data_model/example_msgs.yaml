@@ -1,0 +1,230 @@
+# Copyright DB InfraGO AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+- parent: !promise root.package1
+  sync:
+      classes:
+          - promise_id: package1.SampleClass
+            find:
+                name: SampleClass
+            set:
+                description: "<p>SampleClass.msg</p><p>The first comment block at the top of the file</p><p>is added to the class description of SampleClass.</p>"
+                properties:
+                    - name: sample_field1
+                      description: "<p>This block comment is added to the</p><p>property description of sample_field1.</p><p>This block comment is also added to the</p><p>property description of sample_field1.</p>"
+                      type: !promise package1.uint8
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      min_value: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                      max_value: !new_object
+                          _type: LiteralNumericValue
+                          value: "10"
+                    - name: sample_field2
+                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field2 and sample_field3.</p>"
+                      type: !promise package1.uint8
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: sample_field3
+                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field2 and sample_field3.</p>"
+                      type: !promise package1.uint8
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "*"
+                    - name: sample_field4
+                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field4 and sample_field5.</p><p>Fields in SampleClass can reference</p><p>enums in other files.</p><p>The property sample_field4</p><p>is of type SampleEnum.</p><p>cf. SampleEnum</p>"
+                      type: !promise types.SampleEnum
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: sample_field5
+                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field4 and sample_field5.</p><p>This inline comment</p><p>is added to the</p><p>property description of</p><p>sample_field5.</p><p>The property sample_field5</p><p>is of type SampleEnumValue.</p><p>cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX</p>"
+                      type: !promise types.SampleEnumValue
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+      enumerations:
+          - promise_id: types.SampleEnumValue
+            find:
+                name: SampleEnumValue
+            set:
+                description: "<p>SampleEnum.msg</p><p>This block comment is added to the</p><p>enum description of SampleEnumValue.</p>"
+                literals:
+                    - name: RED
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                    - name: BLUE
+                      description: "<p>This inline comment</p><p>is added to the</p><p>enum literal</p><p>description of BLUE.</p>"
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: YELLOW
+                      description: "<p>This block comment is added to the</p><p>enum literal descriptions of YELLOW and GREEN.</p>"
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "2"
+                    - name: GREEN
+                      description: "<p>This block comment is added to the</p><p>enum literal descriptions of YELLOW and GREEN.</p>"
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "3"
+          - promise_id: types.SampleEnum
+            find:
+                name: SampleEnum
+            set:
+                description: "<p>This block comment is added to the</p><p>enum description of SampleEnum.</p><p>In a file, there can only be one or no enum</p><p>whose literal names do not share a common prefix.</p>"
+                literals:
+                    - name: OK
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                    - name: WARN
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: ERROR
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "2"
+                    - name: STALE
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "3"
+
+- parent: !promise root.package2
+  sync:
+      classes:
+          - promise_id: package2.SampleClassEnum
+            find:
+                name: SampleClassEnum
+            set:
+                description: "<p>SampleClassEnum.msg</p><p>Properties in SampleClassEnum can reference</p><p>enums in the same file.</p>"
+                properties:
+                    - name: status
+                      description: "<p>The property status is of type</p><p>SampleClassEnumStatus.</p>"
+                      type: !promise types.SampleClassEnumStatus
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: color
+                      description: "<p>The property color is of type Color.</p>"
+                      type: !promise types.Color
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: field
+                      description: ""
+                      type: !promise package2.uint8
+                      min_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                      max_card: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+      enumerations:
+          - promise_id: types.SampleClassEnumStatus
+            find:
+                name: SampleClassEnumStatus
+            set:
+                description: "<p>This block comment is added to the</p><p>enum description of SampleClassEnumStatus.</p>"
+                literals:
+                    - name: OK
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                    - name: WARN
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: ERROR
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "2"
+                    - name: STALE
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "3"
+          - promise_id: types.Color
+            find:
+                name: Color
+            set:
+                description: "<p>This block comment is added to the</p><p>enum description of Color.</p>"
+                literals:
+                    - name: RED
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "0"
+                    - name: BLUE
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "1"
+                    - name: YELLOW
+                      description: ""
+                      value: !new_object
+                          _type: LiteralNumericValue
+                          value: "2"
+
+- parent: !uuid "00000000-0000-0000-0000-000000000000"
+  sync:
+      packages:
+          - promise_id: root.package1
+            find:
+                name: package1
+          - promise_id: root.package2
+            find:
+                name: package2
+
+- parent: !uuid "00000000-0000-0000-0000-000000000001"
+  sync:
+      packages:
+          - promise_id: root.DataTypes
+            find:
+                name: "Data Types"
+
+- parent: !promise root.DataTypes
+  sync:
+      datatypes:
+          - promise_id: package1.uint8
+            find:
+                name: uint8
+                _type: NumericType
+          - promise_id: package2.uint8
+            find:
+                name: uint8
+                _type: NumericType
