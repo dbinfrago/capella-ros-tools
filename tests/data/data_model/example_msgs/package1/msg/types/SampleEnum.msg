@@ -18,4 +18,5 @@ uint8 SAMPLE_ENUM_VALUE_GREEN  = 3
 uint8 OK     = 0
 uint8 WARN   = 1
 uint8 ERROR  = 2
+
 uint8 STALE  = 3
