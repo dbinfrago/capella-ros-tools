@@ -15,7 +15,7 @@ from capella_ros_tools.data_model import (
     Range,
     TypeDef,
 )
-from capella_ros_tools.scripts.import_msgs import Importer
+from capella_ros_tools.importer import Importer
 
 PATH = pathlib.Path(__file__).parent
 
@@ -311,5 +311,7 @@ def test_convert_package(
 
 def test_import_msgs():
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
-    actual = Importer(SAMPLE_PACKAGE_PATH.as_posix(), True)(ROOT, SA_ROOT)
+    actual = Importer(SAMPLE_PACKAGE_PATH.as_posix(), True).to_yaml(
+        ROOT, SA_ROOT
+    )
     assert actual == expected

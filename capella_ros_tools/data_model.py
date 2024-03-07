@@ -150,6 +150,13 @@ class EnumDef:
         )
 
 
+def _process_block_comment(line: str) -> str:
+    if comment := _clean_comment(line):
+        return f"{comment} "
+    else:
+        return "<br>"
+
+
 def _extract_file_level_comments(
     msg_string: str,
 ) -> t.Tuple[str, list[str]]:
@@ -165,7 +172,7 @@ def _extract_file_level_comments(
                 return "", lines
             else:
                 break
-        file_level_comments += f"<p>{_clean_comment(line)}</p>"
+        file_level_comments += _process_block_comment(line)
 
     file_content = lines[i:]
     return file_level_comments, file_content
@@ -240,16 +247,19 @@ class MessageDef:
                 if last_index > 0:
                     # block comments were used
                     block_comments = ""
-                block_comments += f"<p>{_clean_comment(line)}</p>"
+                block_comments += _process_block_comment(line)
                 continue
             else:
                 # inline comment
-                comment = f"<p>{_clean_comment(line[index:])}</p>"
+                comment = _clean_comment(line[index:])
                 line = line[:index].rstrip()
                 if not line:
                     # indented comment
-                    last_element.description += comment
+                    last_element.description += (
+                        f"{comment} " if comment else "<br>"
+                    )
                     continue
+                comment = f"{comment} "
 
             type_string, _, rest = line.partition(" ")
             name, _, value = rest.partition(CONSTANT_SEPARATOR)
@@ -288,6 +298,11 @@ class MessageDef:
             common_prefix = os.path.commonprefix(
                 [literal.name for literal in enum.literals]
             )
+            if not common_prefix.endswith("_"):
+                if index := common_prefix.rfind("_"):
+                    common_prefix = common_prefix[: index + 1]
+                else:
+                    common_prefix = ""
             if common_prefix:
                 enum.name = _get_enum_identifier(common_prefix)
                 for literal in enum.literals:

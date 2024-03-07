@@ -21,54 +21,54 @@ def sample_class_def():
             FieldDef(
                 type=TypeDef("uint8", Range("1", "1"), Range("0", "10"), None),
                 name="sample_field1",
-                description="<p>This block comment is added to the</p>"
-                "<p>property description of sample_field1.</p>"
-                "<p>This block comment is also added to the</p>"
-                "<p>property description of sample_field1.</p>",
+                description="This block comment is added to the "
+                "property description of sample_field1. "
+                "This block comment is also added to the "
+                "property description of sample_field1. ",
             ),
             FieldDef(
                 type=TypeDef("uint8", Range("1", "1"), None, None),
                 name="sample_field2",
-                description="<p>This block comment is added to the property</p>"
-                "<p>descriptions of sample_field2 and sample_field3.</p>",
+                description="This block comment is added to the property "
+                "descriptions of sample_field2 and sample_field3. ",
             ),
             FieldDef(
                 TypeDef("uint8", Range("0", "*"), None, None),
                 name="sample_field3",
-                description="<p>This block comment is added to the property</p>"
-                "<p>descriptions of sample_field2 and sample_field3.</p>",
+                description="This block comment is added to the property "
+                "descriptions of sample_field2 and sample_field3. ",
             ),
             FieldDef(
                 type=TypeDef("SampleEnum", Range("1", "1"), None, "types"),
                 name="sample_field4",
-                description="<p>This block comment is added to the property</p>"
-                "<p>descriptions of sample_field4 and sample_field5.</p>"
-                "<p>Fields in SampleClass can reference</p>"
-                "<p>enums in other files.</p>"
-                "<p>The property sample_field4</p>"
-                "<p>is of type SampleEnum.</p>"
-                "<p>cf. SampleEnum</p>",
+                description="This block comment is added to the property "
+                "descriptions of sample_field4 and sample_field5. "
+                "Fields in SampleClass can reference "
+                "enums in other files. "
+                "The property sample_field4 "
+                "is of type SampleEnum. "
+                "cf. SampleEnum ",
             ),
             FieldDef(
                 type=TypeDef(
                     "SampleEnumValue", Range("1", "1"), None, "types"
                 ),
                 name="sample_field5",
-                description="<p>This block comment is added to the property</p>"
-                "<p>descriptions of sample_field4 and sample_field5.</p>"
-                "<p>This inline comment</p>"
-                "<p>is added to the</p>"
-                "<p>property description of</p>"
-                "<p>sample_field5.</p>"
-                "<p>The property sample_field5</p>"
-                "<p>is of type SampleEnumValue.</p>"
-                "<p>cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX</p>",
+                description="This block comment is added to the property "
+                "descriptions of sample_field4 and sample_field5. "
+                "This inline comment "
+                "is added to the "
+                "property description of "
+                "sample_field5. "
+                "The property sample_field5 "
+                "is of type SampleEnumValue. "
+                "cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX ",
             ),
         ],
         enums=[],
-        description="<p>SampleClass.msg</p>"
-        "<p>The first comment block at the top of the file</p>"
-        "<p>is added to the class description of SampleClass.</p>",
+        description="SampleClass.msg "
+        "The first comment block at the top of the file "
+        "is added to the class description of SampleClass. ",
     )
 
 
@@ -91,29 +91,29 @@ def sample_enum_def():
                         type=TypeDef("uint8", Range("1", "1"), None, None),
                         name="BLUE",
                         value="1",
-                        description="<p>This inline comment</p>"
-                        "<p>is added to the</p>"
-                        "<p>enum literal</p>"
-                        "<p>description of BLUE.</p>",
+                        description="This inline comment "
+                        "is added to the "
+                        "enum literal "
+                        "description of BLUE. ",
                     ),
                     ConstantDef(
                         type=TypeDef("uint8", Range("1", "1"), None, None),
                         name="YELLOW",
                         value="2",
-                        description="<p>This block comment is added to the</p>"
-                        "<p>enum literal descriptions of YELLOW and GREEN.</p>",
+                        description="This block comment is added to the "
+                        "enum literal descriptions of YELLOW and GREEN. ",
                     ),
                     ConstantDef(
                         type=TypeDef("uint8", Range("1", "1"), None, None),
                         name="GREEN",
                         value="3",
-                        description="<p>This block comment is added to the</p>"
-                        "<p>enum literal descriptions of YELLOW and GREEN.</p>",
+                        description="This block comment is added to the "
+                        "enum literal descriptions of YELLOW and GREEN. ",
                     ),
                 ],
-                description="<p>SampleEnum.msg</p>"
-                "<p>This block comment is added to the</p>"
-                "<p>enum description of SampleEnumValue.</p>",
+                description="SampleEnum.msg "
+                "This block comment is added to the "
+                "enum description of SampleEnumValue. ",
             ),
             EnumDef(
                 name="SampleEnum",
@@ -143,10 +143,10 @@ def sample_enum_def():
                         description="",
                     ),
                 ],
-                description="<p>This block comment is added to the</p>"
-                "<p>enum description of SampleEnum.</p>"
-                "<p>In a file, there can only be one or no enum</p>"
-                "<p>whose literal names do not share a common prefix.</p>",
+                description="This block comment is added to the "
+                "enum description of SampleEnum. "
+                "In a file, there can only be one or no enum "
+                "whose literal names do not share a common prefix. ",
             ),
         ],
         description="",
@@ -163,13 +163,13 @@ def sample_class_enum_def():
                     "SampleClassEnumStatus", Range("1", "1"), None, "types"
                 ),
                 name="status",
-                description="<p>The property status is of type</p>"
-                "<p>SampleClassEnumStatus.</p>",
+                description="The property status is of type "
+                "SampleClassEnumStatus. ",
             ),
             FieldDef(
                 type=TypeDef("Color", Range("1", "1"), None, "types"),
                 name="color",
-                description="<p>The property color is of type Color.</p>",
+                description="The property color is of type Color. ",
             ),
             FieldDef(
                 type=TypeDef("uint8", Range("1", "1"), None, None),
@@ -206,8 +206,8 @@ def sample_class_enum_def():
                         description="",
                     ),
                 ],
-                description="<p>This block comment is added to the</p>"
-                "<p>enum description of SampleClassEnumStatus.</p>",
+                description="This block comment is added to the "
+                "enum description of SampleClassEnumStatus. ",
             ),
             EnumDef(
                 name="Color",
@@ -231,11 +231,11 @@ def sample_class_enum_def():
                         description="",
                     ),
                 ],
-                description="<p>This block comment is added to the</p>"
-                "<p>enum description of Color.</p>",
+                description="This block comment is added to the "
+                "enum description of Color. ",
             ),
         ],
-        description="<p>SampleClassEnum.msg</p>"
-        "<p>Properties in SampleClassEnum can reference</p>"
-        "<p>enums in the same file.</p>",
+        description="SampleClassEnum.msg "
+        "Properties in SampleClassEnum can reference "
+        "enums in the same file. ",
     )

@@ -25,7 +25,7 @@ SAMPLE_CLASS_PATH = PATH.joinpath(
     "data/data_model/example_msgs/package1/msg/SampleClass.msg"
 )
 SAMPLE_ENUM_PATH = PATH.joinpath(
-    "data/data_model/example_msgs/package1/msg/SampleEnum.msg"
+    "data/data_model/example_msgs/package1/msg/types/SampleEnum.msg"
 )
 SAMPLE_CLASS_ENUM_PATH = PATH.joinpath(
     "data/data_model/example_msgs/package2/msg/SampleClassEnum.msg"
@@ -145,40 +145,138 @@ def test_ConstantDef_str(params: tuple[TypeDef, str, str, str], expected: str):
     assert str(constant_def) == expected
 
 
-def test_extract_file_level_comments_no_comments():
-    msg_string = """uint8 OK = 0
+class TestComments:
+    @staticmethod
+    def test_extract_file_level_comments_no_comments():
+        msg_string = """uint8 OK = 0
 uint8 WARN = 1
 uint8 ERROR = 2"""
-    comments, _ = data_model._extract_file_level_comments(msg_string)
+        comments, _ = data_model._extract_file_level_comments(msg_string)
 
-    assert comments == ""
+        assert comments == ""
+
+    @staticmethod
+    def test_extract_file_level_comments_no_newline():
+        msg_string = """# This is a comment
+    # This is another comment
+    uint8 OK = 0
+    uint8 WARN = 1
+    uint8 ERROR = 2"""
+        comments, _ = data_model._extract_file_level_comments(msg_string)
+
+        assert comments == ""
+
+    @staticmethod
+    def test_extract_file_level_comments():
+        msg_string = """# This is a comment
+    # This is another comment
+
+    uint8 OK = 0
+    uint8 WARN = 1
+    uint8 ERROR = 2"""
+        comments, _ = data_model._extract_file_level_comments(msg_string)
+        expected = "This is a comment This is another comment "
+
+        assert comments == expected
+
+    @staticmethod
+    def test_extract_file_level_comments_with_newline():
+        msg_string = """# This is a comment
+#
+# This is another comment"""
+        comments, _ = data_model._extract_file_level_comments(msg_string)
+        expected = "This is a comment <br>This is another comment"
+
+    @staticmethod
+    def test_parse_comments_no_comments():
+        msg_string = """uint8 field"""
+
+        msg_def = MessageDef.from_string("test_name", msg_string)
+        expected = MessageDef(
+            name="test_name",
+            fields=[
+                FieldDef(
+                    type=TypeDef.from_string("uint8"),
+                    name="field",
+                    description="",
+                )
+            ],
+            enums=[],
+            description="",
+        )
+        assert msg_def == expected
+
+    @staticmethod
+    def test_parse_comments_block_comments():
+        msg_string = """# Here is text.
+# Here is more text.
+#
+# This is unrelated text.
+uint8 field"""
+        msg_def = MessageDef.from_string("test_name", msg_string)
+        expected = MessageDef(
+            name="test_name",
+            fields=[
+                FieldDef(
+                    type=TypeDef.from_string("uint8"),
+                    name="field",
+                    description="Here is text. Here is more text. <br>"
+                    "This is unrelated text. ",
+                )
+            ],
+            enums=[],
+            description="",
+        )
+        assert msg_def == expected
+
+    @staticmethod
+    def test_parse_comments_inline_comments():
+        msg_string = """uint8 field     # Here is text.
+                                        # Here is more text.
+                                        #
+                                        # This is unrelated text."""
+        msg_def = MessageDef.from_string("test_name", msg_string)
+        expected = MessageDef(
+            name="test_name",
+            fields=[
+                FieldDef(
+                    type=TypeDef.from_string("uint8"),
+                    name="field",
+                    description="Here is text. Here is more text. <br>"
+                    "This is unrelated text. ",
+                )
+            ],
+            enums=[],
+            description="",
+        )
+        assert msg_def == expected
+
+    @staticmethod
+    def test_parse_comments_mixed_comments():
+        msg_string = """# This is a block comment.
+# This is still a block comment.
+uint8 field     # This is an inline comment.
+                # This is still an inline comment."""
+        msg_def = MessageDef.from_string("test_name", msg_string)
+        expected = MessageDef(
+            name="test_name",
+            fields=[
+                FieldDef(
+                    type=TypeDef.from_string("uint8"),
+                    name="field",
+                    description="This is a block comment. "
+                    "This is still a block comment. "
+                    "This is an inline comment. "
+                    "This is still an inline comment. ",
+                )
+            ],
+            enums=[],
+            description="",
+        )
+        assert msg_def == expected
 
 
-def test_extract_file_level_comments_no_newline():
-    msg_string = """# This is a comment
-# This is another comment
-uint8 OK = 0
-uint8 WARN = 1
-uint8 ERROR = 2"""
-    comments, _ = data_model._extract_file_level_comments(msg_string)
-
-    assert comments == ""
-
-
-def test_extract_file_level_comments():
-    msg_string = """# This is a comment
-# This is another comment
-
-uint8 OK = 0
-uint8 WARN = 1
-uint8 ERROR = 2"""
-    comments, _ = data_model._extract_file_level_comments(msg_string)
-    expected = "<p>This is a comment</p><p>This is another comment</p>"
-
-    assert comments == expected
-
-
-class TestEnumDef:
+class TestMergeEnumDef:
     @staticmethod
     @pytest.fixture
     def expected():
@@ -223,8 +321,7 @@ uint8 OK = 0
 
 uint8 WARN = 1
 uint8 ERROR = 2
-uint8 STALE = 3
-"""
+uint8 STALE = 3"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         assert msg_def == expected
 
@@ -235,8 +332,7 @@ uint8 OK = 0
 uint8 WARN = 1
 uint8 ERROR = 2
 
-uint8 STALE = 3
-        """
+uint8 STALE = 3"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         assert msg_def == expected
 
@@ -248,8 +344,7 @@ uint8 WARN = 1
 
 uint8 ERROR = 2
 
-uint8 STALE = 3
-        """
+uint8 STALE = 3"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         assert msg_def == expected
 
@@ -261,10 +356,44 @@ uint8 OK = 0
 uint8 WARN = 1
 
 uint8 ERROR = 2
-uint8 STALE = 3
-        """
+uint8 STALE = 3"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         assert msg_def == expected
+
+
+class TestEnumName:
+    @staticmethod
+    def test_enum_name_commonprefix_no_underscore():
+        msg_string = """
+uint8 START = 0
+uint8 STOP = 1"""
+        msg_def = MessageDef.from_string("enum_name", msg_string)
+        actual = msg_def.enums[0].name
+        expected = "enum_name"
+
+        assert actual == expected
+
+    @staticmethod
+    def test_enum_name_commonprefix_with_underscore():
+        msg_string = """
+uint8 ST_ART = 0
+uint8 ST_OP = 1"""
+        msg_def = MessageDef.from_string("enum_name", msg_string)
+        actual = msg_def.enums[0].name
+        expected = "St"
+
+        assert actual == expected
+
+    @staticmethod
+    def test_enum_name_commonprefix_with_multiple_underscore():
+        msg_string = """
+uint8 S_T_ART = 0
+uint8 S_T_OP = 1"""
+        msg_def = MessageDef.from_string("enum_name", msg_string)
+        actual = msg_def.enums[0].name
+        expected = "ST"
+
+        assert actual == expected
 
 
 def test_MessageDef_class(sample_class_def):
@@ -296,7 +425,7 @@ def test_MessageDef_class_enum(sample_class_enum_def):
     ],
 )
 def test_MessagePkgDef_from_msg_folder(
-    msg_pkg_path: abc.AbstractFilePat | pathlib.Path,
+    msg_pkg_path: abc.AbstractFilePath | pathlib.Path,
 ):
     message_pkg_def = MessagePkgDef.from_msg_folder("", msg_pkg_path)
 

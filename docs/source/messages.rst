@@ -10,6 +10,35 @@ ROS2 Message Layout
 
 The Capella ROS Tools API expects ROS2 messages to be organized in a specific way:
 
+Package Definition
+==================
+* A package is a directory containing a `msg` directory.
+* The `msg` directory contains `.msg` files which contain class and enum definitions.
+
+::
+
+    folders
+    ├── package1
+    │   └── msg
+    │       ├── class1.msg
+    │       └── types
+    │           └── enum1.msg
+    └── package2
+        └── msg
+            └── class2.msg
+
+The above folder structure would translate to the following package definition (assuming class1.msg, class2.msg contain class definitions and enum1.msg contains an enum definition):
+
+::
+
+    packages
+    ├── Package: package1
+    │   ├── Class: class1
+    │   └── Enum: enum1
+    └── Package: package2
+        └── Class: class3
+
+
 Class Definition
 ================
 * A `.msg` file can contain one class definition.

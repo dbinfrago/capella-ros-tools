@@ -10,6 +10,7 @@ import click
 from capellambse import cli_helpers, decl
 
 import capella_ros_tools
+from capella_ros_tools import exporter, importer
 
 
 @click.group()
@@ -28,17 +29,21 @@ def cli():
     "--input",
     type=str,
     required=True,
+    help="Path to the ROS message package.",
 )
 @click.option(
-    "-m" "--model",
+    "-m",
+    "--model",
     type=cli_helpers.ModelCLI(),
     required=True,
+    help="Path to the Capella model.",
 )
 @click.option(
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
+    help="The layer to import the messages to.",
 )
 @click.option(
     "--no-deps",
@@ -47,56 +52,58 @@ def cli():
     help="Don’t install message dependencies.",
 )
 @click.option(
-    "-p", "--port", type=int, help="Open model viewer on given port."
+    "-o",
+    "--output",
+    type=click.Path(path_type=pathlib.Path, dir_okay=False),
+    help="Output file path for decl YAML.",
 )
 def import_msgs(
     input: str,
     model: capellambse.MelodyModel,
     layer: str,
     no_deps: bool,
-    port: int,
+    output: pathlib.Path,
 ) -> None:
     """Import ROS messages into a Capella data package."""
-
-    from capella_ros_tools.scripts import import_msgs as importer
 
     root_uuid = getattr(model, layer).uuid
     types_uuid = model.sa.data_package.uuid
 
-    yml = importer.Importer(input, no_deps)(root_uuid, types_uuid)
-    decl.apply(model, io.StringIO(yml))
-
-    if port:
-        raise NotImplementedError("Open model with model explorer.")
+    yml = importer.Importer(input, no_deps).to_yaml(root_uuid, types_uuid)
+    if output:
+        output.write_text(yml, encoding="utf-8")
+    else:
+        decl.apply(model, io.StringIO(yml))
 
 
 @cli.command("export")
-@click.option("-m", "--model", type=cli_helpers.ModelCLI, required=True)
+@click.option(
+    "-m",
+    "--model",
+    type=cli_helpers.ModelCLI,
+    required=True,
+    help="Path to the Capella model.",
+)
 @click.option(
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     required=True,
+    help="The layer to export the model objects from.",
 )
 @click.option(
     "-o",
     "--output",
-    type=click.Path(path_type=pathlib.Path),
+    type=click.Path(path_type=pathlib.Path, file_okay=False),
     default=pathlib.Path.cwd() / "export",
+    help="Output directory for the .msg files.",
 )
 def export_capella(
     model: capellambse.MelodyModel,
     layer: str,
     output: pathlib.Path,
 ):
-    """Export Capella data package to ROS messages.
-
-    CAPELLA_PATH: Path to Capella model.
-    LAYER: Layer of Capella model to export elements from.
-    MESSAGES: Path to output folder for .msg files.
-    """
-    from capella_ros_tools.scripts import export_capella as exporter
-
+    """Export Capella data package to ROS messages."""
     current_pkg = getattr(model, layer).data_package
     exporter.export(current_pkg, output)
 

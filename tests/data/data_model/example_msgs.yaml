@@ -8,10 +8,10 @@
             find:
                 name: SampleClass
             set:
-                description: "<p>SampleClass.msg</p><p>The first comment block at the top of the file</p><p>is added to the class description of SampleClass.</p>"
+                description: "SampleClass.msg The first comment block at the top of the file is added to the class description of SampleClass. "
                 properties:
                     - name: sample_field1
-                      description: "<p>This block comment is added to the</p><p>property description of sample_field1.</p><p>This block comment is also added to the</p><p>property description of sample_field1.</p>"
+                      description: "This block comment is added to the property description of sample_field1. This block comment is also added to the property description of sample_field1. "
                       type: !promise package1.uint8
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -26,7 +26,7 @@
                           _type: LiteralNumericValue
                           value: "10"
                     - name: sample_field2
-                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field2 and sample_field3.</p>"
+                      description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                       type: !promise package1.uint8
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -35,7 +35,7 @@
                           _type: LiteralNumericValue
                           value: "1"
                     - name: sample_field3
-                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field2 and sample_field3.</p>"
+                      description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                       type: !promise package1.uint8
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -44,7 +44,7 @@
                           _type: LiteralNumericValue
                           value: "*"
                     - name: sample_field4
-                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field4 and sample_field5.</p><p>Fields in SampleClass can reference</p><p>enums in other files.</p><p>The property sample_field4</p><p>is of type SampleEnum.</p><p>cf. SampleEnum</p>"
+                      description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. Fields in SampleClass can reference enums in other files. The property sample_field4 is of type SampleEnum. cf. SampleEnum "
                       type: !promise types.SampleEnum
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -53,7 +53,7 @@
                           _type: LiteralNumericValue
                           value: "1"
                     - name: sample_field5
-                      description: "<p>This block comment is added to the property</p><p>descriptions of sample_field4 and sample_field5.</p><p>This inline comment</p><p>is added to the</p><p>property description of</p><p>sample_field5.</p><p>The property sample_field5</p><p>is of type SampleEnumValue.</p><p>cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX</p>"
+                      description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. This inline comment is added to the property description of sample_field5. The property sample_field5 is of type SampleEnumValue. cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX "
                       type: !promise types.SampleEnumValue
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -66,7 +66,7 @@
             find:
                 name: SampleEnumValue
             set:
-                description: "<p>SampleEnum.msg</p><p>This block comment is added to the</p><p>enum description of SampleEnumValue.</p>"
+                description: "SampleEnum.msg This block comment is added to the enum description of SampleEnumValue. "
                 literals:
                     - name: RED
                       description: ""
@@ -74,17 +74,17 @@
                           _type: LiteralNumericValue
                           value: "0"
                     - name: BLUE
-                      description: "<p>This inline comment</p><p>is added to the</p><p>enum literal</p><p>description of BLUE.</p>"
+                      description: "This inline comment is added to the enum literal description of BLUE. "
                       value: !new_object
                           _type: LiteralNumericValue
                           value: "1"
                     - name: YELLOW
-                      description: "<p>This block comment is added to the</p><p>enum literal descriptions of YELLOW and GREEN.</p>"
+                      description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
                       value: !new_object
                           _type: LiteralNumericValue
                           value: "2"
                     - name: GREEN
-                      description: "<p>This block comment is added to the</p><p>enum literal descriptions of YELLOW and GREEN.</p>"
+                      description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
                       value: !new_object
                           _type: LiteralNumericValue
                           value: "3"
@@ -92,7 +92,7 @@
             find:
                 name: SampleEnum
             set:
-                description: "<p>This block comment is added to the</p><p>enum description of SampleEnum.</p><p>In a file, there can only be one or no enum</p><p>whose literal names do not share a common prefix.</p>"
+                description: "This block comment is added to the enum description of SampleEnum. In a file, there can only be one or no enum whose literal names do not share a common prefix. "
                 literals:
                     - name: OK
                       description: ""
@@ -122,10 +122,10 @@
             find:
                 name: SampleClassEnum
             set:
-                description: "<p>SampleClassEnum.msg</p><p>Properties in SampleClassEnum can reference</p><p>enums in the same file.</p>"
+                description: "SampleClassEnum.msg Properties in SampleClassEnum can reference enums in the same file. "
                 properties:
                     - name: status
-                      description: "<p>The property status is of type</p><p>SampleClassEnumStatus.</p>"
+                      description: "The property status is of type SampleClassEnumStatus. "
                       type: !promise types.SampleClassEnumStatus
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -134,7 +134,7 @@
                           _type: LiteralNumericValue
                           value: "1"
                     - name: color
-                      description: "<p>The property color is of type Color.</p>"
+                      description: "The property color is of type Color. "
                       type: !promise types.Color
                       min_card: !new_object
                           _type: LiteralNumericValue
@@ -156,7 +156,7 @@
             find:
                 name: SampleClassEnumStatus
             set:
-                description: "<p>This block comment is added to the</p><p>enum description of SampleClassEnumStatus.</p>"
+                description: "This block comment is added to the enum description of SampleClassEnumStatus. "
                 literals:
                     - name: OK
                       description: ""
@@ -182,7 +182,7 @@
             find:
                 name: Color
             set:
-                description: "<p>This block comment is added to the</p><p>enum description of Color.</p>"
+                description: "This block comment is added to the enum description of Color. "
                 literals:
                     - name: RED
                       description: ""

@@ -15,7 +15,7 @@ uint8 COLOR_RED    = 0
 uint8 COLOR_BLUE   = 1
 uint8 COLOR_YELLOW = 2
 
-uint8 status     # The property status is of type
+uint8 status    # The property status is of type
                 # SampleClassEnumStatus.
 uint8 color   # The property color is of type Color.
 uint8 field

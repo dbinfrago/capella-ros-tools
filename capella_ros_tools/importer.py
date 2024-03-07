@@ -4,17 +4,16 @@
 
 import logging
 
-import capellambse
 from capellambse import decl, filehandler, helpers
-from capellambse.filehandler import abc
 
 from capella_ros_tools import data_model
 
 ROS2_INTERFACES = {
     "common_interfaces": "git+https://github.com/ros2/common_interfaces",
     "rcl_interfaces": "git+https://github.com/ros2/rcl_interfaces",
-    "unique_identifier_msgs": "git+https://github.com"
-    "/ros2/unique_identifier_msgs",
+    "unique_identifier_msgs": (
+        "git+https://github.com/ros2/unique_identifier_msgs"
+    ),
 }
 
 
@@ -181,7 +180,7 @@ class Importer:
 
         return yml
 
-    def __call__(self, layer_data_uuid: str, sa_data_uuid) -> str:
+    def to_yaml(self, layer_data_uuid: str, sa_data_uuid) -> str:
         """Import ROS messages into a Capella data package."""
         instructions = self._convert_package(
             decl.UUIDReference(helpers.UUIDString(layer_data_uuid)),
