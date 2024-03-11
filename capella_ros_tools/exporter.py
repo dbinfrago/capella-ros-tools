@@ -1,15 +1,13 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Tool for exporting a Capella data package to ROS messages."""
-import logging
+
 import pathlib
 import re
 
 from capellambse.model.crosslayer import information
 
 from capella_ros_tools import data_model
-
-logger = logging.getLogger(__name__)
 
 
 def _clean_name(name: str) -> str:

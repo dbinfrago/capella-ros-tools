@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
 
-import logging
-
 from capellambse import decl, filehandler, helpers
 
 from capella_ros_tools import data_model
@@ -15,9 +13,6 @@ ROS2_INTERFACES = {
         "git+https://github.com/ros2/unique_identifier_msgs"
     ),
 }
-
-
-logger = logging.getLogger(__name__)
 
 
 class Importer:
@@ -65,10 +60,8 @@ class Importer:
 
     def _convert_package(
         self,
-        parent: decl.Promise | decl.UUIDReference,
         pkg_def: data_model.MessagePkgDef,
-    ) -> list[dict]:
-        instructions = []
+    ) -> dict:
         classes = []
         enums = []
         packages = []
@@ -82,17 +75,17 @@ class Importer:
         for new_pkg in pkg_def.packages:
             promise_id = f"{pkg_def.name}.{new_pkg.name}"
             self._promise_ids.add(promise_id)
-            packages.append(
-                {
-                    "promise_id": promise_id,
-                    "find": {
-                        "name": new_pkg.name,
-                    },
-                }
-            )
-            instructions.extend(
-                self._convert_package(decl.Promise(promise_id), new_pkg)
-            )
+            yml = {
+                "promise_id": promise_id,
+                "find": {
+                    "name": new_pkg.name,
+                },
+            }
+
+            if new_sync := self._convert_package(new_pkg):
+                yml["sync"] = new_sync
+
+            packages.append(yml)
 
         sync = {}
         if classes:
@@ -102,15 +95,7 @@ class Importer:
         if packages:
             sync["packages"] = packages
 
-        if sync:
-            instructions.append(
-                {
-                    "parent": parent,
-                    "sync": sync,
-                }
-            )
-
-        return instructions
+        return sync
 
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
@@ -182,35 +167,32 @@ class Importer:
 
     def to_yaml(self, layer_data_uuid: str, sa_data_uuid) -> str:
         """Import ROS messages into a Capella data package."""
-        instructions = self._convert_package(
-            decl.UUIDReference(helpers.UUIDString(layer_data_uuid)),
-            self.messages,
-        )
-
+        instructions = [
+            {
+                "parent": decl.UUIDReference(
+                    helpers.UUIDString(layer_data_uuid)
+                ),
+                "sync": self._convert_package(self.messages),
+            }
+        ]
         if needed_types := self._promise_id_refs - self._promise_ids:
             datatypes = [
                 self._convert_datatype(promise_id)
                 for promise_id in needed_types
             ]
-            instructions.extend(
-                [
-                    {
-                        "parent": decl.UUIDReference(
-                            helpers.UUIDString(sa_data_uuid)
-                        ),
-                        "sync": {
-                            "packages": [
-                                {
-                                    "promise_id": "root.DataTypes",
-                                    "find": {"name": "Data Types"},
-                                }
-                            ],
-                        },
+            instructions.append(
+                {
+                    "parent": decl.UUIDReference(
+                        helpers.UUIDString(sa_data_uuid)
+                    ),
+                    "sync": {
+                        "packages": [
+                            {
+                                "find": {"name": "Data Types"},
+                                "sync": {"datatypes": datatypes},
+                            }
+                        ],
                     },
-                    {
-                        "parent": decl.Promise("root.DataTypes"),
-                        "sync": {"datatypes": datatypes},
-                    },
-                ]
+                }
             )
         return decl.dump(instructions)

@@ -19,7 +19,7 @@ Import ROS2 Messages:
 
    python -m capella_ros_tools import \
    -i tests/data/data_model/example_msgs \
-   -m tests/data/empty_project_52 -l la \
+   -m tests/data/empty_project_60 -l la \
    --port=5000 --no-deps
 
 Import ROS2 Messages from Git Repository:
@@ -28,7 +28,7 @@ Import ROS2 Messages from Git Repository:
 
    python -m capella_ros_tools import \
    -i git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss \
-   -m tests/data/empty_project_52 -l la \
+   -m tests/data/ empty_project_60 -l la \
    --port=5000
 
 Export Capella data package:

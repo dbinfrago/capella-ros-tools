@@ -21,7 +21,7 @@ PATH = pathlib.Path(__file__).parent
 
 SAMPLE_PACKAGE_PATH = PATH.joinpath("data/data_model/example_msgs")
 SAMPLE_PACKAGE_YAML = PATH.joinpath("data/data_model/example_msgs.yaml")
-DUMMY_PATH = PATH.joinpath("data/empty_project_52")
+DUMMY_PATH = PATH.joinpath("data/empty_project_60")
 
 ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000000")
 SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
@@ -274,39 +274,29 @@ def test_convert_package(
         packages=[subpkg_def, subpkg2_def],
     )
 
-    expected = [
-        {
-            "parent": decl.Promise("my_package.sub_package"),
-            "sync": {
-                "enumerations": [enum_expected],
+    expected = {
+        "classes": [class_expected],
+        "packages": [
+            {
+                "promise_id": "my_package.sub_package",
+                "find": {
+                    "name": "sub_package",
+                },
+                "sync": {
+                    "enumerations": [enum_expected],
+                },
             },
-        },
-        {
-            "parent": decl.Promise("root.my_package"),
-            "sync": {
-                "classes": [class_expected],
-                "packages": [
-                    {
-                        "promise_id": "my_package.sub_package",
-                        "find": {
-                            "name": "sub_package",
-                        },
-                    },
-                    {
-                        "promise_id": "my_package.sub_package2",
-                        "find": {
-                            "name": "sub_package2",
-                        },
-                    },
-                ],
+            {
+                "promise_id": "my_package.sub_package2",
+                "find": {
+                    "name": "sub_package2",
+                },
             },
-        },
-    ]
+        ],
+    }
 
-    actual = importer._convert_package(
-        decl.Promise("root.my_package"), pkg_def
-    )
-    assert decl.dump(actual) == decl.dump(expected)
+    actual = importer._convert_package(pkg_def)
+    assert decl.dump([actual]) == decl.dump([expected])
 
 
 def test_import_msgs():

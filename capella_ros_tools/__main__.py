@@ -95,7 +95,7 @@ def import_msgs(
     "-o",
     "--output",
     type=click.Path(path_type=pathlib.Path, file_okay=False),
-    default=pathlib.Path.cwd() / "export",
+    default=pathlib.Path.cwd() / "data-package",
     help="Output directory for the .msg files.",
 )
 def export_capella(

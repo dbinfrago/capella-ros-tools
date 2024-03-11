@@ -61,7 +61,7 @@ Enum definition
 * **Indented Comment Lines:** Comments on a line of their own but indented are added to the description of the last encountered enum literal.
 * **Block Comments:** Comments on a line of their own and not indented are added to the description of the next enum definition or the next enum literal definitions until an empty line and the block comment has been used.
 
-.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/types/SampleEnum.msg
   :language: python
 
 Enum and Class Definition
@@ -72,7 +72,7 @@ Enum and Class Definition
 * Comments at the top of the file are added to the class description.
 * **Inline Comments:** Comments on the same line as a property or enum literal are directly added to the description of that element.
 * **Indented Comment Lines:** Comments on a line of their own but indented are added to the description of the last encountered property or enum literal.
-* **Block Comments:** Comments on a line of their own and not indented are added to the descriptions of the next properties or added to the descriptions of the next/current enum until an empty line and the block comment has been used.
+* **Block Comments:** Comments on a line of their own and not indented are added to the descriptions of the next properties, enum or enum literal until an empty line and the block comment has been used.
 
 .. code-block:: python
 
