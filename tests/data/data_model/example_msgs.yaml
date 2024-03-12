@@ -4,8 +4,7 @@
 - parent: !uuid "00000000-0000-0000-0000-000000000000"
   sync:
       packages:
-          - promise_id: root.package1
-            find:
+          - find:
                 name: package1
             sync:
                 classes:
@@ -18,6 +17,7 @@
                               - name: sample_field1
                                 description: "This block comment is added to the property description of sample_field1. This block comment is also added to the property description of sample_field1. "
                                 type: !promise package1.uint8
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -33,6 +33,7 @@
                               - name: sample_field2
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                                 type: !promise package1.uint8
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -42,6 +43,7 @@
                               - name: sample_field3
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                                 type: !promise package1.uint8
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "0"
@@ -51,6 +53,7 @@
                               - name: sample_field4
                                 description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. Fields in SampleClass can reference enums in other files. The property sample_field4 is of type SampleEnum. cf. SampleEnum "
                                 type: !promise types.SampleEnum
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -60,6 +63,7 @@
                               - name: sample_field5
                                 description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. This inline comment is added to the property description of sample_field5. The property sample_field5 is of type SampleEnumValue. cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX "
                                 type: !promise types.SampleEnumValue
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -119,8 +123,7 @@
                                 value: !new_object
                                     _type: LiteralNumericValue
                                     value: "3"
-          - promise_id: root.package2
-            find:
+          - find:
                 name: package2
             sync:
                 classes:
@@ -133,6 +136,7 @@
                               - name: status
                                 description: "The property status is of type SampleClassEnumStatus. "
                                 type: !promise types.SampleClassEnumStatus
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -142,6 +146,7 @@
                               - name: color
                                 description: "The property color is of type Color. "
                                 type: !promise types.Color
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
@@ -151,6 +156,7 @@
                               - name: field
                                 description: ""
                                 type: !promise package2.uint8
+                                kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"

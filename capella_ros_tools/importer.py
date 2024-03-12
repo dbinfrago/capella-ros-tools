@@ -73,10 +73,7 @@ class Importer:
                 enums.append(self._convert_enum(enum_def))
 
         for new_pkg in pkg_def.packages:
-            promise_id = f"{pkg_def.name}.{new_pkg.name}"
-            self._promise_ids.add(promise_id)
             yml = {
-                "promise_id": promise_id,
                 "find": {
                     "name": new_pkg.name,
                 },
@@ -111,6 +108,7 @@ class Importer:
             prop_yml = {
                 "name": field_def.name,
                 "type": decl.Promise(promise_ref),
+                "kind": "COMPOSITION",
                 "description": field_def.description,
                 "min_card": decl.NewObject(
                     "LiteralNumericValue", value=field_def.type.card.min

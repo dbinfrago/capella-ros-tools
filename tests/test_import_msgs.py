@@ -83,6 +83,7 @@ def class_expected():
                 {
                     "name": "field",
                     "type": decl.Promise("my_package.uint8"),
+                    "kind": "COMPOSITION",
                     "description": "Field",
                     "min_card": decl.NewObject(
                         "LiteralNumericValue", value="1"
@@ -178,6 +179,7 @@ def test_convert_class_with_range(importer):
                 {
                     "name": "field",
                     "type": decl.Promise("my_package.uint8"),
+                    "kind": "COMPOSITION",
                     "description": "Field",
                     "min_card": decl.NewObject(
                         "LiteralNumericValue", value="1"
@@ -229,6 +231,7 @@ def test_convert_class_with_ref(importer):
                 {
                     "name": "field",
                     "type": decl.Promise("std_msgs.uint8"),
+                    "kind": "COMPOSITION",
                     "description": "Field",
                     "min_card": decl.NewObject(
                         "LiteralNumericValue", value="1"
@@ -278,7 +281,6 @@ def test_convert_package(
         "classes": [class_expected],
         "packages": [
             {
-                "promise_id": "my_package.sub_package",
                 "find": {
                     "name": "sub_package",
                 },
@@ -287,7 +289,6 @@ def test_convert_package(
                 },
             },
             {
-                "promise_id": "my_package.sub_package2",
                 "find": {
                     "name": "sub_package2",
                 },
