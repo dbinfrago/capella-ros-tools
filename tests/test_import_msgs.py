@@ -11,7 +11,6 @@ from capella_ros_tools.data_model import (
     EnumDef,
     FieldDef,
     MessageDef,
-    MessagePkgDef,
     Range,
     TypeDef,
 )
@@ -32,25 +31,24 @@ def importer():
     return Importer(DUMMY_PATH.as_posix(), True)
 
 
-@pytest.fixture
-def class_def():
-    return MessageDef(
-        name="MyMessage",
-        description="An example message",
-        fields=[
-            FieldDef(
-                name="field",
-                type=TypeDef("uint8", Range("1", "1")),
-                description="Field",
-            ),
-        ],
-        enums=[],
-    )
+def test_convert_datatype(importer):
+    promise_id = "std_msgs.uint8"
+
+    expected = {
+        "promise_id": "std_msgs.uint8",
+        "find": {
+            "name": "uint8",
+            "_type": "NumericType",
+        },
+    }
+
+    actual = importer._convert_datatype(promise_id)
+
+    assert decl.dump([actual]) == decl.dump([expected])
 
 
-@pytest.fixture
-def enum_def():
-    return EnumDef(
+def test_convert_enum(importer):
+    enum_def = EnumDef(
         name="MyEnum",
         description="An example enum",
         literals=[
@@ -68,38 +66,7 @@ def enum_def():
             ),
         ],
     )
-
-
-@pytest.fixture
-def class_expected():
-    return {
-        "promise_id": "my_package.MyMessage",
-        "find": {
-            "name": "MyMessage",
-        },
-        "set": {
-            "description": "An example message",
-            "properties": [
-                {
-                    "name": "field",
-                    "type": decl.Promise("my_package.uint8"),
-                    "kind": "COMPOSITION",
-                    "description": "Field",
-                    "min_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    "max_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                },
-            ],
-        },
-    }
-
-
-@pytest.fixture
-def enum_expected():
-    return {
+    expected = {
         "promise_id": "types.MyEnum",
         "find": {
             "name": "MyEnum",
@@ -120,35 +87,53 @@ def enum_expected():
             ],
         },
     }
-
-
-def test_convert_datatype(importer):
-    promise_id = "std_msgs.uint8"
-
-    expected = {
-        "promise_id": "std_msgs.uint8",
-        "find": {
-            "name": "uint8",
-            "_type": "NumericType",
-        },
-    }
-
-    actual = importer._convert_datatype(promise_id)
-
-    assert decl.dump([actual]) == decl.dump([expected])
-
-
-def test_convert_enum(importer, enum_def, enum_expected):
     actual = importer._convert_enum(enum_def)
 
-    assert decl.dump([actual]) == decl.dump([enum_expected])
+    assert decl.dump([actual]) == decl.dump([expected])
     assert "types.MyEnum" in importer._promise_ids
 
 
-def test_convert_class(importer, class_def, class_expected):
-    actual = importer._convert_class("my_package", class_def)
+def test_convert_class(importer):
+    class_def = MessageDef(
+        name="MyMessage",
+        description="An example message",
+        fields=[
+            FieldDef(
+                name="field",
+                type=TypeDef("uint8", Range("1", "1")),
+                description="Field",
+            ),
+        ],
+        enums=[],
+    )
 
-    assert decl.dump([actual]) == decl.dump([class_expected])
+    expected = {
+        "promise_id": "my_package.MyMessage",
+        "find": {
+            "name": "MyMessage",
+        },
+        "set": {
+            "description": "An example message",
+            "properties": [
+                {
+                    "promise_id": "my_package.MyMessage.field",
+                    "name": "field",
+                    "type": decl.Promise("my_package.uint8"),
+                    "kind": "COMPOSITION",
+                    "description": "Field",
+                    "min_card": decl.NewObject(
+                        "LiteralNumericValue", value="1"
+                    ),
+                    "max_card": decl.NewObject(
+                        "LiteralNumericValue", value="1"
+                    ),
+                },
+            ],
+        },
+    }
+    actual, _ = importer._convert_class("my_package", class_def)
+
+    assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyMessage" in importer._promise_ids
     assert "my_package.uint8" in importer._promise_id_refs
 
@@ -177,6 +162,7 @@ def test_convert_class_with_range(importer):
             "description": "An example message",
             "properties": [
                 {
+                    "promise_id": "my_package.MyMessage.field",
                     "name": "field",
                     "type": decl.Promise("my_package.uint8"),
                     "kind": "COMPOSITION",
@@ -198,7 +184,7 @@ def test_convert_class_with_range(importer):
         },
     }
 
-    actual = importer._convert_class(pkg_name, msg_def)
+    actual, _ = importer._convert_class(pkg_name, msg_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyMessage" in importer._promise_ids
@@ -229,6 +215,7 @@ def test_convert_class_with_ref(importer):
             "description": "An example message",
             "properties": [
                 {
+                    "promise_id": "my_package.MyMessage.field",
                     "name": "field",
                     "type": decl.Promise("std_msgs.uint8"),
                     "kind": "COMPOSITION",
@@ -244,63 +231,14 @@ def test_convert_class_with_ref(importer):
         },
     }
 
-    actual = importer._convert_class(pkg_name, msg_def)
+    actual, _ = importer._convert_class(pkg_name, msg_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyMessage" in importer._promise_ids
     assert "std_msgs.uint8" in importer._promise_id_refs
 
 
-def test_convert_package(
-    importer, class_def, enum_def, class_expected, enum_expected
-):
-    subpkg_def = MessagePkgDef(
-        name="sub_package",
-        messages=[
-            MessageDef(
-                name="MyEnum",
-                description="An example enum",
-                fields=[],
-                enums=[enum_def],
-            ),
-        ],
-        packages=[],
-    )
-    subpkg2_def = MessagePkgDef(
-        name="sub_package2",
-        messages=[],
-        packages=[],
-    )
-    pkg_def = MessagePkgDef(
-        name="my_package",
-        messages=[class_def],
-        packages=[subpkg_def, subpkg2_def],
-    )
-
-    expected = {
-        "classes": [class_expected],
-        "packages": [
-            {
-                "find": {
-                    "name": "sub_package",
-                },
-                "sync": {
-                    "enumerations": [enum_expected],
-                },
-            },
-            {
-                "find": {
-                    "name": "sub_package2",
-                },
-            },
-        ],
-    }
-
-    actual = importer._convert_package(pkg_def)
-    assert decl.dump([actual]) == decl.dump([expected])
-
-
-def test_import_msgs():
+def test_convert_package():
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
     actual = Importer(SAMPLE_PACKAGE_PATH.as_posix(), True).to_yaml(
         ROOT, SA_ROOT

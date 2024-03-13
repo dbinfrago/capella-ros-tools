@@ -66,7 +66,7 @@ def import_msgs(
 ) -> None:
     """Import ROS messages into a Capella data package."""
 
-    root_uuid = getattr(model, layer).uuid
+    root_uuid = getattr(model, layer).data_package.uuid
     types_uuid = model.sa.data_package.uuid
 
     yml = importer.Importer(input, no_deps).to_yaml(root_uuid, types_uuid)
@@ -74,13 +74,14 @@ def import_msgs(
         output.write_text(yml, encoding="utf-8")
     else:
         decl.apply(model, io.StringIO(yml))
+        model.save()
 
 
 @cli.command("export")
 @click.option(
     "-m",
     "--model",
-    type=cli_helpers.ModelCLI,
+    type=cli_helpers.ModelCLI(),
     required=True,
     help="Path to the Capella model.",
 )

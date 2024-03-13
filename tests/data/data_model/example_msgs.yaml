@@ -14,7 +14,8 @@
                       set:
                           description: "SampleClass.msg The first comment block at the top of the file is added to the class description of SampleClass. "
                           properties:
-                              - name: sample_field1
+                              - promise_id: package1.SampleClass.sample_field1
+                                name: sample_field1
                                 description: "This block comment is added to the property description of sample_field1. This block comment is also added to the property description of sample_field1. "
                                 type: !promise package1.uint8
                                 kind: COMPOSITION
@@ -30,7 +31,8 @@
                                 max_value: !new_object
                                     _type: LiteralNumericValue
                                     value: "10"
-                              - name: sample_field2
+                              - promise_id: package1.SampleClass.sample_field2
+                                name: sample_field2
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                                 type: !promise package1.uint8
                                 kind: COMPOSITION
@@ -40,7 +42,8 @@
                                 max_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
-                              - name: sample_field3
+                              - promise_id: package1.SampleClass.sample_field3
+                                name: sample_field3
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
                                 type: !promise package1.uint8
                                 kind: COMPOSITION
@@ -50,7 +53,8 @@
                                 max_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "*"
-                              - name: sample_field4
+                              - promise_id: package1.SampleClass.sample_field4
+                                name: sample_field4
                                 description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. Fields in SampleClass can reference enums in other files. The property sample_field4 is of type SampleEnum. cf. SampleEnum "
                                 type: !promise types.SampleEnum
                                 kind: COMPOSITION
@@ -60,7 +64,8 @@
                                 max_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
-                              - name: sample_field5
+                              - promise_id: package1.SampleClass.sample_field5
+                                name: sample_field5
                                 description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. This inline comment is added to the property description of sample_field5. The property sample_field5 is of type SampleEnumValue. cf. SampleEnum, SAMPLE_ENUM_VALUE_XXX "
                                 type: !promise types.SampleEnumValue
                                 kind: COMPOSITION
@@ -123,6 +128,68 @@
                                 value: !new_object
                                     _type: LiteralNumericValue
                                     value: "3"
+            extend:
+                owned_associations:
+                    - navigable_members:
+                          - !promise package1.SampleClass.sample_field1
+                      members:
+                          - _type: Property
+                            type: !promise package1.SampleClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package1.SampleClass.sample_field2
+                      members:
+                          - _type: Property
+                            type: !promise package1.SampleClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package1.SampleClass.sample_field3
+                      members:
+                          - _type: Property
+                            type: !promise package1.SampleClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package1.SampleClass.sample_field4
+                      members:
+                          - _type: Property
+                            type: !promise package1.SampleClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package1.SampleClass.sample_field5
+                      members:
+                          - _type: Property
+                            type: !promise package1.SampleClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
           - find:
                 name: package2
             sync:
@@ -133,7 +200,8 @@
                       set:
                           description: "SampleClassEnum.msg Properties in SampleClassEnum can reference enums in the same file. "
                           properties:
-                              - name: status
+                              - promise_id: package2.SampleClassEnum.status
+                                name: status
                                 description: "The property status is of type SampleClassEnumStatus. "
                                 type: !promise types.SampleClassEnumStatus
                                 kind: COMPOSITION
@@ -143,7 +211,8 @@
                                 max_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
-                              - name: color
+                              - promise_id: package2.SampleClassEnum.color
+                                name: color
                                 description: "The property color is of type Color. "
                                 type: !promise types.Color
                                 kind: COMPOSITION
@@ -153,7 +222,8 @@
                                 max_card: !new_object
                                     _type: LiteralNumericValue
                                     value: "1"
-                              - name: field
+                              - promise_id: package2.SampleClassEnum.field
+                                name: field
                                 description: ""
                                 type: !promise package2.uint8
                                 kind: COMPOSITION
@@ -211,6 +281,44 @@
                                 value: !new_object
                                     _type: LiteralNumericValue
                                     value: "2"
+            extend:
+                owned_associations:
+                    - navigable_members:
+                          - !promise package2.SampleClassEnum.status
+                      members:
+                          - _type: Property
+                            type: !promise package2.SampleClassEnum
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package2.SampleClassEnum.color
+                      members:
+                          - _type: Property
+                            type: !promise package2.SampleClassEnum
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                    - navigable_members:
+                          - !promise package2.SampleClassEnum.field
+                      members:
+                          - _type: Property
+                            type: !promise package2.SampleClassEnum
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
 
 - parent: !uuid "00000000-0000-0000-0000-000000000001"
   sync:

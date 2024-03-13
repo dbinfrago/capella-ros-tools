@@ -41,7 +41,7 @@
                 "-i",
                 "tests/data/data_model/example_msgs",
                 "-m",
-                "tests/data/ empty_project_60",
+                "tests/data/empty_project_60",
                 "-l",
                 "la",
                 "--no-deps"
@@ -57,7 +57,7 @@
                 "-i",
                 "git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss",
                 "-m",
-                "tests/data/ empty_project_60",
+                "tests/data/empty_project_60",
                 "-l",
                 "la"
             ]

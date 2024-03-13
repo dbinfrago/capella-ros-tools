@@ -65,26 +65,27 @@ class Importer:
         classes = []
         enums = []
         packages = []
+        associations = []
 
         for msg_def in pkg_def.messages:
             if msg_def.fields:
-                classes.append(self._convert_class(pkg_def.name, msg_def))
+                cls_yml, cls_associations = self._convert_class(
+                    pkg_def.name, msg_def
+                )
+                classes.append(cls_yml)
+                associations.extend(cls_associations)
             for enum_def in msg_def.enums:
                 enums.append(self._convert_enum(enum_def))
 
         for new_pkg in pkg_def.packages:
-            yml = {
+            new_yml = {
                 "find": {
                     "name": new_pkg.name,
                 },
-            }
+            } | self._convert_package(new_pkg)
+            packages.append(new_yml)
 
-            if new_sync := self._convert_package(new_pkg):
-                yml["sync"] = new_sync
-
-            packages.append(yml)
-
-        sync = {}
+        sync: dict = {}
         if classes:
             sync["classes"] = classes
         if enums:
@@ -92,20 +93,33 @@ class Importer:
         if packages:
             sync["packages"] = packages
 
-        return sync
+        extend: dict = {}
+        if associations:
+            extend["owned_associations"] = associations
+
+        yml = {}
+        if sync:
+            yml["sync"] = sync
+        if extend:
+            yml["extend"] = extend
+
+        return yml
 
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
-    ) -> dict:
+    ) -> tuple[dict, list[dict]]:
         promise_id = f"{pkg_name}.{msg_def.name}"
         self._promise_ids.add(promise_id)
         props = []
+        associations = []
         for field_def in msg_def.fields:
+            prop_promise_id = f"{promise_id}.{field_def.name}"
             promise_ref = (
                 f"{field_def.type.package or pkg_name}.{field_def.type.name}"
             )
             self._promise_id_refs.add(promise_ref)
             prop_yml = {
+                "promise_id": prop_promise_id,
                 "name": field_def.name,
                 "type": decl.Promise(promise_ref),
                 "kind": "COMPOSITION",
@@ -124,6 +138,25 @@ class Importer:
                 prop_yml["max_value"] = decl.NewObject(
                     "LiteralNumericValue", value=field_def.type.range.max
                 )
+
+            associations.append(
+                {
+                    "navigable_members": [decl.Promise(prop_promise_id)],
+                    "members": [
+                        {
+                            "_type": "Property",
+                            "type": decl.Promise(promise_id),
+                            "kind": "ASSOCIATION",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        }
+                    ],
+                }
+            )
             props.append(prop_yml)
 
         yml = {
@@ -136,7 +169,7 @@ class Importer:
                 "properties": props,
             },
         }
-        return yml
+        return yml, associations
 
     def _convert_enum(self, enum_def: data_model.EnumDef) -> dict:
         promise_id = f"types.{enum_def.name}"
@@ -163,15 +196,11 @@ class Importer:
 
         return yml
 
-    def to_yaml(self, layer_data_uuid: str, sa_data_uuid) -> str:
+    def to_yaml(self, layer_data_uuid: str, sa_data_uuid: str) -> str:
         """Import ROS messages into a Capella data package."""
         instructions = [
-            {
-                "parent": decl.UUIDReference(
-                    helpers.UUIDString(layer_data_uuid)
-                ),
-                "sync": self._convert_package(self.messages),
-            }
+            {"parent": decl.UUIDReference(helpers.UUIDString(layer_data_uuid))}
+            | self._convert_package(self.messages),
         ]
         if needed_types := self._promise_id_refs - self._promise_ids:
             datatypes = [
