@@ -14,17 +14,13 @@ Import ROS2 Messages:
 ----------------------
 .. code-block:: bash
 
-   python -m capella_ros_tools import -i <INPUT> -m <MODEL> -l <LAYER> -p <PORT> --no-deps
+   python -m capella_ros_tools import -i <INPUT> -m <MODEL> -l <LAYER> -o <OUTPUT> --no-deps
 
-*  **-i/--input**, import ROS2 messages from <INPUT>
-*  **-m/--model**, export to Capella model <CAPELLA_MODEL_PATH>
-*  **-l/--layer**, use Capella model layer <CAPELLA_MODEL_LAYER>
-*  **-p/--port**, start Capella model explorer at <PORT> (optional)
-*  **--no-deps**, do not import ROS2 dependencies (e.g. std_msgs) (flag)
-
-.. note::
-   The `--port` option can be used to start the Capella model explorer on a specific port. The Capella model viewer can then be downloaded to be viewed at a later time using `wget` eg. `wget http://localhost:<PORT> -E -r`.
-
+*  **-i/--input**, import ROS2 messages from path <INPUT>
+*  **-m/--model**, write to Capella model at path <MODEL>
+*  **-l/--layer**, use Capella model layer <LAYER>
+*  **-o/--out**, write generated decl YAML to path <OUT> (optional)
+*  **--no-deps**, flag to disable import of ROS2 dependencies (e.g. std_msgs)
 
 Export Capella Model (experimental):
 ------------------------------------
@@ -32,6 +28,6 @@ Export Capella Model (experimental):
 
    python -m capella_ros_tools export -m <MODEL> -l <LAYER> -o <OUTPUT>
 
-* **-m/--model**, import Capella model from <MODEL>
+* **-m/--model**, export Capella model from path <MODEL>
 * **-l/--layer**, use Capella model layer <LAYER>
-* **-o/--output**, export ROS2 messages to <OUTPUT>
+* **-o/--output**, write ROS2 messages to <OUTPUT>

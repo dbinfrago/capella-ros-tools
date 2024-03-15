@@ -111,7 +111,8 @@ class Importer:
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
     ) -> tuple[dict, list[dict]]:
-        promise_id = self._register_promise_id(f"{pkg_name}.{msg_def.name}")
+        promise_id = f"{pkg_name}.{msg_def.name}"
+        self._promise_ids.add(promise_id)
         props = []
         associations = []
         for field_def in msg_def.fields:
@@ -176,7 +177,8 @@ class Importer:
     def _convert_enum(
         self, pkg_name: str, enum_def: data_model.EnumDef
     ) -> dict:
-        promise_id = self._register_promise_id(f"{pkg_name}.{enum_def.name}")
+        promise_id = f"{pkg_name}.{enum_def.name}"
+        self._promise_ids.add(promise_id)
         yml = {
             "promise_id": promise_id,
             "find": {
@@ -198,13 +200,6 @@ class Importer:
         }
 
         return yml
-
-    def _register_promise_id(self, promise_id: str) -> str:
-        while promise_id in self._promise_ids:
-            promise_id += "_"
-
-        self._promise_ids.add(promise_id)
-        return promise_id
 
     def to_yaml(self, layer_data_uuid: str, sa_data_uuid: str) -> str:
         """Import ROS messages into a Capella data package."""
