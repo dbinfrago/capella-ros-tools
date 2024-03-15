@@ -47,8 +47,8 @@ PACKAGE2_PATH = PATH.joinpath("data/data_model/example_msgs/package2")
             "test_package/test_name[10]",
         ),
         (
-            ("test_name", Range("1", "1"), Range("0", "10"), "test_package"),
-            f"test_package/test_name[{UPPER_BOUND_TOKEN}10]",
+            ("test_name", Range("0", "10"), Range("0", "10"), "test_package"),
+            f"test_package/test_name{UPPER_BOUND_TOKEN}10[10]",
         ),
         (
             ("test_name", Range("1", "1"), None, None),
@@ -80,8 +80,8 @@ def test_TypeDef_str(
             ("test_name", Range("0", "10"), None, "test_package"),
         ),
         (
-            f"test_package/test_name[{UPPER_BOUND_TOKEN}10]",
-            ("test_name", Range("1", "1"), Range("0", "10"), "test_package"),
+            f"test_package/test_name{UPPER_BOUND_TOKEN}10[10]",
+            ("test_name", Range("0", "10"), Range("0", "10"), "test_package"),
         ),
         (
             "test_name[]",
@@ -185,7 +185,9 @@ uint8 ERROR = 2"""
 #
 # This is another comment"""
         comments, _ = data_model._extract_file_level_comments(msg_string)
-        expected = "This is a comment <br>This is another comment"
+        expected = "This is a comment <br>This is another comment "
+
+        assert comments == expected
 
     @staticmethod
     def test_parse_comments_no_comments():
@@ -361,15 +363,83 @@ uint8 STALE = 3"""
         assert msg_def == expected
 
 
+def test_enum_non_ascending_values():
+    msg_string = """
+uint8 SHAPE_TYPE_UNDEFINED = 0
+
+# Comment block 1
+
+uint8 SHAPE_TYPE_BOX = 1
+uint8 SHAPE_TYPE_SPHERE = 2
+
+# Comment block 2
+
+uint8 SHAPE_TYPE_VERTICAL_STRUCTURE = 10
+uint8 SHAPE_TYPE_VERTICAL_STRUCTURE_WITH_RADIUS = 101
+uint8 SHAPE_TYPE_HORIZONTAL_STRUCTURE = 11"""
+    msg_def = MessageDef.from_string("ShapeTypes", msg_string)
+    expected = MessageDef(
+        name="ShapeTypes",
+        fields=[],
+        enums=[
+            EnumDef(
+                name="ShapeTypes",
+                literals=[
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="UNDEFINED",
+                        value="0",
+                        description="",
+                    ),
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="BOX",
+                        value="1",
+                        description="Comment block 1 ",
+                    ),
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="SPHERE",
+                        value="2",
+                        description="Comment block 1 ",
+                    ),
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="VERTICAL_STRUCTURE",
+                        value="10",
+                        description="Comment block 2 ",
+                    ),
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="VERTICAL_STRUCTURE_WITH_RADIUS",
+                        value="101",
+                        description="Comment block 2 ",
+                    ),
+                    ConstantDef(
+                        type=TypeDef("uint8", Range("1", "1")),
+                        name="HORIZONTAL_STRUCTURE",
+                        value="11",
+                        description="Comment block 2 ",
+                    ),
+                ],
+                description="",
+            )
+        ],
+        description="",
+    )
+    assert msg_def == expected
+
+
 class TestEnumName:
     @staticmethod
     def test_enum_name_commonprefix_no_underscore():
         msg_string = """
 uint8 START = 0
-uint8 STOP = 1"""
+uint8 STOP = 1
+int8 field"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         actual = msg_def.enums[0].name
-        expected = "enum_name"
+        expected = "enum_nameType"
 
         assert actual == expected
 
@@ -377,7 +447,8 @@ uint8 STOP = 1"""
     def test_enum_name_commonprefix_with_underscore():
         msg_string = """
 uint8 ST_ART = 0
-uint8 ST_OP = 1"""
+uint8 ST_OP = 1
+int8 field"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         actual = msg_def.enums[0].name
         expected = "St"
@@ -388,12 +459,114 @@ uint8 ST_OP = 1"""
     def test_enum_name_commonprefix_with_multiple_underscore():
         msg_string = """
 uint8 S_T_ART = 0
-uint8 S_T_OP = 1"""
+uint8 S_T_OP = 1
+int8 field"""
         msg_def = MessageDef.from_string("enum_name", msg_string)
         actual = msg_def.enums[0].name
         expected = "ST"
 
         assert actual == expected
+
+    @staticmethod
+    def test_enum_name_match():
+        msg_string = """
+int8 STATUS_NO_FIX =  -1
+int8 STATUS_FIX =      0
+int8 STATUS_SBAS_FIX = 1
+int8 STATUS_GBAS_FIX = 2
+
+int8 status
+
+uint16 SERVICE_GPS =     1
+uint16 SERVICE_GLONASS = 2
+uint16 SERVICE_COMPASS = 4
+uint16 SERVICE_GALILEO = 8
+
+uint16 service"""
+        msg_def = MessageDef.from_string("NavSatStatus", msg_string)
+        expected = MessageDef(
+            name="NavSatStatus",
+            fields=[
+                FieldDef(
+                    type=TypeDef(
+                        "Status", Range("1", "1"), package="NavSatStatus"
+                    ),
+                    name="status",
+                    description="",
+                ),
+                FieldDef(
+                    type=TypeDef(
+                        "Service", Range("1", "1"), package="NavSatStatus"
+                    ),
+                    name="service",
+                    description="",
+                ),
+            ],
+            enums=[
+                EnumDef(
+                    name="Status",
+                    literals=[
+                        ConstantDef(
+                            type=TypeDef("int8", Range("1", "1")),
+                            name="NO_FIX",
+                            value="-1",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("int8", Range("1", "1")),
+                            name="FIX",
+                            value="0",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("int8", Range("1", "1")),
+                            name="SBAS_FIX",
+                            value="1",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("int8", Range("1", "1")),
+                            name="GBAS_FIX",
+                            value="2",
+                            description="",
+                        ),
+                    ],
+                    description="",
+                ),
+                EnumDef(
+                    name="Service",
+                    literals=[
+                        ConstantDef(
+                            type=TypeDef("uint16", Range("1", "1")),
+                            name="GPS",
+                            value="1",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("uint16", Range("1", "1")),
+                            name="GLONASS",
+                            value="2",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("uint16", Range("1", "1")),
+                            name="COMPASS",
+                            value="4",
+                            description="",
+                        ),
+                        ConstantDef(
+                            type=TypeDef("uint16", Range("1", "1")),
+                            name="GALILEO",
+                            value="8",
+                            description="",
+                        ),
+                    ],
+                    description="",
+                ),
+            ],
+            description="",
+        )
+        assert msg_def == expected
 
 
 def test_MessageDef_class(sample_class_def):

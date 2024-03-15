@@ -6,6 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "capella_ros_tools",
+            "justMyCode": false,
             "args": [
                 "export",
                 "-m",
@@ -21,6 +22,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "capella_ros_tools",
+            "justMyCode": false,
             "args": [
                 "export",
                 "-m",
@@ -36,6 +38,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "capella_ros_tools",
+            "justMyCode": false,
             "args": [
                 "import",
                 "-i",
@@ -52,6 +55,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "capella_ros_tools",
+            "justMyCode": false,
             "args": [
                 "import",
                 "-i",

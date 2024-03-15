@@ -67,7 +67,7 @@ def test_convert_enum(importer):
         ],
     )
     expected = {
-        "promise_id": "types.MyEnum",
+        "promise_id": "MyMessage.MyEnum",
         "find": {
             "name": "MyEnum",
         },
@@ -87,10 +87,10 @@ def test_convert_enum(importer):
             ],
         },
     }
-    actual = importer._convert_enum(enum_def)
+    actual = importer._convert_enum("MyMessage", enum_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
-    assert "types.MyEnum" in importer._promise_ids
+    assert "MyMessage.MyEnum" in importer._promise_ids
 
 
 def test_convert_class(importer):

@@ -58,8 +58,8 @@ class TypeDef:
         """Return string representation of the type."""
         out = self.name
         if self.range:
-            out += f"[{UPPER_BOUND_TOKEN}{self.range.max}]"
-        elif self.card.min != self.card.max:
+            out += f"{UPPER_BOUND_TOKEN}{self.range.max}"
+        if self.card.min != self.card.max:
             out += f"[{self.card.max if self.card.max != '*' else ''}]"
         if self.package:
             out = f"{self.package}{PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR}{out}"
@@ -68,20 +68,17 @@ class TypeDef:
     @classmethod
     def from_string(cls, type_str: str) -> TypeDef:
         """Create a type definition from a string."""
+        name = type_str
+        card = Range("1", "1")
+        range = None
         if type_str.endswith("]"):
             name, _, max_card = type_str.partition("[")
             max_card = max_card.rstrip("]")
-            if max_card.startswith(UPPER_BOUND_TOKEN):
-                range = Range("0", max_card.strip(UPPER_BOUND_TOKEN))
-                card = Range("1", "1")
-            else:
-                range = None
-                max_card = max_card if max_card else "*"
-                card = Range("0", max_card)
-        else:
-            name = type_str
-            card = Range("1", "1")
-            range = None
+            max_card = max_card if max_card else "*"
+            card = Range("0", max_card)
+        if UPPER_BOUND_TOKEN in name:
+            name, _, max_value = name.rpartition(UPPER_BOUND_TOKEN)
+            range = Range("0", max_value)
 
         if len(temp := name.split(PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR)) == 2:
             package, name = temp
@@ -227,7 +224,7 @@ class MessageDef:
         last_element: t.Any = None
         block_comments = ""
         index = -1
-        last_value = float("inf")
+        values: list[str] = []
 
         for line in lines:
             line = line.rstrip()
@@ -267,12 +264,16 @@ class MessageDef:
             value = value.strip()
             if value:
                 # constant
-                if int(value) <= last_value:
+                if (
+                    value in values
+                    or not msg.enums
+                    or not isinstance(last_element, ConstantDef)
+                ):
                     # new enum
                     enum_def = EnumDef("", [], block_comments)
                     block_comments = ""
                     msg.enums.append(enum_def)
-                last_value = int(value)
+                    values = []
                 constant_def = ConstantDef(
                     TypeDef.from_string(type_string),
                     name,
@@ -280,6 +281,7 @@ class MessageDef:
                     block_comments + comment,
                 )
                 msg.enums[-1].literals.append(constant_def)
+                values.append(value)
                 last_element = constant_def
             else:
                 # field
@@ -291,49 +293,62 @@ class MessageDef:
                 msg.fields.append(field_def)
                 last_element = field_def
 
+        if not msg.fields and len(msg.enums) == 1:
+            enum = msg.enums[0]
+            _process_enums(enum)
+            enum.name = msg_name
+            return msg
+
         for field in msg.fields:
             _process_comment(field)
 
         for enum in msg.enums:
-            common_prefix = os.path.commonprefix(
-                [literal.name for literal in enum.literals]
-            )
-            if not common_prefix.endswith("_"):
-                if index := common_prefix.rfind("_"):
-                    common_prefix = common_prefix[: index + 1]
-                else:
-                    common_prefix = ""
+
+            common_prefix = _process_enums(enum)
+
             if common_prefix:
                 enum.name = _get_enum_identifier(common_prefix)
-                for literal in enum.literals:
-                    literal.name = literal.name.removeprefix(common_prefix)
             else:
                 enum.name = msg_name if not msg.fields else msg_name + "Type"
 
+            matched_field = None
             for field in msg.fields:
-                if field.name.lower() == enum.name.lower():
-                    # name match found
-                    field.type.name = enum.name
-                    field.type.package = "types"
-                    break
-            else:
-                # no name match found
-                for field in msg.fields:
-                    if field.type.name == enum.literals[0].type.name:
-                        # type match found
-                        enum.name = msg_name + field.name.capitalize()
+                if field.type.name == enum.literals[0].type.name:
+                    matched_field = matched_field or field
+                    if field.name.lower() == enum.name.lower():
                         field.type.name = enum.name
-                        field.type.package = "types"
+                        field.type.package = msg_name
                         break
+            else:
+                if matched_field:
+                    enum.name = msg_name + matched_field.name.capitalize()
+                    matched_field.type.name = enum.name
+                    matched_field.type.package = msg_name
 
         return msg
+
+
+def _process_enums(enum: EnumDef) -> str:
+    common_prefix = os.path.commonprefix(
+        [literal.name for literal in enum.literals]
+    )
+    if not common_prefix.endswith("_"):
+        if index := common_prefix.rfind("_"):
+            common_prefix = common_prefix[: index + 1]
+        else:
+            common_prefix = ""
+
+    for literal in enum.literals:
+        literal.name = literal.name.removeprefix(common_prefix)
+
+    return common_prefix
 
 
 def _process_comment(field: FieldDef) -> None:
     """Process comment of a field."""
     if match := VALID_REF_COMMENT_PATTERN.match(field.description):
-        field.type.package = "types"
         ref_msg_name, ref_const_name = match.groups()
+        field.type.package = ref_msg_name
         if ref_const_name:
             field.type.name = _get_enum_identifier(
                 ref_const_name.rstrip("_XXX")

@@ -12,6 +12,8 @@ from capellambse import cli_helpers, decl
 import capella_ros_tools
 from capella_ros_tools import exporter, importer
 
+from . import logger
+
 
 @click.group()
 @click.version_option(
@@ -69,10 +71,15 @@ def import_msgs(
     root_uuid = getattr(model, layer).data_package.uuid
     types_uuid = model.sa.data_package.uuid
 
-    yml = importer.Importer(input, no_deps).to_yaml(root_uuid, types_uuid)
+    parsed = importer.Importer(input, no_deps)
+    logger.info("Loaded %d packages", len(parsed.messages.packages))
+
+    yml = parsed.to_yaml(root_uuid, types_uuid)
     if output:
+        logger.info("Writing to file %s", output)
         output.write_text(yml, encoding="utf-8")
     else:
+        logger.info("Writing to model %s", model.name)
         decl.apply(model, io.StringIO(yml))
         model.save()
 

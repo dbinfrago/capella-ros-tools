@@ -19,7 +19,7 @@ def sample_class_def():
         name="SampleClass",
         fields=[
             FieldDef(
-                type=TypeDef("uint8", Range("1", "1"), Range("0", "10"), None),
+                type=TypeDef("uint8", Range("0", "*"), Range("0", "10"), None),
                 name="sample_field1",
                 description="This block comment is added to the "
                 "property description of sample_field1. "
@@ -39,7 +39,9 @@ def sample_class_def():
                 "descriptions of sample_field2 and sample_field3. ",
             ),
             FieldDef(
-                type=TypeDef("SampleEnum", Range("1", "1"), None, "types"),
+                type=TypeDef(
+                    "SampleEnum", Range("1", "1"), None, "SampleEnum"
+                ),
                 name="sample_field4",
                 description="This block comment is added to the property "
                 "descriptions of sample_field4 and sample_field5. "
@@ -51,7 +53,7 @@ def sample_class_def():
             ),
             FieldDef(
                 type=TypeDef(
-                    "SampleEnumValue", Range("1", "1"), None, "types"
+                    "SampleEnumValue", Range("1", "1"), None, "SampleEnum"
                 ),
                 name="sample_field5",
                 description="This block comment is added to the property "
@@ -160,14 +162,19 @@ def sample_class_enum_def():
         fields=[
             FieldDef(
                 type=TypeDef(
-                    "SampleClassEnumStatus", Range("1", "1"), None, "types"
+                    "SampleClassEnumStatus",
+                    Range("1", "1"),
+                    None,
+                    "SampleClassEnum",
                 ),
                 name="status",
                 description="The property status is of type "
                 "SampleClassEnumStatus. ",
             ),
             FieldDef(
-                type=TypeDef("Color", Range("1", "1"), None, "types"),
+                type=TypeDef(
+                    "Color", Range("1", "1"), None, "SampleClassEnum"
+                ),
                 name="color",
                 description="The property color is of type Color. ",
             ),

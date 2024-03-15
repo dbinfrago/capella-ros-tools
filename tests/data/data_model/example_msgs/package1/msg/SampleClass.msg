@@ -7,7 +7,7 @@
 
 # This block comment is also added to the
 # property description of sample_field1.
-uint8[<=10] sample_field1
+uint8<=10[] sample_field1
 
 # This block comment is added to the property
 # descriptions of sample_field2 and sample_field3.

@@ -9,6 +9,8 @@ from capellambse.model.crosslayer import information
 
 from capella_ros_tools import data_model
 
+from . import logger
+
 
 def _clean_name(name: str) -> str:
     return re.sub(r"\W", "", name)
@@ -75,3 +77,4 @@ def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
         pkg_path = current_path / _clean_name(pkg_obj.name)
         pkg_path.mkdir(parents=True, exist_ok=True)
         export(pkg_obj, pkg_path)
+        logger.info("Exported package %s to %s", pkg_obj.name, pkg_path)

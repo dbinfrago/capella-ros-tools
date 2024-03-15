@@ -6,6 +6,8 @@ from capellambse import decl, filehandler, helpers
 
 from capella_ros_tools import data_model
 
+from . import logger
+
 ROS2_INTERFACES = {
     "common_interfaces": "git+https://github.com/ros2/common_interfaces",
     "rcl_interfaces": "git+https://github.com/ros2/rcl_interfaces",
@@ -40,6 +42,7 @@ class Importer:
             pkg_name = dir.parent.name or name
             pkg_def = data_model.MessagePkgDef.from_msg_folder(pkg_name, dir)
             self.messages.packages.append(pkg_def)
+            logger.info("Loaded package %s from %s", pkg_name, dir)
 
     def _convert_datatype(self, promise_id: str) -> dict:
         name = promise_id.split(".", 1)[-1]
@@ -75,7 +78,7 @@ class Importer:
                 classes.append(cls_yml)
                 associations.extend(cls_associations)
             for enum_def in msg_def.enums:
-                enums.append(self._convert_enum(enum_def))
+                enums.append(self._convert_enum(msg_def.name, enum_def))
 
         for new_pkg in pkg_def.packages:
             new_yml = {
@@ -108,8 +111,7 @@ class Importer:
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
     ) -> tuple[dict, list[dict]]:
-        promise_id = f"{pkg_name}.{msg_def.name}"
-        self._promise_ids.add(promise_id)
+        promise_id = self._register_promise_id(f"{pkg_name}.{msg_def.name}")
         props = []
         associations = []
         for field_def in msg_def.fields:
@@ -171,9 +173,10 @@ class Importer:
         }
         return yml, associations
 
-    def _convert_enum(self, enum_def: data_model.EnumDef) -> dict:
-        promise_id = f"types.{enum_def.name}"
-        self._promise_ids.add(promise_id)
+    def _convert_enum(
+        self, pkg_name: str, enum_def: data_model.EnumDef
+    ) -> dict:
+        promise_id = self._register_promise_id(f"{pkg_name}.{enum_def.name}")
         yml = {
             "promise_id": promise_id,
             "find": {
@@ -196,8 +199,16 @@ class Importer:
 
         return yml
 
+    def _register_promise_id(self, promise_id: str) -> str:
+        while promise_id in self._promise_ids:
+            promise_id += "_"
+
+        self._promise_ids.add(promise_id)
+        return promise_id
+
     def to_yaml(self, layer_data_uuid: str, sa_data_uuid: str) -> str:
         """Import ROS messages into a Capella data package."""
+        logger.info("Generating decl YAML")
         instructions = [
             {"parent": decl.UUIDReference(helpers.UUIDString(layer_data_uuid))}
             | self._convert_package(self.messages),
