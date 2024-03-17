@@ -56,16 +56,19 @@ class TypeDef:
 
     name: str
     card: Range
-    range: Range | None = None
     package: str | None = None
 
     def __str__(self) -> str:
         """Return string representation of the type."""
         out = self.name
-        if self.range:
-            out += f"{UPPER_BOUND_TOKEN}{self.range.max}"
-        if self.card.min != self.card.max:
-            out += f"[{self.card.max if self.card.max != '*' else ''}]"
+        if self.card.min == self.card.max:
+            out += f"[{self.card.max}]" if self.card.max != "1" else ""
+        else:
+            out += (
+                f"[{UPPER_BOUND_TOKEN}{self.card.max}]"
+                if self.card.max != "*"
+                else "[]"
+            )
         if self.package:
             out = f"{self.package}{PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR}{out}"
         return out
@@ -75,22 +78,23 @@ class TypeDef:
         """Create a type definition from a string."""
         name = type_str
         card = Range("1", "1")
-        range = None
         if type_str.endswith("]"):
             name, _, max_card = type_str.partition("[")
-            max_card = max_card.rstrip("]")
-            max_card = max_card if max_card else "*"
-            card = Range("0", max_card)
-        if UPPER_BOUND_TOKEN in name:
-            name, _, max_value = name.rpartition(UPPER_BOUND_TOKEN)
-            range = Range("0", max_value)
+            max_card = max_card.removesuffix("]")
+            if max_card.startswith(UPPER_BOUND_TOKEN):
+                max_card = max_card.removeprefix(UPPER_BOUND_TOKEN)
+                card = Range("0", max_card)
+            else:
+                card = (
+                    Range(max_card, max_card) if max_card else Range("0", "*")
+                )
 
         if len(temp := name.split(PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR)) == 2:
             package, name = temp
         else:
             package = None
 
-        return cls(name, card, range, package)
+        return cls(name, card, package)
 
 
 @dataclass

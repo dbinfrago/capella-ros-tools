@@ -96,15 +96,12 @@ class Importer:
         if packages:
             sync["packages"] = packages
 
-        extend: dict = {}
-        if associations:
-            extend["owned_associations"] = associations
-
         yml = {}
         if sync:
             yml["sync"] = sync
-        if extend:
-            yml["extend"] = extend
+        if associations:
+            yml["extend"] = {}
+            yml["extend"]["owned_associations"] = associations
 
         return yml
 
@@ -134,13 +131,6 @@ class Importer:
                     "LiteralNumericValue", value=field_def.type.card.max
                 ),
             }
-            if field_def.type.range:
-                prop_yml["min_value"] = decl.NewObject(
-                    "LiteralNumericValue", value=field_def.type.range.min
-                )
-                prop_yml["max_value"] = decl.NewObject(
-                    "LiteralNumericValue", value=field_def.type.range.max
-                )
 
             associations.append(
                 {

@@ -138,59 +138,6 @@ def test_convert_class(importer):
     assert "my_package.uint8" in importer._promise_id_refs
 
 
-def test_convert_class_with_range(importer):
-    pkg_name = "my_package"
-    msg_def = MessageDef(
-        name="MyMessage",
-        description="An example message",
-        fields=[
-            FieldDef(
-                name="field",
-                type=TypeDef("uint8", Range("1", "1"), Range("0", "10")),
-                description="Field",
-            ),
-        ],
-        enums=[],
-    )
-
-    expected = {
-        "promise_id": "my_package.MyMessage",
-        "find": {
-            "name": "MyMessage",
-        },
-        "set": {
-            "description": "An example message",
-            "properties": [
-                {
-                    "promise_id": "my_package.MyMessage.field",
-                    "name": "field",
-                    "type": decl.Promise("my_package.uint8"),
-                    "kind": "COMPOSITION",
-                    "description": "Field",
-                    "min_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    "max_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    "min_value": decl.NewObject(
-                        "LiteralNumericValue", value="0"
-                    ),
-                    "max_value": decl.NewObject(
-                        "LiteralNumericValue", value="10"
-                    ),
-                },
-            ],
-        },
-    }
-
-    actual, _ = importer._convert_class(pkg_name, msg_def)
-
-    assert decl.dump([actual]) == decl.dump([expected])
-    assert "my_package.MyMessage" in importer._promise_ids
-    assert "my_package.uint8" in importer._promise_id_refs
-
-
 def test_convert_class_with_ref(importer):
     pkg_name = "my_package"
     msg_def = MessageDef(
@@ -199,7 +146,7 @@ def test_convert_class_with_ref(importer):
         fields=[
             FieldDef(
                 name="field",
-                type=TypeDef("uint8", Range("1", "1"), None, "std_msgs"),
+                type=TypeDef("uint8", Range("1", "1"), "std_msgs"),
                 description="Field",
             ),
         ],

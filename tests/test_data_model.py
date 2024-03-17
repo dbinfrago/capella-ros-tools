@@ -39,30 +39,28 @@ PACKAGE2_PATH = PATH.joinpath("data/data_model/example_msgs/package2")
     "params, expected",
     [
         (
-            ("test_name", Range("1", "1"), None, "test_package"),
+            ("test_name", Range("1", "1"), "test_package"),
             "test_package/test_name",
         ),
         (
-            ("test_name", Range("0", "10"), None, "test_package"),
+            ("test_name", Range("10", "10"), "test_package"),
             "test_package/test_name[10]",
         ),
         (
-            ("test_name", Range("0", "10"), Range("0", "10"), "test_package"),
-            f"test_package/test_name{UPPER_BOUND_TOKEN}10[10]",
+            ("test_name", Range("0", "10"), "test_package"),
+            f"test_package/test_name[{UPPER_BOUND_TOKEN}10]",
         ),
         (
-            ("test_name", Range("1", "1"), None, None),
+            ("test_name", Range("1", "1"), None),
             "test_name",
         ),
         (
-            ("test_name", Range("0", "*"), None, None),
+            ("test_name", Range("0", "*"), None),
             "test_name[]",
         ),
     ],
 )
-def test_TypeDef_str(
-    params: tuple[str, Range, Range | None, str | None], expected: str
-):
+def test_TypeDef_str(params: tuple[str, Range, str | None], expected: str):
     type_def = TypeDef(*params)
 
     assert str(type_def) == expected
@@ -73,24 +71,24 @@ def test_TypeDef_str(
     [
         (
             "test_package/test_name",
-            ("test_name", Range("1", "1"), None, "test_package"),
+            ("test_name", Range("1", "1"), "test_package"),
         ),
         (
             "test_package/test_name[10]",
-            ("test_name", Range("0", "10"), None, "test_package"),
+            ("test_name", Range("10", "10"), "test_package"),
         ),
         (
-            f"test_package/test_name{UPPER_BOUND_TOKEN}10[10]",
-            ("test_name", Range("0", "10"), Range("0", "10"), "test_package"),
+            f"test_package/test_name[{UPPER_BOUND_TOKEN}10]",
+            ("test_name", Range("0", "10"), "test_package"),
         ),
         (
             "test_name[]",
-            ("test_name", Range("0", "*"), None, None),
+            ("test_name", Range("0", "*"), None),
         ),
     ],
 )
 def test_TypeDef_from_string(
-    type_str: str, params: tuple[str, Range, Range | None, str | None]
+    type_str: str, params: tuple[str, Range, str | None]
 ):
     type_def = TypeDef.from_string(type_str)
     expected = TypeDef(*params)
@@ -502,16 +500,12 @@ uint16 service"""
             name="NavSatStatus",
             fields=[
                 FieldDef(
-                    type=TypeDef(
-                        "Status", Range("1", "1"), package="NavSatStatus"
-                    ),
+                    type=TypeDef("Status", Range("1", "1"), "NavSatStatus"),
                     name="status",
                     description="",
                 ),
                 FieldDef(
-                    type=TypeDef(
-                        "Service", Range("1", "1"), package="NavSatStatus"
-                    ),
+                    type=TypeDef("Service", Range("1", "1"), "NavSatStatus"),
                     name="service",
                     description="",
                 ),

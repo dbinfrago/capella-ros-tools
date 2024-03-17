@@ -19,7 +19,7 @@ def sample_class_def():
         name="SampleClass",
         fields=[
             FieldDef(
-                type=TypeDef("uint8", Range("0", "*"), Range("0", "10"), None),
+                type=TypeDef("uint8", Range("0", "10"), None),
                 name="sample_field1",
                 description="This block comment is added to the "
                 "property description of sample_field1. "
@@ -27,21 +27,19 @@ def sample_class_def():
                 "property description of sample_field1. ",
             ),
             FieldDef(
-                type=TypeDef("uint8", Range("1", "1"), None, None),
+                type=TypeDef("SampleClassEnum", Range("0", "*"), "package2"),
                 name="sample_field2",
                 description="This block comment is added to the property "
                 "descriptions of sample_field2 and sample_field3. ",
             ),
             FieldDef(
-                TypeDef("uint8", Range("0", "*"), None, None),
+                TypeDef("uint8", Range("3", "3"), None),
                 name="sample_field3",
                 description="This block comment is added to the property "
                 "descriptions of sample_field2 and sample_field3. ",
             ),
             FieldDef(
-                type=TypeDef(
-                    "SampleEnum", Range("1", "1"), None, "SampleEnum"
-                ),
+                type=TypeDef("SampleEnum", Range("1", "1"), "SampleEnum"),
                 name="sample_field4",
                 description="This block comment is added to the property "
                 "descriptions of sample_field4 and sample_field5. "
@@ -52,9 +50,7 @@ def sample_class_def():
                 "cf. SampleEnum ",
             ),
             FieldDef(
-                type=TypeDef(
-                    "SampleEnumValue", Range("1", "1"), None, "SampleEnum"
-                ),
+                type=TypeDef("SampleEnumValue", Range("1", "1"), "SampleEnum"),
                 name="sample_field5",
                 description="This block comment is added to the property "
                 "descriptions of sample_field4 and sample_field5. "
@@ -84,13 +80,13 @@ def sample_enum_def():
                 name="SampleEnumValue",
                 literals=[
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="RED",
                         value="0",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="BLUE",
                         value="1",
                         description="This inline comment "
@@ -99,14 +95,14 @@ def sample_enum_def():
                         "description of BLUE. ",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="YELLOW",
                         value="2",
                         description="This block comment is added to the "
                         "enum literal descriptions of YELLOW and GREEN. ",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="GREEN",
                         value="3",
                         description="This block comment is added to the "
@@ -121,25 +117,25 @@ def sample_enum_def():
                 name="SampleEnum",
                 literals=[
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="OK",
                         value="0",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="WARN",
                         value="1",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="ERROR",
                         value="2",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="STALE",
                         value="3",
                         description="",
@@ -164,7 +160,6 @@ def sample_class_enum_def():
                 type=TypeDef(
                     "SampleClassEnumStatus",
                     Range("1", "1"),
-                    None,
                     "SampleClassEnum",
                 ),
                 name="status",
@@ -172,14 +167,12 @@ def sample_class_enum_def():
                 "SampleClassEnumStatus. ",
             ),
             FieldDef(
-                type=TypeDef(
-                    "Color", Range("1", "1"), None, "SampleClassEnum"
-                ),
+                type=TypeDef("Color", Range("1", "1"), "SampleClassEnum"),
                 name="color",
                 description="The property color is of type Color. ",
             ),
             FieldDef(
-                type=TypeDef("uint8", Range("1", "1"), None, None),
+                type=TypeDef("uint8", Range("1", "1"), None),
                 name="field",
                 description="",
             ),
@@ -189,25 +182,25 @@ def sample_class_enum_def():
                 name="SampleClassEnumStatus",
                 literals=[
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="OK",
                         value="0",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="WARN",
                         value="1",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="ERROR",
                         value="2",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="STALE",
                         value="3",
                         description="",
@@ -220,19 +213,19 @@ def sample_class_enum_def():
                 name="Color",
                 literals=[
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="RED",
                         value="0",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="BLUE",
                         value="1",
                         description="",
                     ),
                     ConstantDef(
-                        type=TypeDef("uint8", Range("1", "1"), None, None),
+                        type=TypeDef("uint8", Range("1", "1"), None),
                         name="YELLOW",
                         value="2",
                         description="",

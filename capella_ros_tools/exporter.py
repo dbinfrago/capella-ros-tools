@@ -21,23 +21,24 @@ def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
     for cls_obj in current_pkg.classes:
         fields = []
         for prop_obj in cls_obj.owned_properties:
-            type_def = data_model.TypeDef(
-                name=prop_obj.type.name,
-                card=data_model.Range(
+            try:
+                card = data_model.Range(
                     prop_obj.min_card.value, prop_obj.max_card.value
-                ),
-            )
+                )
+            except AttributeError:
+                card = data_model.Range("1", "1")
+            type_def = data_model.TypeDef(name=prop_obj.type.name, card=card)
             prop_def = data_model.FieldDef(
                 type=type_def,
                 name=prop_obj.name,
-                description=prop_obj.description,
+                description=prop_obj.description or "",
             )
             fields.append(prop_def)
         cls_def = data_model.MessageDef(
             name=cls_obj.name,
             fields=fields,
             enums=[],
-            description=cls_obj.description,
+            description=cls_obj.description or "",
         )
         (current_path / f"{_clean_name(cls_obj.name)}.msg").write_text(
             str(cls_def)
@@ -61,13 +62,13 @@ def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
                 type=type_def,
                 name=lit_obj.name,
                 value=literal_value,
-                description=lit_obj.description,
+                description=lit_obj.description or "",
             )
             literals.append(lit_def)
         enum_def = data_model.EnumDef(
             name=enum_obj.name,
             literals=literals,
-            description=enum_obj.description,
+            description=enum_obj.description or "",
         )
         (current_path / f"{_clean_name(enum_obj.name)}.msg").write_text(
             str(enum_def)

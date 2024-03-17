@@ -24,24 +24,18 @@
                                     value: "0"
                                 max_card: !new_object
                                     _type: LiteralNumericValue
-                                    value: "*"
-                                min_value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "0"
-                                max_value: !new_object
-                                    _type: LiteralNumericValue
                                     value: "10"
                               - promise_id: package1.SampleClass.sample_field2
                                 name: sample_field2
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
-                                type: !promise package1.uint8
+                                type: !promise package2.SampleClassEnum
                                 kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
-                                    value: "1"
+                                    value: "0"
                                 max_card: !new_object
                                     _type: LiteralNumericValue
-                                    value: "1"
+                                    value: "*"
                               - promise_id: package1.SampleClass.sample_field3
                                 name: sample_field3
                                 description: "This block comment is added to the property descriptions of sample_field2 and sample_field3. "
@@ -49,10 +43,10 @@
                                 kind: COMPOSITION
                                 min_card: !new_object
                                     _type: LiteralNumericValue
-                                    value: "0"
+                                    value: "3"
                                 max_card: !new_object
                                     _type: LiteralNumericValue
-                                    value: "*"
+                                    value: "3"
                               - promise_id: package1.SampleClass.sample_field4
                                 name: sample_field4
                                 description: "This block comment is added to the property descriptions of sample_field4 and sample_field5. Fields in SampleClass can reference enums in other files. The property sample_field4 is of type SampleEnum. cf. SampleEnum "
