@@ -12,6 +12,11 @@ from dataclasses import dataclass
 
 from capellambse.filehandler import abc
 
+LICENSE_HEADER = (
+    pathlib.Path(__file__)
+    .parent.joinpath(".license_header.txt")
+    .read_text(encoding="utf-8")
+)
 PACKAGE_NAME_MESSAGE_TYPE_SEPARATOR = "/"
 COMMENT_DELIMITER = "#"
 CONSTANT_SEPARATOR = "="
@@ -214,6 +219,7 @@ class MessageDef:
         """Create message definition from a .msg file."""
         msg_name = file.stem
         msg_string = file.read_text()
+        msg_string = msg_string.removeprefix(LICENSE_HEADER)
         return cls.from_string(msg_name, msg_string)
 
     @classmethod

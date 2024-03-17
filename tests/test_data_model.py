@@ -158,10 +158,10 @@ uint8 ERROR = 2"""
     @staticmethod
     def test_extract_file_level_comments_no_newline():
         msg_string = """# This is a comment
-    # This is another comment
-    uint8 OK = 0
-    uint8 WARN = 1
-    uint8 ERROR = 2"""
+# This is another comment
+uint8 OK = 0
+uint8 WARN = 1
+uint8 ERROR = 2"""
         comments, _ = data_model._extract_file_level_comments(msg_string)
 
         assert comments == ""
@@ -169,11 +169,11 @@ uint8 ERROR = 2"""
     @staticmethod
     def test_extract_file_level_comments():
         msg_string = """# This is a comment
-    # This is another comment
+# This is another comment
 
-    uint8 OK = 0
-    uint8 WARN = 1
-    uint8 ERROR = 2"""
+uint8 OK = 0
+uint8 WARN = 1
+uint8 ERROR = 2"""
         comments, _ = data_model._extract_file_level_comments(msg_string)
         expected = "This is a comment This is another comment "
 
@@ -186,6 +186,20 @@ uint8 ERROR = 2"""
 # This is another comment"""
         comments, _ = data_model._extract_file_level_comments(msg_string)
         expected = "This is a comment <br>This is another comment "
+
+        assert comments == expected
+
+    @staticmethod
+    def test_extract_file_level_comments_strip_empty_lines_at_top():
+        msg_string = """
+
+# This is a comment
+
+uint8 OK = 0
+uint8 WARN = 1
+uint8 ERROR = 2"""
+        comments, _ = data_model._extract_file_level_comments(msg_string)
+        expected = "This is a comment "
 
         assert comments == expected
 

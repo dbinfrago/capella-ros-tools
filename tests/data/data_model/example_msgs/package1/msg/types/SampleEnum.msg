@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright DB Netz AG
+# SPDX-License-Identifier: Apache-2.0
+
 # SampleEnum.msg
 # This block comment is added to the
 # enum description of SampleEnumValue.

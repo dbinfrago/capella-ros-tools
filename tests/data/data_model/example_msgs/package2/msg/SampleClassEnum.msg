@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright DB Netz AG
+# SPDX-License-Identifier: Apache-2.0
+
 # SampleClassEnum.msg
 # Properties in SampleClassEnum can reference
 # enums in the same file.

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright DB Netz AG
+# SPDX-License-Identifier: Apache-2.0
+
 # SampleClass.msg
 # The first comment block at the top of the file
 # is added to the class description of SampleClass.
