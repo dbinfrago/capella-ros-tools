@@ -95,13 +95,12 @@ class Importer:
             sync["enumerations"] = enums
         if packages:
             sync["packages"] = packages
+        if associations:
+            sync["owned_associations"] = associations
 
         yml = {}
         if sync:
             yml["sync"] = sync
-        if associations:
-            yml["extend"] = {}
-            yml["extend"]["owned_associations"] = associations
 
         return yml
 
@@ -134,20 +133,23 @@ class Importer:
 
             associations.append(
                 {
-                    "navigable_members": [decl.Promise(prop_promise_id)],
-                    "members": [
-                        {
-                            "_type": "Property",
-                            "type": decl.Promise(promise_id),
-                            "kind": "ASSOCIATION",
-                            "min_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
-                            "max_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
-                        }
-                    ],
+                    "find": {"name": prop_promise_id},
+                    "set": {
+                        "navigable_members": [decl.Promise(prop_promise_id)],
+                        "members": [
+                            {
+                                "_type": "Property",
+                                "type": decl.Promise(promise_id),
+                                "kind": "ASSOCIATION",
+                                "min_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                                "max_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                            }
+                        ],
+                    },
                 }
             )
             props.append(prop_yml)
