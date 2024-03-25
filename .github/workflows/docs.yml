@@ -32,16 +32,6 @@ jobs:
               run: make -C docs apidoc
             - name: Create docs
               run: make -C docs html
-            - name: Archive the docs
-              # https://github.com/actions/upload-artifact#too-many-uploads-resulting-in-429-responses
-              run: (cd docs/build/html && zip -Xr ../html.zip .)
-            - name: Upload built docs as artifact
-              uses: actions/upload-artifact@v3
-              with:
-                  name: Documentation
-                  path: docs/build/html.zip
-                  if-no-files-found: error
-                  retention-days: 5
             - name: Deploy
               if: github.ref == 'refs/heads/master'
               uses: peaceiris/actions-gh-pages@v3
