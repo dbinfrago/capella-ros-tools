@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "click",
-  "capellambse@ git+https://github.com/DSD-DBS/py-capellambse.git@decl-sync",
+  "capellambse",
 ]
 
 [project.urls]

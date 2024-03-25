@@ -16,6 +16,8 @@ from capella_ros_tools.data_model import (
 )
 from capella_ros_tools.importer import Importer
 
+# pylint: disable=redefined-outer-name
+
 PATH = pathlib.Path(__file__).parent
 
 SAMPLE_PACKAGE_PATH = PATH.joinpath("data/data_model/example_msgs")
@@ -27,13 +29,12 @@ SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
-def importer():
+def importer() -> Importer:
     return Importer(DUMMY_PATH.as_posix(), True)
 
 
-def test_convert_datatype(importer):
+def test_convert_datatype(importer: Importer):
     promise_id = "std_msgs.uint8"
-
     expected = {
         "promise_id": "std_msgs.uint8",
         "find": {
@@ -47,7 +48,7 @@ def test_convert_datatype(importer):
     assert decl.dump([actual]) == decl.dump([expected])
 
 
-def test_convert_enum(importer):
+def test_convert_enum(importer: Importer):
     enum_def = EnumDef(
         name="MyEnum",
         description="An example enum",
@@ -87,13 +88,14 @@ def test_convert_enum(importer):
             ],
         },
     }
+
     actual = importer._convert_enum("MyMessage", enum_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "MyMessage.MyEnum" in importer._promise_ids
 
 
-def test_convert_class(importer):
+def test_convert_class(importer: Importer):
     class_def = MessageDef(
         name="MyMessage",
         description="An example message",
@@ -106,7 +108,6 @@ def test_convert_class(importer):
         ],
         enums=[],
     )
-
     expected = {
         "promise_id": "my_package.MyMessage",
         "find": {
@@ -131,6 +132,7 @@ def test_convert_class(importer):
             ],
         },
     }
+
     actual, _ = importer._convert_class("my_package", class_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
@@ -138,7 +140,7 @@ def test_convert_class(importer):
     assert "my_package.uint8" in importer._promise_id_refs
 
 
-def test_convert_class_with_ref(importer):
+def test_convert_class_with_ref(importer: Importer):
     pkg_name = "my_package"
     msg_def = MessageDef(
         name="MyMessage",
@@ -152,7 +154,6 @@ def test_convert_class_with_ref(importer):
         ],
         enums=[],
     )
-
     expected = {
         "promise_id": "my_package.MyMessage",
         "find": {
@@ -187,7 +188,9 @@ def test_convert_class_with_ref(importer):
 
 def test_convert_package():
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
+
     actual = Importer(SAMPLE_PACKAGE_PATH.as_posix(), True).to_yaml(
         ROOT, SA_ROOT
     )
+
     assert actual == expected
