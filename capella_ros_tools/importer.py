@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
 
+import collections as c
+import typing as t
+
 from capellambse import decl, filehandler, helpers
 
 from capella_ros_tools import data_model
@@ -26,8 +29,8 @@ class Importer:
         no_deps: bool,
     ):
         self.messages = data_model.MessagePkgDef("root", [], [])
-        self._promise_ids: set[str] = set()
-        self._promise_id_refs: set[str] = set()
+        self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
+        self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
 
         self._add_packages("ros_msgs", msg_path)
         if no_deps:
@@ -44,7 +47,7 @@ class Importer:
             self.messages.packages.append(pkg_def)
             logger.info("Loaded package %s from %s", pkg_name, dir)
 
-    def _convert_datatype(self, promise_id: str) -> dict:
+    def _convert_datatype(self, promise_id: str) -> dict[str, t.Any]:
         name = promise_id.split(".", 1)[-1]
         if any(t in name for t in ["char", "str"]):
             _type = "StringType"
@@ -64,7 +67,7 @@ class Importer:
     def _convert_package(
         self,
         pkg_def: data_model.MessagePkgDef,
-    ) -> dict:
+    ) -> dict[str, t.Any]:
         classes = []
         enums = []
         packages = []
@@ -88,7 +91,7 @@ class Importer:
             } | self._convert_package(new_pkg)
             packages.append(new_yml)
 
-        sync: dict = {}
+        sync = {}
         if classes:
             sync["classes"] = classes
         if enums:
@@ -106,9 +109,9 @@ class Importer:
 
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
-    ) -> tuple[dict, list[dict]]:
+    ) -> tuple[dict[str, t.Any], list[dict[str, t.Any]]]:
         promise_id = f"{pkg_name}.{msg_def.name}"
-        self._promise_ids.add(promise_id)
+        self._promise_ids[promise_id] = None
         props = []
         associations = []
         for field_def in msg_def.fields:
@@ -116,7 +119,7 @@ class Importer:
             promise_ref = (
                 f"{field_def.type.package or pkg_name}.{field_def.type.name}"
             )
-            self._promise_id_refs.add(promise_ref)
+            self._promise_id_refs[promise_ref] = None
             prop_yml = {
                 "promise_id": prop_promise_id,
                 "name": field_def.name,
@@ -168,9 +171,9 @@ class Importer:
 
     def _convert_enum(
         self, pkg_name: str, enum_def: data_model.EnumDef
-    ) -> dict:
+    ) -> dict[str, t.Any]:
         promise_id = f"{pkg_name}.{enum_def.name}"
-        self._promise_ids.add(promise_id)
+        self._promise_ids[promise_id] = None
         yml = {
             "promise_id": promise_id,
             "find": {
@@ -200,7 +203,9 @@ class Importer:
             {"parent": decl.UUIDReference(helpers.UUIDString(layer_data_uuid))}
             | self._convert_package(self.messages),
         ]
-        if needed_types := self._promise_id_refs - self._promise_ids:
+        if needed_types := [
+            p for p in self._promise_id_refs if p not in self._promise_ids
+        ]:
             datatypes = [
                 self._convert_datatype(promise_id)
                 for promise_id in needed_types
