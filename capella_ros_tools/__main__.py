@@ -4,6 +4,7 @@
 
 import io
 import pathlib
+import uuid
 
 import capellambse
 import click
@@ -44,8 +45,19 @@ def cli():
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
-    required=True,
     help="The layer to import the messages to.",
+)
+@click.option(
+    "-r",
+    "--root",
+    type=click.UUID,
+    help="The UUID of the root package to import the messages to.",
+)
+@click.option(
+    "-t",
+    "--types",
+    type=click.UUID,
+    help="The UUID of the types package to import the created data types to.",
 )
 @click.option(
     "--no-deps",
@@ -63,18 +75,29 @@ def import_msgs(
     input: str,
     model: capellambse.MelodyModel,
     layer: str,
+    root: uuid.UUID,
+    types: uuid.UUID,
     no_deps: bool,
     output: pathlib.Path,
 ) -> None:
     """Import ROS messages into a Capella data package."""
 
-    root_uuid = getattr(model, layer).data_package.uuid
-    types_uuid = model.sa.data_package.uuid
+    if root:
+        root_uuid = str(root)
+    elif layer:
+        root_uuid = getattr(model, layer).data_package.uuid
+    else:
+        raise click.UsageError("Either --root or --layer must be provided")
+
+    if types:
+        params = {"types_uuid": str(types)}
+    else:
+        params = {"types_parent_uuid": model.sa.data_package.uuid}
 
     parsed = importer.Importer(input, no_deps)
     logger.info("Loaded %d packages", len(parsed.messages.packages))
 
-    yml = parsed.to_yaml(root_uuid, types_uuid)
+    yml = parsed.to_yaml(root_uuid, **params)
     if output:
         logger.info("Writing to file %s", output)
         output.write_text(yml, encoding="utf-8")
@@ -96,8 +119,13 @@ def import_msgs(
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
-    required=True,
     help="The layer to export the model objects from.",
+)
+@click.option(
+    "-r",
+    "--root",
+    type=click.UUID,
+    help="The UUID of the root package to import the messages to.",
 )
 @click.option(
     "-o",
@@ -109,11 +137,17 @@ def import_msgs(
 def export_capella(
     model: capellambse.MelodyModel,
     layer: str,
+    root: uuid.UUID,
     output: pathlib.Path,
 ):
     """Export Capella data package to ROS messages."""
-    current_pkg = getattr(model, layer).data_package
-    exporter.export(current_pkg, output)
+    if root:
+        current_pkg = model.search("DataPkg").by_uuid(str(root))
+    elif layer:
+        current_pkg = getattr(model, layer).data_package
+    else:
+        raise click.UsageError("Either --root or --layer must be provided")
+    exporter.export(current_pkg, output)  # type: ignore
 
 
 if __name__ == "__main__":
