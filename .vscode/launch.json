@@ -10,7 +10,7 @@
             "args": [
                 "export",
                 "-m",
-                "tests/data/melody_model_60",
+                "local_data/melody_model_60",
                 "-l",
                 "la",
                 "-o",

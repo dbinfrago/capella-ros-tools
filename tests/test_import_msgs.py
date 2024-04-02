@@ -115,19 +115,25 @@ def test_convert_class(importer: Importer):
         },
         "set": {
             "description": "An example message",
+        },
+        "sync": {
             "properties": [
                 {
                     "promise_id": "my_package.MyMessage.field",
-                    "name": "field",
-                    "type": decl.Promise("my_package.uint8"),
-                    "kind": "COMPOSITION",
-                    "description": "Field",
-                    "min_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    "max_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
+                    "find": {
+                        "name": "field",
+                    },
+                    "set": {
+                        "type": decl.Promise("my_package.uint8"),
+                        "kind": "COMPOSITION",
+                        "description": "Field",
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                    },
                 },
             ],
         },
@@ -161,19 +167,25 @@ def test_convert_class_with_ref(importer: Importer):
         },
         "set": {
             "description": "An example message",
+        },
+        "sync": {
             "properties": [
                 {
                     "promise_id": "my_package.MyMessage.field",
-                    "name": "field",
-                    "type": decl.Promise("std_msgs.uint8"),
-                    "kind": "COMPOSITION",
-                    "description": "Field",
-                    "min_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    "max_card": decl.NewObject(
-                        "LiteralNumericValue", value="1"
-                    ),
+                    "find": {
+                        "name": "field",
+                    },
+                    "set": {
+                        "type": decl.Promise("std_msgs.uint8"),
+                        "kind": "COMPOSITION",
+                        "description": "Field",
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                    },
                 },
             ],
         },

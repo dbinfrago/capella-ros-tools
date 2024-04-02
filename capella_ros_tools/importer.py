@@ -122,17 +122,22 @@ class Importer:
             self._promise_id_refs[promise_ref] = None
             prop_yml = {
                 "promise_id": prop_promise_id,
-                "name": field_def.name,
-                "type": decl.Promise(promise_ref),
-                "kind": "COMPOSITION",
-                "description": field_def.description,
-                "min_card": decl.NewObject(
-                    "LiteralNumericValue", value=field_def.type.card.min
-                ),
-                "max_card": decl.NewObject(
-                    "LiteralNumericValue", value=field_def.type.card.max
-                ),
+                "find": {
+                    "name": field_def.name,
+                },
+                "set": {
+                    "type": decl.Promise(promise_ref),
+                    "kind": "COMPOSITION",
+                    "description": field_def.description,
+                    "min_card": decl.NewObject(
+                        "LiteralNumericValue", value=field_def.type.card.min
+                    ),
+                    "max_card": decl.NewObject(
+                        "LiteralNumericValue", value=field_def.type.card.max
+                    ),
+                },
             }
+            props.append(prop_yml)
 
             associations.append(
                 {
@@ -155,7 +160,6 @@ class Importer:
                     },
                 }
             )
-            props.append(prop_yml)
 
         yml = {
             "promise_id": promise_id,
@@ -164,6 +168,8 @@ class Importer:
             },
             "set": {
                 "description": msg_def.description,
+            },
+            "sync": {
                 "properties": props,
             },
         }
