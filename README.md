@@ -3,7 +3,7 @@
  ~ SPDX-License-Identifier: Apache-2.0
  -->
 
-# capella-ros-tools
+# Capella ROS Tools
 
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
@@ -13,6 +13,29 @@ Tools for importing ROS .msg files into Capella data package and vice versa.
 # Documentation
 
 Read the [full documentation on Github pages](https://dsd-dbs.github.io/capella-ros-tools).
+
+# Examples
+
+Import ROS .msg files to Capella model layer's root data package:
+
+```sh
+   python -m capella_ros_tools \
+   import \
+   -i tests/data/data_model/example_msgs \
+   -m tests/data/empty_project_60 \
+   -l la \
+   --no-deps
+```
+
+Export Capella model layer's root data package as ROS .msg files:
+
+```sh
+   python -m capella_ros_tools \
+   export \
+   -m tests/data/melody_model_60 \
+   -l la \
+   -o tests/data/melody_msgs
+```
 
 # Installation
 

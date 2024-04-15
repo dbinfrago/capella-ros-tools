@@ -147,6 +147,8 @@ def export_capella(
         current_pkg = getattr(model, layer).data_package
     else:
         raise click.UsageError("Either --root or --layer must be provided")
+
+    output.mkdir(exist_ok=True, parents=True)
     exporter.export(current_pkg, output)  # type: ignore
 
 
