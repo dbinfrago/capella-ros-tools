@@ -86,129 +86,162 @@
                           name: SampleEnumValue
                       set:
                           description: "SampleEnum.msg This block comment is added to the enum description of SampleEnumValue. "
+                      sync:
                           literals:
-                              - name: RED
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "0"
-                              - name: BLUE
-                                description: "This inline comment is added to the enum literal description of BLUE. "
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                              - name: YELLOW
-                                description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "2"
-                              - name: GREEN
-                                description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "3"
+                              - find:
+                                    name: RED
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "0"
+                              - find:
+                                    name: BLUE
+                                set:
+                                    description: "This inline comment is added to the enum literal description of BLUE. "
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                              - find:
+                                    name: YELLOW
+                                set:
+                                    description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "2"
+                              - find:
+                                    name: GREEN
+                                set:
+                                    description: "This block comment is added to the enum literal descriptions of YELLOW and GREEN. "
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "3"
                     - promise_id: SampleEnum.SampleEnum
                       find:
                           name: SampleEnum
                       set:
                           description: "This block comment is added to the enum description of SampleEnum. In a file, there can only be one or no enum whose literal names do not share a common prefix. "
+                      sync:
                           literals:
-                              - name: OK
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "0"
-                              - name: WARN
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                              - name: ERROR
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "2"
-                              - name: STALE
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "3"
+                              - find:
+                                    name: OK
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "0"
+                              - find:
+                                    name: WARN
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                              - find:
+                                    name: ERROR
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "2"
+                              - find:
+                                    name: STALE
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "3"
                 owned_associations:
                     - find:
                           name: package1.SampleClass.sample_field1
                       set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field1
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package1.SampleClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package1.SampleClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package1.SampleClass.sample_field2
                       set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field2
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package1.SampleClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package1.SampleClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package1.SampleClass.sample_field3
                       set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field3
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package1.SampleClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package1.SampleClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package1.SampleClass.sample_field4
                       set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field4
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package1.SampleClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package1.SampleClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package1.SampleClass.sample_field5
                       set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field5
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package1.SampleClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package1.SampleClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
           - find:
                 name: package2
             sync:
@@ -265,94 +298,119 @@
                           name: SampleClassEnumStatus
                       set:
                           description: "This block comment is added to the enum description of SampleClassEnumStatus. "
+                      sync:
                           literals:
-                              - name: OK
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "0"
-                              - name: WARN
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                              - name: ERROR
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "2"
-                              - name: STALE
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "3"
+                              - find:
+                                    name: OK
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "0"
+                              - find:
+                                    name: WARN
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                              - find:
+                                    name: ERROR
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "2"
+                              - find:
+                                    name: STALE
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "3"
                     - promise_id: SampleClassEnum.Color
                       find:
                           name: Color
                       set:
                           description: "This block comment is added to the enum description of Color. "
+                      sync:
                           literals:
-                              - name: RED
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "0"
-                              - name: BLUE
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                              - name: YELLOW
-                                description: ""
-                                value: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "2"
+                              - find:
+                                    name: RED
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "0"
+                              - find:
+                                    name: BLUE
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                              - find:
+                                    name: YELLOW
+                                set:
+                                    description: ""
+                                    value: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "2"
                 owned_associations:
                     - find:
                           name: package2.SampleClassEnum.status
                       set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.status
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package2.SampleClassEnum
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package2.SampleClassEnum
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package2.SampleClassEnum.color
                       set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.color
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package2.SampleClassEnum
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package2.SampleClassEnum
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                     - find:
                           name: package2.SampleClassEnum.field
                       set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.field
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package2.SampleClassEnum
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package2.SampleClassEnum
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
 
 - parent: !uuid "00000000-0000-0000-0000-000000000001"
   sync:

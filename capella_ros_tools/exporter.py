@@ -18,6 +18,7 @@ def _clean_name(name: str) -> str:
 
 def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
     """Export a Capella data package to ROS messages."""
+    current_path.mkdir(parents=True, exist_ok=True)
     for cls_obj in current_pkg.classes:
         fields = []
         for prop_obj in cls_obj.owned_properties:
@@ -76,6 +77,5 @@ def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
 
     for pkg_obj in current_pkg.packages:
         pkg_path = current_path / _clean_name(pkg_obj.name)
-        pkg_path.mkdir(parents=True, exist_ok=True)
         export(pkg_obj, pkg_path)
         logger.info("Exported package %s to %s", pkg_obj.name, pkg_path)

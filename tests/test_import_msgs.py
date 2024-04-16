@@ -74,16 +74,30 @@ def test_convert_enum(importer: Importer):
         },
         "set": {
             "description": "An example enum",
+        },
+        "sync": {
             "literals": [
                 {
-                    "name": "LITERAL_A",
-                    "description": "Literal A",
-                    "value": decl.NewObject("LiteralNumericValue", value="0"),
+                    "find": {
+                        "name": "LITERAL_A",
+                    },
+                    "set": {
+                        "description": "Literal A",
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value="0"
+                        ),
+                    },
                 },
                 {
-                    "name": "LITERAL_B",
-                    "description": "Literal B",
-                    "value": decl.NewObject("LiteralNumericValue", value="1"),
+                    "find": {
+                        "name": "LITERAL_B",
+                    },
+                    "set": {
+                        "description": "Literal B",
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                    },
                 },
             ],
         },

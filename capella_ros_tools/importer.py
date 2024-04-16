@@ -141,20 +141,25 @@ class Importer:
 
             associations.append(
                 {
-                    "find": {"name": prop_promise_id},
-                    "set": {
+                    "find": {
                         "navigable_members": [decl.Promise(prop_promise_id)],
+                    },
+                    "sync": {
                         "members": [
                             {
-                                "_type": "Property",
-                                "type": decl.Promise(promise_id),
-                                "kind": "ASSOCIATION",
-                                "min_card": decl.NewObject(
-                                    "LiteralNumericValue", value="1"
-                                ),
-                                "max_card": decl.NewObject(
-                                    "LiteralNumericValue", value="1"
-                                ),
+                                "find": {
+                                    "type": decl.Promise(promise_id),
+                                },
+                                "set": {
+                                    "_type": "Property",
+                                    "kind": "ASSOCIATION",
+                                    "min_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                    "max_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                },
                             }
                         ],
                     },
@@ -180,6 +185,20 @@ class Importer:
     ) -> dict[str, t.Any]:
         promise_id = f"{pkg_name}.{enum_def.name}"
         self._promise_ids[promise_id] = None
+        literals = []
+        for literal in enum_def.literals:
+            literal_yml = {
+                "find": {
+                    "name": literal.name,
+                },
+                "set": {
+                    "description": literal.description,
+                    "value": decl.NewObject(
+                        "LiteralNumericValue", value=literal.value
+                    ),
+                },
+            }
+            literals.append(literal_yml)
         yml = {
             "promise_id": promise_id,
             "find": {
@@ -187,16 +206,9 @@ class Importer:
             },
             "set": {
                 "description": enum_def.description,
-                "literals": [
-                    {
-                        "name": literal.name,
-                        "description": literal.description,
-                        "value": decl.NewObject(
-                            "LiteralNumericValue", value=literal.value
-                        ),
-                    }
-                    for literal in enum_def.literals
-                ],
+            },
+            "sync": {
+                "literals": literals,
             },
         }
 
