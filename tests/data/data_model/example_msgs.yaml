@@ -153,8 +153,6 @@
                                         value: "3"
                 owned_associations:
                     - find:
-                          name: package1.SampleClass.sample_field1
-                      set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field1
                       sync:
@@ -171,8 +169,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package1.SampleClass.sample_field2
-                      set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field2
                       sync:
@@ -189,8 +185,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package1.SampleClass.sample_field3
-                      set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field3
                       sync:
@@ -207,8 +201,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package1.SampleClass.sample_field4
-                      set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field4
                       sync:
@@ -225,8 +217,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package1.SampleClass.sample_field5
-                      set:
                           navigable_members:
                               - !promise package1.SampleClass.sample_field5
                       sync:
@@ -358,8 +348,6 @@
                                         value: "2"
                 owned_associations:
                     - find:
-                          name: package2.SampleClassEnum.status
-                      set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.status
                       sync:
@@ -376,8 +364,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package2.SampleClassEnum.color
-                      set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.color
                       sync:
@@ -394,8 +380,6 @@
                                         _type: LiteralNumericValue
                                         value: "1"
                     - find:
-                          name: package2.SampleClassEnum.field
-                      set:
                           navigable_members:
                               - !promise package2.SampleClassEnum.field
                       sync:
