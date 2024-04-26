@@ -28,7 +28,7 @@
                 "-m",
                 "git+https://github.com/DSD-DBS/coffee-machine",
                 "-l",
-                "oa",
+                "sa",
                 "-o",
                 "tests/data/coffee_msgs"
             ]

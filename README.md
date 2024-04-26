@@ -16,25 +16,45 @@ Read the [full documentation on Github pages](https://dsd-dbs.github.io/capella-
 
 # Examples
 
-Import ROS .msg files to Capella model layer's root data package:
+Import local ROS .msg files to Capella model layer's root data package:
 
 ```sh
-   python -m capella_ros_tools \
-   import \
-   -i tests/data/data_model/example_msgs \
-   -m tests/data/empty_project_60 \
-   -l la \
-   --no-deps
+python -m capella_ros_tools \
+import \
+-i tests/data/data_model/example_msgs \
+-m tests/data/empty_project_60 \
+-l la \
+--no-deps
 ```
 
-Export Capella model layer's root data package as ROS .msg files:
+Import remote ROS .msg files to Capella model layer's root data package:
 
 ```sh
-   python -m capella_ros_tools \
-   export \
-   -m tests/data/melody_model_60 \
-   -l la \
-   -o tests/data/melody_msgs
+python -m capella_ros_tools \
+import \
+-i git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss \
+-m tests/data/empty_project_60 \
+-l la
+```
+
+Export local Capella model layer's root data package as ROS .msg files:
+
+```sh
+python -m capella_ros_tools \
+export \
+-m tests/data/melody_model_60 \
+-l la \
+-o tests/data/melody_msgs
+```
+
+Export remote Capella model layer's root data package as ROS .msg files:
+
+```sh
+python -m capella_ros_tools \
+export \
+-m git+https://github.com/DSD-DBS/coffee-machine \
+-l sa \
+-o tests/data/coffee_msgs
 ```
 
 # Installation

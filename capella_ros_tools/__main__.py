@@ -125,7 +125,7 @@ def import_msgs(
     "-r",
     "--root",
     type=click.UUID,
-    help="The UUID of the root package to import the messages to.",
+    help="The UUID of the root package to import the messages from.",
 )
 @click.option(
     "-o",

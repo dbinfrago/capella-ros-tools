@@ -31,7 +31,7 @@ Import ROS2 Messages from Git Repository:
    python -m capella_ros_tools \
    import \
    -i git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss \
-   -m tests/data/ empty_project_60 \
+   -m tests/data/empty_project_60 \
    -l la
 
 Export Capella data package:
@@ -40,7 +40,8 @@ Export Capella data package:
 
    python -m capella_ros_tools \
    export \
-   -m tests/data/melody_model_60 -l la \
+   -m tests/data/melody_model_60 \
+   -l la \
    -o tests/data/melody_msgs
 
 Export Capella data package from Git Repository:

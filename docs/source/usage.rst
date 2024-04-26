@@ -16,11 +16,13 @@ Import ROS2 Messages:
 
    python -m capella_ros_tools import -i <INPUT> -m <MODEL> -l <LAYER> -o <OUTPUT> --no-deps
 
-*  **-i/--input**, import ROS2 messages from path <INPUT>
-*  **-m/--model**, write to Capella model at path <MODEL>
-*  **-l/--layer**, use Capella model layer <LAYER>
-*  **-o/--out**, write generated decl YAML to path <OUT> (optional)
+*  **-i/--input**, path to folder with .msg files.
+*  **-m/--model**, path to the Capella model.
+*  **-l/--layer**, layer to import the messages to.
+*  **-r/--root**, UUID of the root package to import the messages to.
+*  **-t/--type**, UUID of the types package to import the generated data types to.
 *  **--no-deps**, flag to disable import of ROS2 dependencies (e.g. std_msgs)
+*  **-o/--output**, path to output decl YAML.
 
 Export Capella Model (experimental):
 ------------------------------------
@@ -28,6 +30,7 @@ Export Capella Model (experimental):
 
    python -m capella_ros_tools export -m <MODEL> -l <LAYER> -o <OUTPUT>
 
-* **-m/--model**, export Capella model from path <MODEL>
-* **-l/--layer**, use Capella model layer <LAYER>
-* **-o/--output**, write ROS2 messages to <OUTPUT>
+* **-m/--model**, path to the Capella model.
+* **-l/--layer**, layer to export the messages from.
+* **-r/--root**, UUID of the root package to export the messages from.
+* **-o/--output**, path to output folder.
