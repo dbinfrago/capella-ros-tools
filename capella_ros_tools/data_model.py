@@ -159,8 +159,7 @@ class EnumDef:
 def _process_block_comment(line: str) -> str:
     if comment := _clean_comment(line):
         return f"{comment} "
-    else:
-        return "<br>"
+    return "<br>"
 
 
 def _extract_file_level_comments(
