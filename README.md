@@ -9,7 +9,9 @@
 ![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
 
 Tools for importing ROS .msg files into Capella `DataPackage`, `DataType` and
-`Class` objects, and exporting those objects into .msg files.
+`Class` objects, or exporting those objects to .msg files.
+
+![Showcase](https://i.imgur.com/hs4EUnL.gif)
 
 # Documentation
 

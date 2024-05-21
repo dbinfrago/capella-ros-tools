@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
 
-import collections as c
 import typing as t
 
 from capellambse import decl, filehandler, helpers
@@ -29,8 +28,8 @@ class Importer:
         no_deps: bool,
     ):
         self.messages = data_model.MessagePkgDef("root", [], [])
-        self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
-        self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
+        self._promise_ids: dict[str, None] = {}
+        self._promise_id_refs: dict[str, None] = {}
 
         self._add_packages("ros_msgs", msg_path)
         if no_deps:
