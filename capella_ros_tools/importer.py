@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
 
+import os
 import typing as t
 
 from capellambse import decl, filehandler, helpers
@@ -40,7 +41,7 @@ class Importer:
 
     def _add_packages(self, name: str, path: str) -> None:
         root = filehandler.get_filehandler(path).rootdir
-        for dir in root.rglob("msg"):
+        for dir in sorted(root.rglob("msg"), key=os.fspath):
             pkg_name = dir.parent.name or name
             pkg_def = data_model.MessagePkgDef.from_msg_folder(pkg_name, dir)
             self.messages.packages.append(pkg_def)
