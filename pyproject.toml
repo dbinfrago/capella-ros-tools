@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 
 [build-system]
@@ -8,13 +8,13 @@ build-backend = "setuptools.build_meta"
 [project]
 dynamic = ["version"]
 
-name = "rosidl2capella"
-description = "Tool for parsing ROS IDL (.msg files) and converting them to Capella model."
+name = "capella-ros-tools"
+description = "Tools for importing ROS .msg files into Capella data package and vice versa."
 readme = "README.md"
-requires-python = ">=3, <3.11"
+requires-python = ">=3.10, <3.13"
 license = { text = "Apache-2.0" }
 authors = [
-  { name = "DB Netz AG" },
+  { name = "DB InfraGO AG" },
 ]
 keywords = []
 classifiers = [
@@ -24,21 +24,29 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
   "click",
+  "capellambse",
 ]
 
 [project.urls]
-Homepage = "https://github.com/DSD-DBS/rosidl2capella"
-Documentation = "https://dsd-dbs.github.io/rosidl2capella"
+Homepage = "https://github.com/DSD-DBS/capella-ros-tools"
+Documentation = "https://dsd-dbs.github.io/capella-ros-tools"
 
 [project.optional-dependencies]
 docs = [
   "furo",
-  "sphinx",
+  "ipython",
+  "nbsphinx",
   "sphinx-copybutton",
-  "tomli; python_version<'3.11'",
+  "tomli",
+  "jinja2",
+  "pyyaml",
+  "sphinx",
+  "sphinx-argparse-cli",
 ]
 
 test = [
@@ -53,7 +61,7 @@ target-version = ["py310"]
 [tool.coverage.run]
 branch = true
 command_line = "-m pytest"
-source = ["rosidl2capella"]
+source = ["capella_ros_tools"]
 
 [tool.coverage.report]
 exclude_also = [
@@ -194,7 +202,8 @@ zip-safe = false
 "*" = ["py.typed"]
 
 [tool.setuptools.packages.find]
-include = ["rosidl2capella", "rosidl2capella.*"]
+include = ["capella_ros_tools", "capella_ros_tools.*"]
 
 [tool.setuptools_scm]
 # This section must exist for setuptools_scm to work
+local_scheme = "no-local-version"

@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: CC0-1.0
 
 name: Lint
@@ -39,4 +39,4 @@ jobs:
           python -m pip install pylint
       - name: Run pylint
         run: |-
-          pylint -dfixme rosidl2capella || exit $(($? & ~24))
+          pylint -dfixme capella_ros_tools || exit $(($? & ~24))

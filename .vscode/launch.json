@@ -1,0 +1,70 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Export local",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "capella_ros_tools",
+            "justMyCode": false,
+            "args": [
+                "export",
+                "-m",
+                "tests/data/melody_model_60",
+                "-l",
+                "la",
+                "-o",
+                "tests/data/melody_msgs"
+            ]
+        },
+        {
+            "name": "Export git",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "capella_ros_tools",
+            "justMyCode": false,
+            "args": [
+                "export",
+                "-m",
+                "git+https://github.com/DSD-DBS/coffee-machine",
+                "-l",
+                "sa",
+                "-o",
+                "tests/data/coffee_msgs"
+            ]
+        },
+        {
+            "name": "Import local",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "capella_ros_tools",
+            "justMyCode": false,
+            "args": [
+                "import",
+                "-i",
+                "tests/data/data_model/example_msgs",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "la",
+                "--no-deps"
+            ]
+        },
+        {
+            "name": "Import git",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "capella_ros_tools",
+            "justMyCode": false,
+            "args": [
+                "import",
+                "-i",
+                "git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "la"
+            ]
+        }
+    ]
+}

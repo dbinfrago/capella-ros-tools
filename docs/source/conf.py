@@ -1,4 +1,4 @@
-# Copyright DB Netz AG and contributors
+# Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Configuration file for Sphinx."""
 
@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-import rosidl2capella
+import capella_ros_tools
 
 # -- Project information -----------------------------------------------------
 
@@ -25,7 +25,7 @@ else:
 with open("../../pyproject.toml", "rb") as f:
     _metadata = tomllib.load(f)["project"]
 
-project = "rosidl2capella"
+project = "capella-ros-tools"
 author = _metadata["authors"][0]["name"]
 copyright = f"{author} and the {_metadata['name']} contributors"
 
@@ -36,6 +36,7 @@ copyright = f"{author} and the {_metadata['name']} contributors"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
@@ -58,7 +59,7 @@ templates_path = ["_templates"]
 # built documents.
 
 # The full version, including alpha/beta/rc tags.
-version = rosidl2capella.__version__
+version = capella_ros_tools.__version__
 rst_epilog = f"""
 .. |Project| replace:: {project}
 .. |Version| replace:: {version}
@@ -95,7 +96,7 @@ html_theme_options = {
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/DSD-DBS/rosidl2capella",
+            "url": "https://github.com/DSD-DBS/capella-ros-tools",
             "html": '<img src="/_static/img/github-logo.svg"/>',
             "class": "",
         },

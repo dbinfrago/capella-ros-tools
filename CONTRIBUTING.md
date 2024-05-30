@@ -1,5 +1,5 @@
 <!--
- ~ Copyright DB Netz AG and contributors
+ ~ Copyright DB InfraGO AG and contributors
  ~ SPDX-License-Identifier: Apache-2.0
  -->
 
@@ -16,8 +16,8 @@ reduce the burden on our maintainers, please make sure that your code follows
 our style guidelines outlined below.
 
 <!-- prettier-ignore -->
-[open an issue]: https://github.com/DSD-DBS/rosidl2capella/issues
-[open a pull request]: https://github.com/DSD-DBS/rosidl2capella/pulls
+[open an issue]: https://github.com/DSD-DBS/capella-ros-tools/issues
+[open a pull request]: https://github.com/DSD-DBS/capella-ros-tools/pulls
 
 ## Developing
 
