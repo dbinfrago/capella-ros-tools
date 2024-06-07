@@ -63,13 +63,13 @@ def cli():
     "--no-deps",
     "no_deps",
     is_flag=True,
-    help="Don’t install message dependencies.",
+    help="Don't install message dependencies.",
 )
 @click.option(
     "-o",
     "--output",
     type=click.Path(path_type=pathlib.Path, dir_okay=False),
-    help="Output file path for decl YAML.",
+    help="Produce a declarative YAML instead of modifying the source model.",
 )
 def import_msgs(
     input: str,
@@ -81,7 +81,6 @@ def import_msgs(
     output: pathlib.Path,
 ) -> None:
     """Import ROS messages into a Capella data package."""
-
     if root:
         root_uuid = str(root)
     elif layer:
@@ -99,7 +98,7 @@ def import_msgs(
 
     yml = parsed.to_yaml(root_uuid, **params)
     if output:
-        logger.info("Writing to file %s", output)
+        logger.info("Writing declarative YAML to file %s", output)
         output.write_text(yml, encoding="utf-8")
     else:
         logger.info("Writing to model %s", model.name)
