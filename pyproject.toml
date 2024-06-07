@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "click",
-  "capellambse",
+  "capellambse>=0.5.64",
 ]
 
 [project.urls]

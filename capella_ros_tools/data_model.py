@@ -395,7 +395,11 @@ class MessagePkgDef:
     ) -> MessagePkgDef:
         """Create a message package definition from a folder."""
         out = cls(pkg_name, [], [])
-        for msg_file in sorted(msg_path.rglob("*.msg"), key=os.fspath):
+        files = t.cast(
+            t.Iterable[abc.AbstractFilePath | pathlib.Path],
+            msg_path.rglob("*.msg"),
+        )
+        for msg_file in sorted(files, key=os.fspath):
             msg_def = MessageDef.from_file(msg_file)
             out.messages.append(msg_def)
         return out
