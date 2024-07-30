@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright DB Netz AG
+# SPDX-FileCopyrightText: Copyright DB InfraGO AG
 # SPDX-License-Identifier: Apache-2.0
 
 # SampleEnum.msg

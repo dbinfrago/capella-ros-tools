@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Copyright DB InfraGO AG
 # SPDX-License-Identifier: Apache-2.0
+# Additional Stuff to be removed
 
 # SampleClassEnum.msg
 # Properties in SampleClassEnum can reference

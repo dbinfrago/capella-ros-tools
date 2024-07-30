@@ -11,9 +11,7 @@ import click
 from capellambse import cli_helpers, decl
 
 import capella_ros_tools
-from capella_ros_tools import exporter, importer
-
-from . import logger
+from capella_ros_tools import exporter, importer, logger
 
 
 @click.group()
@@ -71,6 +69,11 @@ def cli():
     type=click.Path(path_type=pathlib.Path, dir_okay=False),
     help="Produce a declarative YAML instead of modifying the source model.",
 )
+@click.option(
+    "--license-header",
+    type=click.Path(path_type=pathlib.Path, dir_okay=False),
+    help="Ignore the license header from the given file when importing msgs.",
+)
 def import_msgs(
     input: str,
     model: capellambse.MelodyModel,
@@ -79,6 +82,7 @@ def import_msgs(
     types: uuid.UUID,
     no_deps: bool,
     output: pathlib.Path,
+    license_header: pathlib.Path | None,
 ) -> None:
     """Import ROS messages into a Capella data package."""
     if root:
@@ -93,7 +97,7 @@ def import_msgs(
     else:
         params = {"types_parent_uuid": model.sa.data_package.uuid}
 
-    parsed = importer.Importer(input, no_deps)
+    parsed = importer.Importer(input, no_deps, license_header)
     logger.info("Loaded %d packages", len(parsed.messages.packages))
 
     yml = parsed.to_yaml(root_uuid, **params)
