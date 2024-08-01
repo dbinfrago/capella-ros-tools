@@ -21,8 +21,18 @@ from capella_ros_tools.importer import Importer
 PATH = pathlib.Path(__file__).parent
 
 SAMPLE_PACKAGE_PATH = PATH.joinpath("data/data_model/example_msgs")
+CUSTOM_LICENSE_PACKAGE_PATH = PATH.joinpath(
+    "data/data_model/custom_license_msgs"
+)
 SAMPLE_PACKAGE_YAML = PATH.joinpath("data/data_model/example_msgs.yaml")
 DUMMY_PATH = PATH.joinpath("data/empty_project_60")
+CUSTOM_LICENSE_PATH = PATH.joinpath(
+    "data/data_model/custom_license_header.txt"
+)
+EXPECTED_DESCRIPTION_SAMPLE_CLASS_ENUM = (
+    "SampleClassEnum.msg "
+    "Properties in SampleClassEnum can reference enums in the same file. "
+)
 
 ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000000")
 SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
@@ -220,3 +230,14 @@ def test_convert_package():
     )
 
     assert actual == expected
+
+
+def test_custom_license_header():
+    importer = Importer(
+        CUSTOM_LICENSE_PACKAGE_PATH.as_posix(), True, CUSTOM_LICENSE_PATH
+    )
+
+    assert (
+        importer.messages.packages[0].messages[0].description
+        == EXPECTED_DESCRIPTION_SAMPLE_CLASS_ENUM
+    )

@@ -217,12 +217,15 @@ class MessageDef:
 
     @classmethod
     def from_file(
-        cls, file: abc.AbstractFilePath | pathlib.Path
+        cls,
+        file: abc.AbstractFilePath | pathlib.Path,
+        license_header: str | None = None,
     ) -> MessageDef:
         """Create message definition from a .msg file."""
         msg_name = file.stem
         msg_string = file.read_text()
-        msg_string = msg_string.removeprefix(LICENSE_HEADER)
+        license_header = license_header or LICENSE_HEADER
+        msg_string = msg_string.removeprefix(license_header)
         return cls.from_string(msg_name, msg_string)
 
     @classmethod
@@ -391,7 +394,10 @@ class MessagePkgDef:
 
     @classmethod
     def from_msg_folder(
-        cls, pkg_name: str, msg_path: abc.AbstractFilePath | pathlib.Path
+        cls,
+        pkg_name: str,
+        msg_path: abc.AbstractFilePath | pathlib.Path,
+        license_header: str | None = None,
     ) -> MessagePkgDef:
         """Create a message package definition from a folder."""
         out = cls(pkg_name, [], [])
@@ -400,6 +406,6 @@ class MessagePkgDef:
             msg_path.rglob("*.msg"),
         )
         for msg_file in sorted(files, key=os.fspath):
-            msg_def = MessageDef.from_file(msg_file)
+            msg_def = MessageDef.from_file(msg_file, license_header)
             out.messages.append(msg_def)
         return out

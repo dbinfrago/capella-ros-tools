@@ -3,6 +3,7 @@
 """Tool for importing ROS messages to a Capella data package."""
 
 import os
+import pathlib
 import typing as t
 
 from capellambse import decl, filehandler, helpers
@@ -27,10 +28,14 @@ class Importer:
         self,
         msg_path: str,
         no_deps: bool,
+        license_header_path: pathlib.Path | None = None,
     ):
         self.messages = data_model.MessagePkgDef("root", [], [])
         self._promise_ids: dict[str, None] = {}
         self._promise_id_refs: dict[str, None] = {}
+        self._license_header = None
+        if license_header_path is not None:
+            self._license_header = license_header_path.read_text("utf-8")
 
         self._add_packages("ros_msgs", msg_path)
         if no_deps:
@@ -43,7 +48,9 @@ class Importer:
         root = filehandler.get_filehandler(path).rootdir
         for dir in sorted(root.rglob("msg"), key=os.fspath):
             pkg_name = dir.parent.name or name
-            pkg_def = data_model.MessagePkgDef.from_msg_folder(pkg_name, dir)
+            pkg_def = data_model.MessagePkgDef.from_msg_folder(
+                pkg_name, dir, self._license_header
+            )
             self.messages.packages.append(pkg_def)
             logger.info("Loaded package %s from %s", pkg_name, dir)
 
