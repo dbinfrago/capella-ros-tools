@@ -159,11 +159,11 @@ class EnumDef:
 def _process_block_comment(line: str) -> str:
     if comment := _clean_comment(line):
         return f"{comment} "
-    return "<br>"
+    return ""
 
 
 def _extract_file_level_comments(
-    msg_string: str,
+    msg_string: str, regex: re.Pattern | None = None
 ) -> t.Tuple[str, list[str]]:
     """Extract comments at the beginning of the message."""
     lines = msg_string.lstrip("\n").splitlines()
@@ -177,8 +177,14 @@ def _extract_file_level_comments(
                 return "", lines
             else:
                 break
-        file_level_comments += _process_block_comment(line)
+        file_level_comments += _process_block_comment(line) or "\n"
 
+    if regex is not None:
+        if matches := regex.search(file_level_comments):
+            file_level_comments = "\n".join(matches.groups())
+        else:
+            file_level_comments = ""
+    file_level_comments = file_level_comments.replace("\n", "<br>")
     file_content = lines[i:]
     return file_level_comments, file_content
 
@@ -220,18 +226,26 @@ class MessageDef:
         cls,
         file: abc.AbstractFilePath | pathlib.Path,
         license_header: str | None = None,
+        msg_description_regex: re.Pattern[str] | None = None,
     ) -> MessageDef:
         """Create message definition from a .msg file."""
         msg_name = file.stem
         msg_string = file.read_text()
         license_header = license_header or LICENSE_HEADER
         msg_string = msg_string.removeprefix(license_header)
-        return cls.from_string(msg_name, msg_string)
+        return cls.from_string(msg_name, msg_string, msg_description_regex)
 
     @classmethod
-    def from_string(cls, msg_name: str, msg_string: str) -> MessageDef:
+    def from_string(
+        cls,
+        msg_name: str,
+        msg_string: str,
+        msg_description_regex: re.Pattern[str] | None = None,
+    ) -> MessageDef:
         """Create message definition from a string."""
-        msg_comments, lines = _extract_file_level_comments(msg_string)
+        msg_comments, lines = _extract_file_level_comments(
+            msg_string, msg_description_regex
+        )
         msg = cls(msg_name, [], [], msg_comments)
         last_element: t.Any = None
         block_comments = ""
@@ -256,7 +270,7 @@ class MessageDef:
                 if last_index > 0:
                     # block comments were used
                     block_comments = ""
-                block_comments += _process_block_comment(line)
+                block_comments += _process_block_comment(line) or "<br>"
                 continue
             else:
                 # inline comment
@@ -398,6 +412,7 @@ class MessagePkgDef:
         pkg_name: str,
         msg_path: abc.AbstractFilePath | pathlib.Path,
         license_header: str | None = None,
+        msg_description_regex: re.Pattern[str] | None = None,
     ) -> MessagePkgDef:
         """Create a message package definition from a folder."""
         out = cls(pkg_name, [], [])
@@ -406,6 +421,8 @@ class MessagePkgDef:
             msg_path.rglob("*.msg"),
         )
         for msg_file in sorted(files, key=os.fspath):
-            msg_def = MessageDef.from_file(msg_file, license_header)
+            msg_def = MessageDef.from_file(
+                msg_file, license_header, msg_description_regex
+            )
             out.messages.append(msg_def)
         return out

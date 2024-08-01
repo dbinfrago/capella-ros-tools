@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pathlib
+import re
 
 import pytest
 from capellambse import decl, helpers
@@ -24,6 +25,9 @@ SAMPLE_PACKAGE_PATH = PATH.joinpath("data/data_model/example_msgs")
 CUSTOM_LICENSE_PACKAGE_PATH = PATH.joinpath(
     "data/data_model/custom_license_msgs"
 )
+DESCRIPTION_REGEX_PACKAGE_PATH = PATH.joinpath(
+    "data/data_model/description_regex_msgs"
+)
 SAMPLE_PACKAGE_YAML = PATH.joinpath("data/data_model/example_msgs.yaml")
 DUMMY_PATH = PATH.joinpath("data/empty_project_60")
 CUSTOM_LICENSE_PATH = PATH.joinpath(
@@ -32,6 +36,11 @@ CUSTOM_LICENSE_PATH = PATH.joinpath(
 EXPECTED_DESCRIPTION_SAMPLE_CLASS_ENUM = (
     "SampleClassEnum.msg "
     "Properties in SampleClassEnum can reference enums in the same file. "
+)
+
+EXPECTED_DESCRIPTION_REGEX = (
+    "Message type for providing the made decision. "
+    "An additional description line. <br>Expect linebreak "
 )
 
 ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000000")
@@ -240,4 +249,17 @@ def test_custom_license_header():
     assert (
         importer.messages.packages[0].messages[0].description
         == EXPECTED_DESCRIPTION_SAMPLE_CLASS_ENUM
+    )
+
+
+def test_description_regex():
+    importer = Importer(
+        DESCRIPTION_REGEX_PACKAGE_PATH.as_posix(),
+        True,
+        msg_description_regex=r"^Description:\s*([\s\S]*)",
+    )
+
+    assert (
+        importer.messages.packages[0].messages[0].description
+        == EXPECTED_DESCRIPTION_REGEX
     )

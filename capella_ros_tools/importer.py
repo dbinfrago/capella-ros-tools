@@ -4,6 +4,7 @@
 
 import os
 import pathlib
+import re
 import typing as t
 
 from capellambse import decl, filehandler, helpers
@@ -29,6 +30,7 @@ class Importer:
         msg_path: str,
         no_deps: bool,
         license_header_path: pathlib.Path | None = None,
+        msg_description_regex: str | None = None,
     ):
         self.messages = data_model.MessagePkgDef("root", [], [])
         self._promise_ids: dict[str, None] = {}
@@ -37,19 +39,27 @@ class Importer:
         if license_header_path is not None:
             self._license_header = license_header_path.read_text("utf-8")
 
-        self._add_packages("ros_msgs", msg_path)
+        self._add_packages("ros_msgs", msg_path, msg_description_regex)
         if no_deps:
             return
 
         for interface_name, interface_url in ROS2_INTERFACES.items():
             self._add_packages(interface_name, interface_url)
 
-    def _add_packages(self, name: str, path: str) -> None:
+    def _add_packages(
+        self, name: str, path: str, msg_description_regex: str | None = None
+    ) -> None:
         root = filehandler.get_filehandler(path).rootdir
+        msg_description_pattern = None
+        if msg_description_regex is not None:
+            msg_description_pattern = re.compile(
+                msg_description_regex, re.MULTILINE
+            )
+
         for dir in sorted(root.rglob("msg"), key=os.fspath):
             pkg_name = dir.parent.name or name
             pkg_def = data_model.MessagePkgDef.from_msg_folder(
-                pkg_name, dir, self._license_header
+                pkg_name, dir, self._license_header, msg_description_pattern
             )
             self.messages.packages.append(pkg_def)
             logger.info("Loaded package %s from %s", pkg_name, dir)
