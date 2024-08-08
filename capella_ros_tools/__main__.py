@@ -74,6 +74,11 @@ def cli():
     type=click.Path(path_type=pathlib.Path, dir_okay=False),
     help="Ignore the license header from the given file when importing msgs.",
 )
+@click.option(
+    "--description-regex",
+    type=str,
+    help="Regular expression to extract description from the file .",
+)
 def import_msgs(
     input: str,
     model: capellambse.MelodyModel,
@@ -83,6 +88,7 @@ def import_msgs(
     no_deps: bool,
     output: pathlib.Path,
     license_header: pathlib.Path | None,
+    description_regex: str | None,
 ) -> None:
     """Import ROS messages into a Capella data package."""
     if root:
@@ -97,7 +103,9 @@ def import_msgs(
     else:
         params = {"types_parent_uuid": model.sa.data_package.uuid}
 
-    parsed = importer.Importer(input, no_deps, license_header)
+    parsed = importer.Importer(
+        input, no_deps, license_header, description_regex
+    )
     logger.info("Loaded %d packages", len(parsed.messages.packages))
 
     yml = parsed.to_yaml(root_uuid, **params)
