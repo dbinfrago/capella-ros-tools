@@ -5,7 +5,7 @@
 import pathlib
 import re
 
-from capellambse.model.crosslayer import information
+from capellambse.metamodel import information
 
 from capella_ros_tools import data_model
 
