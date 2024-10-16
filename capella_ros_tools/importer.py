@@ -35,6 +35,7 @@ class Importer:
         self.messages = data_model.MessagePkgDef("root", [], [])
         self._promise_ids: dict[str, None] = {}
         self._promise_id_refs: dict[str, None] = {}
+        self._needed_associations: dict[str, str] = {}
         self._license_header = None
         if license_header_path is not None:
             self._license_header = license_header_path.read_text("utf-8")
@@ -88,15 +89,11 @@ class Importer:
         classes = []
         enums = []
         packages = []
-        associations = []
 
         for msg_def in pkg_def.messages:
             if msg_def.fields:
-                cls_yml, cls_associations = self._convert_class(
-                    pkg_def.name, msg_def
-                )
+                cls_yml = self._convert_class(pkg_def.name, msg_def)
                 classes.append(cls_yml)
-                associations.extend(cls_associations)
             for enum_def in msg_def.enums:
                 enums.append(self._convert_enum(msg_def.name, enum_def))
 
@@ -115,8 +112,6 @@ class Importer:
             sync["enumerations"] = enums
         if packages:
             sync["packages"] = packages
-        if associations:
-            sync["owned_associations"] = associations
 
         yml = {}
         if sync:
@@ -126,11 +121,10 @@ class Importer:
 
     def _convert_class(
         self, pkg_name: str, msg_def: data_model.MessageDef
-    ) -> tuple[dict[str, t.Any], list[dict[str, t.Any]]]:
+    ) -> dict[str, t.Any]:
         promise_id = f"{pkg_name}.{msg_def.name}"
         self._promise_ids[promise_id] = None
         props = []
-        associations = []
         for field_def in msg_def.fields:
             prop_promise_id = f"{promise_id}.{field_def.name}"
             promise_ref = (
@@ -155,33 +149,7 @@ class Importer:
                 },
             }
             props.append(prop_yml)
-
-            associations.append(
-                {
-                    "find": {
-                        "navigable_members": [decl.Promise(prop_promise_id)],
-                    },
-                    "sync": {
-                        "members": [
-                            {
-                                "find": {
-                                    "type": decl.Promise(promise_id),
-                                },
-                                "set": {
-                                    "_type": "Property",
-                                    "kind": "ASSOCIATION",
-                                    "min_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                    "max_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                },
-                            }
-                        ],
-                    },
-                }
-            )
+            self._needed_associations[prop_promise_id] = promise_id
 
         yml = {
             "promise_id": promise_id,
@@ -195,7 +163,7 @@ class Importer:
                 "properties": props,
             },
         }
-        return yml, associations
+        return yml
 
     def _convert_enum(
         self, pkg_name: str, enum_def: data_model.EnumDef
@@ -239,6 +207,7 @@ class Importer:
     ) -> str:
         """Import ROS messages into a Capella data package."""
         logger.info("Generating decl YAML")
+
         instructions = [
             {"parent": decl.UUIDReference(helpers.UUIDString(root_uuid))}
             | self._convert_package(self.messages),
@@ -246,6 +215,40 @@ class Importer:
         needed_types = [
             p for p in self._promise_id_refs if p not in self._promise_ids
         ]
+
+        associations = []
+        for prop_promise_id, promise_id in self._needed_associations.items():
+            if prop_promise_id in needed_types:
+                continue
+            associations.append(
+                {
+                    "find": {
+                        "navigable_members": [decl.Promise(prop_promise_id)],
+                    },
+                    "sync": {
+                        "members": [
+                            {
+                                "find": {
+                                    "type": decl.Promise(promise_id),
+                                },
+                                "set": {
+                                    "_type": "Property",
+                                    "kind": "ASSOCIATION",
+                                    "min_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                    "max_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                },
+                            }
+                        ],
+                    },
+                }
+            )
+        if associations:
+            instructions[0]["sync"]["owned_associations"] = associations
+
         if not needed_types:
             return decl.dump(instructions)
 
