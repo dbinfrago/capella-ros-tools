@@ -172,7 +172,7 @@ def test_convert_class(importer: Importer):
         },
     }
 
-    actual, _ = importer._convert_class("my_package", class_def)
+    actual = importer._convert_class("my_package", class_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyMessage" in importer._promise_ids
@@ -224,7 +224,7 @@ def test_convert_class_with_ref(importer: Importer):
         },
     }
 
-    actual, _ = importer._convert_class(pkg_name, msg_def)
+    actual = importer._convert_class(pkg_name, msg_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyMessage" in importer._promise_ids
