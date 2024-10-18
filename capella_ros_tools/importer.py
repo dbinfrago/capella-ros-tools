@@ -35,7 +35,7 @@ class Importer:
         self.messages = data_model.MessagePkgDef("root", [], [])
         self._promise_ids: dict[str, None] = {}
         self._promise_id_refs: dict[str, None] = {}
-        self._needed_associations: dict[str, str] = {}
+        self._needed_associations: dict[str, dict[str, tuple[str, str]]] = {}
         self._license_header = None
         if license_header_path is not None:
             self._license_header = license_header_path.read_text("utf-8")
@@ -149,7 +149,9 @@ class Importer:
                 },
             }
             props.append(prop_yml)
-            self._needed_associations[prop_promise_id] = promise_id
+            self._needed_associations.setdefault(pkg_name, {})[
+                prop_promise_id
+            ] = (promise_id, promise_ref)
 
         yml = {
             "promise_id": promise_id,
@@ -216,38 +218,58 @@ class Importer:
             p for p in self._promise_id_refs if p not in self._promise_ids
         ]
 
-        associations = []
-        for prop_promise_id, promise_id in self._needed_associations.items():
-            if prop_promise_id in needed_types:
-                continue
-            associations.append(
-                {
-                    "find": {
-                        "navigable_members": [decl.Promise(prop_promise_id)],
-                    },
-                    "sync": {
-                        "members": [
-                            {
-                                "find": {
-                                    "type": decl.Promise(promise_id),
-                                },
-                                "set": {
-                                    "_type": "Property",
-                                    "kind": "ASSOCIATION",
-                                    "min_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                    "max_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                },
-                            }
-                        ],
-                    },
-                }
-            )
-        if associations:
-            instructions[0]["sync"]["owned_associations"] = associations
+        for pkg_name, needed_associations in self._needed_associations.items():
+            associations = []
+            for prop_promise_id, (
+                promise_id,
+                promise_ref,
+            ) in needed_associations.items():
+                if promise_ref in needed_types:
+                    instructions.append(
+                        {
+                            "parent": decl.Promise(prop_promise_id),
+                            "set": {
+                                "kind": "UNSET",
+                            },
+                        }
+                    )
+                    continue
+                associations.append(
+                    {
+                        "find": {
+                            "navigable_members": [
+                                decl.Promise(prop_promise_id)
+                            ],
+                        },
+                        "sync": {
+                            "members": [
+                                {
+                                    "find": {
+                                        "type": decl.Promise(promise_id),
+                                    },
+                                    "set": {
+                                        "_type": "Property",
+                                        "kind": "ASSOCIATION",
+                                        "min_card": decl.NewObject(
+                                            "LiteralNumericValue", value="1"
+                                        ),
+                                        "max_card": decl.NewObject(
+                                            "LiteralNumericValue", value="1"
+                                        ),
+                                    },
+                                }
+                            ],
+                        },
+                    }
+                )
+
+            if associations:
+                package = next(
+                    p
+                    for p in instructions[0]["sync"]["packages"]
+                    if p["find"]["name"] == pkg_name
+                )
+                package["sync"]["owned_associations"] = associations
 
         if not needed_types:
             return decl.dump(instructions)
