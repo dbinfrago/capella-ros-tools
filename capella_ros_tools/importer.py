@@ -131,7 +131,7 @@ class Importer:
                 f"{field_def.type.package or pkg_name}.{field_def.type.name}"
             )
             self._promise_id_refs[promise_ref] = None
-            prop_yml = {
+            prop_yml: t.Any = {
                 "promise_id": prop_promise_id,
                 "find": {
                     "name": field_def.name,
@@ -139,7 +139,6 @@ class Importer:
                 "set": {
                     "type": decl.Promise(promise_ref),
                     "kind": "COMPOSITION",
-                    "description": field_def.description,
                     "min_card": decl.NewObject(
                         "LiteralNumericValue", value=field_def.type.card.min
                     ),
@@ -148,6 +147,8 @@ class Importer:
                     ),
                 },
             }
+            if field_def.description:
+                prop_yml["set"]["description"] = field_def.description
             props.append(prop_yml)
             self._needed_associations.setdefault(pkg_name, {})[
                 prop_promise_id
@@ -158,9 +159,11 @@ class Importer:
             "find": {
                 "name": msg_def.name,
             },
-            "set": {
-                "description": msg_def.description,
-            },
+            "set": (
+                {"description": msg_def.description}
+                if msg_def.description
+                else {}
+            ),
             "sync": {
                 "properties": props,
             },
@@ -174,26 +177,29 @@ class Importer:
         self._promise_ids[promise_id] = None
         literals = []
         for literal in enum_def.literals:
-            literal_yml = {
+            literal_yml: t.Any = {
                 "find": {
                     "name": literal.name,
                 },
                 "set": {
-                    "description": literal.description,
                     "value": decl.NewObject(
                         "LiteralNumericValue", value=literal.value
                     ),
                 },
             }
+            if literal.description:
+                literal_yml["set"]["description"] = literal.description
             literals.append(literal_yml)
         yml = {
             "promise_id": promise_id,
             "find": {
                 "name": enum_def.name,
             },
-            "set": {
-                "description": enum_def.description,
-            },
+            "set": (
+                {"description": enum_def.description}
+                if enum_def.description
+                else {}
+            ),
             "sync": {
                 "literals": literals,
             },
