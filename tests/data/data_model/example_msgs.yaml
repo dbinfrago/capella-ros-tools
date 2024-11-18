@@ -103,7 +103,6 @@
             - find:
                 name: RED
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '0'
@@ -143,28 +142,24 @@
             - find:
                 name: OK
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '0'
             - find:
                 name: WARN
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '1'
             - find:
                 name: ERROR
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '2'
             - find:
                 name: STALE
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '3'
@@ -259,7 +254,6 @@
                 name: field
               promise_id: package2.SampleClassEnum.field
               set:
-                description: ''
                 kind: COMPOSITION
                 max_card: !new_object
                   _type: LiteralNumericValue
@@ -279,28 +273,24 @@
             - find:
                 name: OK
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '0'
             - find:
                 name: WARN
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '1'
             - find:
                 name: ERROR
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '2'
             - find:
                 name: STALE
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '3'
@@ -314,21 +304,18 @@
             - find:
                 name: RED
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '0'
             - find:
                 name: BLUE
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '1'
             - find:
                 name: YELLOW
               set:
-                description: ''
                 value: !new_object
                   _type: LiteralNumericValue
                   value: '2'
