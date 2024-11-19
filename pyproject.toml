@@ -54,6 +54,9 @@ test = [
   "pytest-cov",
 ]
 
+[project.scripts]
+capella-ros-tools = "capella_ros_tools.__main__:cli"
+
 [tool.black]
 line-length = 79
 target-version = ["py310"]
