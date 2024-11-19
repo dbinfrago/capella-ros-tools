@@ -28,7 +28,16 @@ def export(current_pkg: information.DataPkg, current_path: pathlib.Path):
                 )
             except AttributeError:
                 card = data_model.Range("1", "1")
-            type_def = data_model.TypeDef(name=prop_obj.type.name, card=card)
+
+            if (_type := prop_obj.type) is not None:
+                type_name = _type.name
+            else:
+                logger.error(
+                    "Type of property %s is None", prop_obj._short_repr_()
+                )
+                type_name = "<undefined>"
+
+            type_def = data_model.TypeDef(name=type_name, card=card)
             prop_def = data_model.FieldDef(
                 type=type_def,
                 name=prop_obj.name,
