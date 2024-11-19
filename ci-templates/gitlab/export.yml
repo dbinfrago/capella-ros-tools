@@ -1,0 +1,18 @@
+# Copyright DB InfraGO AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+variables:
+  CAPELLA_ROS_TOOLS_MODEL: "."
+  CAPELLA_ROS_TOOLS_LAYER: "LA"
+  # Optional variables:
+  # $CAPELLA_ROS_TOOLS_VERSION - Use a specific version of the ROS tools
+  # $CAPELLA_ROS_TOOLS_ROOT_PACKAGE - UUID of the package to get classes from
+
+capella_ros_exporter:
+  script:
+    # - pip install "capella-ros-tools{CAPELLA_ROS_TOOLS_VERSION:+==$CAPELLA_ROS_TOOLS_VERSION}"
+    - pip install git+https://github.com/DSD-DBS/capella-ros-tools.git@add-ci-pipeline
+    - capella-ros-tools export -o ros-export
+  artifacts:
+    paths:
+      - ros-export

@@ -129,18 +129,21 @@ def import_msgs(
     type=cli_helpers.ModelCLI(),
     required=True,
     help="Path to the Capella model.",
+    envvar="CAPELLA_ROS_TOOLS_MODEL",
 )
 @click.option(
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
     help="The layer to export the model objects from.",
+    envvar="CAPELLA_ROS_TOOLS_LAYER",
 )
 @click.option(
     "-r",
     "--root",
     type=click.UUID,
     help="The UUID of the root package to import the messages from.",
+    envvar="CAPELLA_ROS_TOOLS_ROOT_PACKAGE",
 )
 @click.option(
     "-o",
