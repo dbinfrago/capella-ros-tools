@@ -66,6 +66,9 @@ docs = [
   "tomli>=2.2.1 ; python_full_version < '3.11'",
 ]
 
+[project.scripts]
+capella-ros-tools = "capella_ros_tools.__main__:cli"
+
 [tool.coverage.run]
 branch = true
 command_line = "-m pytest"
