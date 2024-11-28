@@ -224,6 +224,7 @@ class MessageDef:
     @classmethod
     def from_file(
         cls,
+        pkg_name: str,
         file: abc.AbstractFilePath | pathlib.Path,
         license_header: str | None = None,
         msg_description_regex: re.Pattern[str] | None = None,
@@ -233,11 +234,14 @@ class MessageDef:
         msg_string = file.read_text()
         license_header = license_header or LICENSE_HEADER
         msg_string = msg_string.removeprefix(license_header)
-        return cls.from_string(msg_name, msg_string, msg_description_regex)
+        return cls.from_string(
+            pkg_name, msg_name, msg_string, msg_description_regex
+        )
 
     @classmethod
     def from_string(
         cls,
+        pkg_name: str,
         msg_name: str,
         msg_string: str,
         msg_description_regex: re.Pattern[str] | None = None,
@@ -342,14 +346,15 @@ class MessageDef:
                 if field.type.name == enum.literals[0].type.name:
                     matched_field = matched_field or field
                     if field.name.lower() == enum.name.lower():
+                        enum.name = msg_name + matched_field.name.capitalize()
                         field.type.name = enum.name
-                        field.type.package = msg_name
+                        field.type.package = f"{pkg_name}.{msg_name}"
                         break
             else:
                 if matched_field:
                     enum.name = msg_name + matched_field.name.capitalize()
                     matched_field.type.name = enum.name
-                    matched_field.type.package = msg_name
+                    matched_field.type.package = f"{pkg_name}.{msg_name}"
 
         return msg
 
@@ -422,7 +427,7 @@ class MessagePkgDef:
         )
         for msg_file in sorted(files, key=os.fspath):
             msg_def = MessageDef.from_file(
-                msg_file, license_header, msg_description_regex
+                pkg_name, msg_file, license_header, msg_description_regex
             )
             out.messages.append(msg_def)
         return out

@@ -79,6 +79,11 @@ def cli():
     type=str,
     help="Regular expression to extract description from the file .",
 )
+@click.option(
+    "--dependency-json",
+    type=click.Path(path_type=pathlib.Path, dir_okay=False),
+    help="A path to a JSON containing dependencies which should be imported.",
+)
 def import_msgs(
     input: str,
     model: capellambse.MelodyModel,
@@ -89,6 +94,7 @@ def import_msgs(
     output: pathlib.Path,
     license_header: pathlib.Path | None,
     description_regex: str | None,
+    dependency_json: pathlib.Path | None,
 ) -> None:
     """Import ROS messages into a Capella data package."""
     if root:
@@ -104,7 +110,7 @@ def import_msgs(
         params = {"types_parent_uuid": model.sa.data_package.uuid}
 
     parsed = importer.Importer(
-        input, no_deps, license_header, description_regex
+        input, no_deps, license_header, description_regex, dependency_json
     )
     logger.info("Loaded %d packages", len(parsed.messages.packages))
 
