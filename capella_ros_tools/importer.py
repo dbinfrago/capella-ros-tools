@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
 
+import json
 import os
 import pathlib
 import re
@@ -29,7 +30,13 @@ class Importer:
         no_deps: bool,  # noqa: FBT001
         license_header_path: pathlib.Path | None = None,
         msg_description_regex: str | None = None,
+        dependency_json: pathlib.Path | None = None,
     ):
+        if dependency_json:
+            dependencies = json.loads(dependency_json.read_bytes())
+        else:
+            dependencies = ROS2_INTERFACES
+
         self.messages = data_model.MessagePkgDef("root", [], [])
         self._promise_ids: dict[str, None] = {}
         self._promise_id_refs: dict[str, None] = {}
@@ -42,13 +49,23 @@ class Importer:
         if no_deps:
             return
 
-        for interface_name, interface_url in ROS2_INTERFACES.items():
-            self._add_packages(interface_name, interface_url)
+        for interface_name, interface_spec in dependencies.items():
+            kwargs = {}
+            if isinstance(interface_spec, dict):
+                interface_url = interface_spec.pop("path")
+                kwargs.update(interface_spec)
+            else:
+                interface_url = interface_spec
+            self._add_packages(interface_name, interface_url, **kwargs)
 
     def _add_packages(
-        self, name: str, path: str, msg_description_regex: str | None = None
+        self,
+        name: str,
+        path: str,
+        msg_description_regex: str | None = None,
+        **kwargs,
     ) -> None:
-        root = filehandler.get_filehandler(path).rootdir
+        root = filehandler.get_filehandler(path, **kwargs).rootdir
         msg_description_pattern = None
         if msg_description_regex is not None:
             msg_description_pattern = re.compile(
@@ -92,7 +109,9 @@ class Importer:
                 cls_yml = self._convert_class(pkg_def.name, msg_def)
                 classes.append(cls_yml)
             for enum_def in msg_def.enums:
-                enums.append(self._convert_enum(msg_def.name, enum_def))
+                enums.append(
+                    self._convert_enum(pkg_def.name, msg_def.name, enum_def)
+                )
 
         for new_pkg in pkg_def.packages:
             new_yml = {
@@ -170,9 +189,9 @@ class Importer:
         }
 
     def _convert_enum(
-        self, pkg_name: str, enum_def: data_model.EnumDef
+        self, pkg_name: str, msg_name: str, enum_def: data_model.EnumDef
     ) -> dict[str, t.Any]:
-        promise_id = f"{pkg_name}.{enum_def.name}"
+        promise_id = f"{pkg_name}.{msg_name}.{enum_def.name}"
         self._promise_ids[promise_id] = None
         literals = []
         for literal in enum_def.literals:
@@ -189,16 +208,24 @@ class Importer:
             if literal.description:
                 literal_yml["set"]["description"] = literal.description
             literals.append(literal_yml)
+
+        types = {lit.type.name for lit in enum_def.literals}
+        assert len(types) == 1, "All values of an Enum must have the same type"
+        promise_ref = f"{pkg_name}.{types.pop()}"
+        self._promise_id_refs[promise_ref] = None
+
+        set_values: dict[str, t.Any] = {
+            "domain_type": decl.Promise(promise_ref)
+        }
+        if enum_def.description:
+            set_values["description"] = enum_def.description
+
         return {
             "promise_id": promise_id,
             "find": {
                 "name": enum_def.name,
             },
-            "set": (
-                {"description": enum_def.description}
-                if enum_def.description
-                else {}
-            ),
+            "set": set_values,
             "sync": {
                 "literals": literals,
             },
