@@ -16,9 +16,7 @@ from . import logger
 ROS2_INTERFACES = {
     "common_interfaces": "git+https://github.com/ros2/common_interfaces",
     "rcl_interfaces": "git+https://github.com/ros2/rcl_interfaces",
-    "unique_identifier_msgs": (
-        "git+https://github.com/ros2/unique_identifier_msgs"
-    ),
+    "unique_identifier_msgs": "git+https://github.com/ros2/unique_identifier_msgs",
 }
 
 
@@ -28,7 +26,7 @@ class Importer:
     def __init__(
         self,
         msg_path: str,
-        no_deps: bool,
+        no_deps: bool,  # noqa: FBT001
         license_header_path: pathlib.Path | None = None,
         msg_description_regex: str | None = None,
     ):
@@ -73,14 +71,13 @@ class Importer:
             _type = "BooleanType"
         else:
             _type = "NumericType"
-        yml = {
+        return {
             "promise_id": promise_id,
             "find": {
                 "name": name,
                 "_type": _type,
             },
         }
-        return yml
 
     def _convert_package(
         self,
@@ -152,9 +149,12 @@ class Importer:
             props.append(prop_yml)
             self._needed_associations.setdefault(pkg_name, {})[
                 prop_promise_id
-            ] = (promise_id, promise_ref)
+            ] = (
+                promise_id,
+                promise_ref,
+            )
 
-        yml = {
+        return {
             "promise_id": promise_id,
             "find": {
                 "name": msg_def.name,
@@ -168,7 +168,6 @@ class Importer:
                 "properties": props,
             },
         }
-        return yml
 
     def _convert_enum(
         self, pkg_name: str, enum_def: data_model.EnumDef
@@ -190,7 +189,7 @@ class Importer:
             if literal.description:
                 literal_yml["set"]["description"] = literal.description
             literals.append(literal_yml)
-        yml = {
+        return {
             "promise_id": promise_id,
             "find": {
                 "name": enum_def.name,
@@ -204,8 +203,6 @@ class Importer:
                 "literals": literals,
             },
         }
-
-        return yml
 
     def to_yaml(
         self,

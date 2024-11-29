@@ -121,7 +121,7 @@ In another file
    * **cf. <File Name>:** The enum name was derived from the file name (excluding the extension).
    * **cf. <File Name>, <Common Prefix>_XXX:** The enum name was derived from the longest common prefix of all enum literals in the definition.
 
-.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleEnum.msg
+.. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/types/SampleEnum.msg
   :language: python
 
 .. literalinclude:: ../../tests/data/data_model/example_msgs/package1/msg/SampleClass.msg

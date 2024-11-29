@@ -3,6 +3,7 @@
 """Main entry point into Capella ROS Tools."""
 
 import io
+import logging
 import pathlib
 import uuid
 
@@ -20,8 +21,10 @@ from capella_ros_tools import exporter, importer, logger
     prog_name="capella-ros-tools",
     message="%(prog)s %(version)s",
 )
-def cli():
+def cli() -> None:
     """Console script for Capella ROS Tools."""
+
+    logging.basicConfig(level=logging.INFO)
 
 
 @cli.command("import")
@@ -80,6 +83,7 @@ def cli():
     help="Regular expression to extract description from the file .",
 )
 def import_msgs(
+    *,
     input: str,
     model: capellambse.MelodyModel,
     layer: str,
@@ -150,7 +154,7 @@ def export_capella(
     layer: str,
     root: uuid.UUID,
     output: pathlib.Path,
-):
+) -> None:
     """Export Capella data package to ROS messages."""
     if root:
         current_pkg = model.search("DataPkg").by_uuid(str(root))

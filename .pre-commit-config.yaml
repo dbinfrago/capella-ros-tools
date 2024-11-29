@@ -3,105 +3,142 @@
 
 default_install_hook_types: [commit-msg, pre-commit]
 default_stages: [pre-commit, pre-merge-commit]
+minimum_pre_commit_version: 4.0.0
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v5.0.0
-      hooks:
-          - id: check-added-large-files
-          - id: check-ast
-          - id: check-builtin-literals
-          - id: check-case-conflict
-          - id: check-executables-have-shebangs
-          - id: check-json
-          - id: check-merge-conflict
-          - id: check-shebang-scripts-are-executable
-          - id: check-symlinks
-          - id: check-toml
-          - id: check-vcs-permalinks
-          - id: check-xml
-          - id: check-yaml
-            exclude: '^tests/data/data_model/[^/]+\.ya?ml$'
-          - id: debug-statements
-          - id: destroyed-symlinks
-          - id: end-of-file-fixer
-          - id: fix-byte-order-marker
-          - id: trailing-whitespace
-    - repo: https://github.com/psf/black-pre-commit-mirror
-      rev: 24.10.0
-      hooks:
-          - id: black
-    - repo: https://github.com/PyCQA/isort
-      rev: 5.13.2
-      hooks:
-          - id: isort
-    - repo: https://github.com/PyCQA/docformatter
-      rev: eb1df347edd128b30cd3368dddc3aa65edcfac38
-      hooks:
-          - id: docformatter
-            additional_dependencies:
-                - docformatter[tomli]
-    - repo: https://github.com/PyCQA/pydocstyle
-      rev: 6.3.0
-      hooks:
-          - id: pydocstyle
-            exclude: "^tests/"
-            additional_dependencies:
-                - pydocstyle[toml]
-    - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v1.12.0
-      hooks:
-          - id: mypy
-            additional_dependencies:
-                - capellambse==0.6.6
-    - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.5.5
-      hooks:
-          - id: insert-license
-            name: Insert license headers (shell-style comments)
-            files: '(?:^|/)(?:.*\.(?:py|sh|toml|ya?ml)|Dockerfile|Makefile)$'
-            exclude: '(?:^|/)\..+|^docs/Makefile$'
-            args:
-                - --detect-license-in-X-top-lines=15
-                - --license-filepath
-                - LICENSES/.license_header.txt
-                - --comment-style
-                - "#"
-          - id: insert-license
-            name: Insert license headers (XML-style comments)
-            files: '\.(?:html|md|xml)$'
-            exclude: '(?:^|/)\..+'
-            args:
-                - --detect-license-in-X-top-lines=15
-                - --license-filepath
-                - LICENSES/.license_header.txt
-                - --comment-style
-                - "<!--| ~| -->"
-          - id: insert-license
-            name: Insert license headers (C-style comments)
-            files: '\.(?:css|js|ts)$'
-            exclude: '(?:^|/)\..+'
-            args:
-                - --detect-license-in-X-top-lines=15
-                - --license-filepath
-                - LICENSES/.license_header.txt
-                - --comment-style
-                - "/*| *| */"
-          - id: insert-license
-            name: Insert license headers (reST comments)
-            files: '\.rst$'
-            exclude: '(?:^|/)\..+'
-            args:
-                - --detect-license-in-X-top-lines=15
-                - --license-filepath
-                - LICENSES/.license_header.txt
-                - --comment-style
-                - "..|  |"
-    - repo: https://github.com/fsfe/reuse-tool
-      rev: v4.0.3
-      hooks:
-          - id: reuse
-    - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-      rev: v9.18.0
-      hooks:
-          - id: commitlint
-            stages: [commit-msg]
+  - repo: https://github.com/gitleaks/gitleaks.git
+    rev: v8.27.2
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-xml
+      - id: check-yaml
+        exclude: '^tests/data/data_model/[^/]+\.ya?ml$'
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: Insert Apache license headers (shell-style comments)
+        files: '(?:^|/)(?:.*\.(?:py|sh|toml|ya?ml)|Dockerfile|Makefile)$'
+        exclude: '(?:^|/)\..+|^docs/Makefile$'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_apache.txt
+          - --comment-style
+          - '#'
+      - id: insert-license
+        name: Insert CC0 license headers (shell-style comments)
+        files: '(?:^|/)(?:codeql-analysis.yml|dependabot.yml|\.(?:pre-commit-config.yaml|(?:git|helm|docker)ignore))$'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_cc0.txt
+          - --comment-style
+          - '#'
+      - id: insert-license
+        name: Insert license headers (XML-style comments)
+        files: '\.(?:html|md|xml)$'
+        exclude: '(?:^|/)\..+'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_apache.txt
+          - --comment-style
+          - '<!--| ~| -->'
+      - id: insert-license
+        name: Insert Apache license headers (C-style comments)
+        files: '\.(?:s?css|js|ts)$'
+        exclude: '(?:^|/)\..+'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_apache.txt
+          - --comment-style
+          - '/*| *| */'
+      - id: insert-license
+        name: Insert Apache license headers (reST comments)
+        files: '\.rst$'
+        exclude: '(?:^|/)\..+'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_apache.txt
+          - --comment-style
+          - '..|  |'
+  - repo: local # docformatter
+    hooks:
+      - id: docformatter
+        name: docformatter
+        language: system
+        entry: uv run --dev docformatter --in-place
+        types_or: [python]
+        require_serial: true
+  - repo: local # ruff
+    hooks:
+      - id: ruff-format
+        name: Format with ruff
+        language: system
+        entry: uv run --dev ruff format
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+      - id: ruff-check
+        name: Lint with ruff
+        language: system
+        entry: uv run --dev ruff check
+        args: [--extend-ignore=FIX, --fix]
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+  - repo: local # codespell
+    hooks:
+      - id: codespell
+        name: codespell
+        language: system
+        entry: uv run --dev codespell
+        types_or: [text]
+        exclude: '^tests/data/melody_model_60/'
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint-docker
+  - repo: local # mypy
+    hooks:
+      - id: mypy
+        name: mypy
+        language: system
+        entry: uv run --dev mypy
+        args: [capella_ros_tools, --scripts-are-modules]
+        types_or: [python, pyi, toml, yaml]
+        require_serial: true
+        pass_filenames: false
+  - repo: local # reuse
+    hooks:
+      - id: reuse
+        name: reuse
+        language: system
+        entry: uv run --dev reuse lint-file
+        require_serial: true
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.22.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies:
+          - '@commitlint/config-conventional'
