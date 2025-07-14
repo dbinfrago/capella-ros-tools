@@ -21,13 +21,25 @@ our style guidelines outlined below.
 
 ## Developing
 
-We recommend that you
-[develop inside of a virtual environment](README.md#installation). After you
-have set it up, simply run the unit tests to verify that everything is set up
-correctly:
+Use [uv](https://docs.astral.sh/uv/) to set up a local development environment.
 
 ```sh
-pytest
+git clone https://github.com/DSD-DBS/capella-ros-tools
+cd capella-ros-tools
+uv sync
+uv run pre-commit install
+
+# You may need to explicitly activate the project venv
+# to make code completion and tools available:
+source .venv/bin/activate.sh  # for Linux / Mac
+.venv\Scripts\activate  # for Windows
+```
+
+You can use `uv run <tool>` to avoid having to manually activate the project
+venv. For example, to run the unit tests, use:
+
+```sh
+uv run pytest
 ```
 
 We additionally recommend that you set up your editor / IDE as follows.
@@ -39,29 +51,19 @@ We additionally recommend that you set up your editor / IDE as follows.
 - _If you use Visual Studio Code_: Consider using a platform which supports
   third-party language servers more easily, and continue with the next point.
 
-  Otherwise, set up the editor to run `black`, `pylint` and `mypy` when saving.
-  To enable automatic import sorting with `isort`, add the following to your
-  `settings.json`:
-
-  ```json
-  "[python]": {
-      "editor.codeActionsOnSave": {
-          "source.organizeImports": true
-      }
-  }
-  ```
-
   Note that the Pylance language server is not recommended, as it occasionally
   causes false-positive errors for perfectly valid code.
 
-- _If you do not use VSC_: Set up your editor to use the [python-lsp-server],
-  and make sure that the relevant plugins are installed. You can install
-  everything that's needed into the virtualenv with pip:
+- _If you do not use VSC_: Set up your editor to use the [python-lsp-server]
+  and [ruff], and make sure that the relevant pylsp plugins are installed.
 
   [python-lsp-server]: https://github.com/python-lsp/python-lsp-server
+  [ruff]: https://github.com/astral-sh/ruff
+
+  You can install everything that's needed into the virtualenv with pip:
 
   ```sh
-  pip install "python-lsp-server[pylint]" python-lsp-black pyls-isort pylsp-mypy
+  pip install "python-lsp-server" pylsp-mypy ruff
   ```
 
   This will provide as-you-type linting as well as automatic formatting on
@@ -80,7 +82,7 @@ The key differences are:
     https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
 
   When writing docstrings for functions, use the imperative style, as per
-  [PEP-257]). For example, write "Do X and Y" instead of "Does X and Y".
+  [PEP-257]. For example, write "Do X and Y" instead of "Does X and Y".
 
   [pep-257]: https://peps.python.org/pep-0257/
 
@@ -90,20 +92,18 @@ The key differences are:
   automated tools pick up the full base class docstring instead, and is
   therefore more useful in IDEs etc.
 
-- **Linting**: Use [pylint] for static code analysis, and [mypy] for static
+- **Linting**: Use [ruff] for static code analysis, and [mypy] for static
   type checking.
 
-  [pylint]: https://github.com/PyCQA/pylint
   [mypy]: https://github.com/python/mypy
 
-- **Formatting**: Use [black] as code auto-formatter. The maximum line length
+- **Formatting**: Use [ruff] as code auto-formatter. The maximum line length
   is 79, as per [PEP-8]. This setting should be automatically picked up from
   the `pyproject.toml` file. The reason for the shorter line length is that it
   avoids wrapping and overflows in side-by-side split views (e.g. diffs) if
   there's also information displayed to the side of it (e.g. a tree view of the
   modified files).
 
-  [black]: https://github.com/psf/black
   [pep-8]: https://www.python.org/dev/peps/pep-0008/
 
   Be aware of the different line length of 72 for docstrings. We currently do
@@ -114,16 +114,9 @@ The key differences are:
   break up strings that are presented to the user in e.g. log messages, as that
   makes it significantly harder to grep for them.
 
-  Use [isort] for automatic sorting of imports. Its settings should
-  automatically be picked up from the `pyproject.toml` file as well.
-
-  [isort]: https://github.com/PyCQA/isort
-
 - **Typing**: We do not make an exception for `typing` imports. Instead of
   writing `from typing import SomeName`, use `import typing as t` and access
   typing related classes like `t.TypedDict`.
-
-  <!-- prettier-ignore -->
 
   Use the new syntax and classes for typing introduced with Python 3.10.
 
@@ -138,12 +131,7 @@ The key differences are:
 
   [pep-604-style unions]: https://www.python.org/dev/peps/pep-0604/
 
-- **Python style rules**: For conflicting parts, the [Black code style] wins.
-  If you have set up black correctly, you don't need to worry about this though
-  :)
-
-  [black code style]:
-    https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html
+- **Python style rules**: The auto-formatter wins.
 
 - When working with `dict`s, consider using `t.TypedDict` instead of a more
   generic `dict[str, float|int|str]`-like annotation where possible, as the

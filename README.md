@@ -68,26 +68,11 @@ You can install the latest released version directly from PyPI.
 pip install capella-ros-tools
 ```
 
-To set up a development environment, clone the project and install it into a
-virtual environment.
-
-```sh
-git clone https://github.com/DSD-DBS/capella-ros-tools
-cd capella-ros-tools
-python -m venv .venv
-
-source .venv/bin/activate.sh  # for Linux / Mac
-.venv\Scripts\activate  # for Windows
-
-pip install -U pip pre-commit
-pip install -e '.[docs,test]'
-pre-commit install
-```
-
 # Contributing
 
 We'd love to see your bug reports and improvement suggestions! Please take a
-look at our [guidelines for contributors](CONTRIBUTING.md) for details.
+look at our [guidelines for contributors](CONTRIBUTING.md) for details. It also
+contains a short guide on how to set up a local development environment.
 
 # Licenses
 
