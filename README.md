@@ -5,8 +5,7 @@
 
 # Capella ROS Tools
 
-![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
-![image](https://github.com/DSD-DBS/capella-ros-tools/actions/workflows/lint.yml/badge.svg)
+![image](https://github.com/dbinfrago/capella-ros-tools/actions/workflows/build-test-publish.yml/badge.svg)
 
 Tools for importing ROS .msg files into Capella `DataPackage`, `DataType` and
 `Class` objects, or exporting those objects to .msg files.
@@ -15,7 +14,7 @@ Tools for importing ROS .msg files into Capella `DataPackage`, `DataType` and
 
 # Documentation
 
-Read the [full documentation on Github pages](https://dsd-dbs.github.io/capella-ros-tools).
+Read the [full documentation on Github pages](https://dbinfrago.github.io/capella-ros-tools).
 
 # Examples
 

@@ -35,8 +35,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/DSD-DBS/capella-ros-tools"
-Documentation = "https://dsd-dbs.github.io/capella-ros-tools"
+Homepage = "https://github.com/dbinfrago/capella-ros-tools"
+Documentation = "https://dbinfrago.github.io/capella-ros-tools"
 
 [dependency-groups]
 dev = [

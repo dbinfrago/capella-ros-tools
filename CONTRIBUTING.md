@@ -16,15 +16,15 @@ reduce the burden on our maintainers, please make sure that your code follows
 our style guidelines outlined below.
 
 <!-- prettier-ignore -->
-[open an issue]: https://github.com/DSD-DBS/capella-ros-tools/issues
-[open a pull request]: https://github.com/DSD-DBS/capella-ros-tools/pulls
+[open an issue]: https://github.com/dbinfrago/capella-ros-tools/issues
+[open a pull request]: https://github.com/dbinfrago/capella-ros-tools/pulls
 
 ## Developing
 
 Use [uv](https://docs.astral.sh/uv/) to set up a local development environment.
 
 ```sh
-git clone https://github.com/DSD-DBS/capella-ros-tools
+git clone https://github.com/dbinfrago/capella-ros-tools
 cd capella-ros-tools
 uv sync
 uv run pre-commit install
