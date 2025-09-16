@@ -5,16 +5,14 @@
 import io
 import logging
 import pathlib
-import typing
 import uuid
 
 import capellambse
 import click
-import yaml
 from capellambse import cli_helpers, decl
 
 import capella_ros_tools
-from capella_ros_tools import configured_exporter, exporter, importer, logger
+from capella_ros_tools import exporter, importer, logger
 
 
 @click.group()
@@ -154,44 +152,13 @@ def import_msgs(
     envvar="CAPELLA_ROS_TOOLS_ROOT_PACKAGE",
 )
 @click.option(
-    "-o",
-    "--output",
-    type=click.Path(path_type=pathlib.Path, file_okay=False),
-    default=pathlib.Path.cwd() / "data-package",
-    help="Output directory for the .msg files.",
-)
-def export_capella(
-    model: capellambse.MelodyModel,
-    layer: str,
-    root: uuid.UUID,
-    output: pathlib.Path,
-) -> None:
-    """Export Capella data package to ROS messages."""
-    if root:
-        current_pkg = model.search("DataPkg").by_uuid(str(root))
-    elif layer:
-        current_pkg = getattr(model, layer).data_package
-    else:
-        raise click.UsageError("Either --root or --layer must be provided")
-
-    exporter.export(current_pkg, output)  # type: ignore
-
-
-@cli.command("configured-export")
-@click.option(
-    "-m",
-    "--model",
-    type=cli_helpers.ModelCLI(),
-    required=True,
-    help="Path to the Capella model.",
-    envvar="CAPELLA_ROS_TOOLS_MODEL",
-)
-@click.option(
     "-c",
     "--config",
-    type=click.File(mode="r", encoding="utf8"),
-    required=True,
-    envvar="CAPELLA_ROS_EXPORT_CONFIG",
+    type=click.Path(
+        path_type=pathlib.Path, file_okay=True, dir_okay=False, readable=True
+    ),
+    help="Path to the configuration file.",
+    envvar="CAPELLA_ROS_TOOLS_EXPORT_CONFIG",
 )
 @click.option(
     "-o",
@@ -203,8 +170,16 @@ def export_capella(
 @click.option(
     "--contact-email",
     type=str,
-    default="dummy@deutschebahn.com",
-    help="E-Mail address to be places in the package.xml files.",
+    default="dummy@dummy",
+    help="E-Mail address to be placed in the package.xml files.",
+    envvar="CAPELLA_ROS_TOOLS_CONTACT_EMAIL",
+)
+@click.option(
+    "--maintainer",
+    type=str,
+    default="Dummy Company",
+    help="Name of the maintainer used in the package.xml files.",
+    envvar="CAPELLA_ROS_TOOLS_MAINTAINER",
 )
 @click.option(
     "-p",
@@ -212,6 +187,7 @@ def export_capella(
     type=str,
     default="custom_ros_msgs",
     help="Project name being used in CMake and package.xml files.",
+    envvar="CAPELLA_ROS_TOOLS_PROJECT_NAME",
 )
 @click.option(
     "--generate-cmake",
@@ -219,28 +195,66 @@ def export_capella(
     default=False,
     is_flag=True,
     help="Decide whether experimental cmake files should be generated.",
+    envvar="CAPELLA_ROS_TOOLS_GENERATE_CMAKE",
 )
 def configured_export(
     model: capellambse.MelodyModel,
-    config: typing.TextIO,
+    config: pathlib.Path | None,
+    layer: str | None,
+    root: str | None,
     output: pathlib.Path,
     contact_email: str,
+    maintainer: str,
     project_name: str,
     generate_cmake: bool,
-):
+) -> None:
     """Export Capella data package to ROS messages."""
-    conf = yaml.safe_load(config)
-    _exporter = configured_exporter.Exporter(
-        conf["packages"],
-        conf["build_ins"],
-        conf["custom_packages"],
-        conf["custom_types"],
+    if config:
+        conf = exporter.load_config(config, model)
+    else:
+        conf = exporter.ExporterConfig(
+            packages={},
+            build_ins={},
+            custom_packages={},
+            custom_types={},
+        )
+    if conf.packages and (root or layer):
+        logger.warning(
+            "Your config has packages defined, will ignore root/layer for that reason."
+        )
+    else:
+        if root:
+            root_package = model.search("DataPkg").by_uuid(str(root))
+        elif layer:
+            root_package = getattr(model, layer).data_package
+        else:
+            logger.error(
+                "Neither packages in config nor root package nor layer specified."
+            )
+            return -1
+        if not isinstance(root_package, capellambse.model.ModelElement):
+            logger.error("Failed to find root package.")
+            return -1
+        conf.packages[exporter.Exporter.make_snake_case(root_package.name)] = (
+            root_package.uuid
+        )
+
+    _exporter = exporter.Exporter(
+        conf.packages,
+        conf.build_ins,
+        conf.custom_packages,
+        conf.custom_types,
         model,
         generate_cmake,
     )
     export_data, dependency_map = _exporter.prepare_export_data()
     _exporter.export_ros_pkgs(
-        output, project_name, export_data, dependency_map, contact_email
+        output,
+        project_name,
+        export_data,
+        dependency_map,
+        contact_email,
+        maintainer,
     )
 
 

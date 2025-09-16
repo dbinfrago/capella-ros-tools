@@ -32,6 +32,8 @@ classifiers = [
 dependencies = [
   "capellambse>=0.6.6,<0.7",
   "click",
+  "jinja2",
+  "pydantic"
 ]
 
 [project.urls]

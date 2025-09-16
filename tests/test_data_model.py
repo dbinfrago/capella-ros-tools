@@ -215,7 +215,7 @@ uint8 ERROR = 2"""
     @staticmethod
     def test_parse_comments_no_comments() -> None:
         msg_string = """uint8 field"""
-        msg_def = MessageDef.from_string("test_name", msg_string)
+        msg_def = MessageDef.from_string("", "test_name", msg_string)
         expected = MessageDef(
             name="test_name",
             fields=[
@@ -238,7 +238,7 @@ uint8 ERROR = 2"""
 #
 # This is unrelated text.
 uint8 field"""
-        msg_def = MessageDef.from_string("test_name", msg_string)
+        msg_def = MessageDef.from_string("", "test_name", msg_string)
         expected = MessageDef(
             name="test_name",
             fields=[
@@ -261,7 +261,7 @@ uint8 field"""
                                         # Here is more text.
                                         #
                                         # This is unrelated text."""
-        msg_def = MessageDef.from_string("test_name", msg_string)
+        msg_def = MessageDef.from_string("", "test_name", msg_string)
         expected = MessageDef(
             name="test_name",
             fields=[
@@ -284,7 +284,7 @@ uint8 field"""
 # This is still a block comment.
 uint8 field     # This is an inline comment.
                 # This is still an inline comment."""
-        msg_def = MessageDef.from_string("test_name", msg_string)
+        msg_def = MessageDef.from_string("", "test_name", msg_string)
         expected = MessageDef(
             name="test_name",
             fields=[
@@ -349,7 +349,7 @@ uint8 OK = 0
 uint8 WARN = 1
 uint8 ERROR = 2
 uint8 STALE = 3"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
 
         assert msg_def == expected
 
@@ -361,7 +361,7 @@ uint8 WARN = 1
 uint8 ERROR = 2
 
 uint8 STALE = 3"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
 
         assert msg_def == expected
 
@@ -374,7 +374,7 @@ uint8 WARN = 1
 uint8 ERROR = 2
 
 uint8 STALE = 3"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
 
         assert msg_def == expected
 
@@ -387,7 +387,7 @@ uint8 WARN = 1
 
 uint8 ERROR = 2
 uint8 STALE = 3"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
 
         assert msg_def == expected
 
@@ -406,7 +406,7 @@ uint8 SHAPE_TYPE_SPHERE = 2
 uint8 SHAPE_TYPE_VERTICAL_STRUCTURE = 10
 uint8 SHAPE_TYPE_VERTICAL_STRUCTURE_WITH_RADIUS = 101
 uint8 SHAPE_TYPE_HORIZONTAL_STRUCTURE = 11"""
-    msg_def = MessageDef.from_string("ShapeTypes", msg_string)
+    msg_def = MessageDef.from_string("", "ShapeTypes", msg_string)
     expected = MessageDef(
         name="ShapeTypes",
         fields=[],
@@ -467,7 +467,7 @@ class TestEnumName:
 uint8 START = 0
 uint8 STOP = 1
 int8 field"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
         expected = "enum_nameType"
 
         actual = msg_def.enums[0].name
@@ -480,7 +480,7 @@ int8 field"""
 uint8 ST_ART = 0
 uint8 ST_OP = 1
 int8 field"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
         expected = "St"
 
         actual = msg_def.enums[0].name
@@ -493,7 +493,7 @@ int8 field"""
 uint8 S_T_ART = 0
 uint8 S_T_OP = 1
 int8 field"""
-        msg_def = MessageDef.from_string("enum_name", msg_string)
+        msg_def = MessageDef.from_string("", "enum_name", msg_string)
         expected = "ST"
 
         actual = msg_def.enums[0].name
@@ -516,24 +516,28 @@ uint16 SERVICE_COMPASS = 4
 uint16 SERVICE_GALILEO = 8
 
 uint16 service"""
-        msg_def = MessageDef.from_string("NavSatStatus", msg_string)
+        msg_def = MessageDef.from_string("", "NavSatStatus", msg_string)
         expected = MessageDef(
             name="NavSatStatus",
             fields=[
                 FieldDef(
-                    type=TypeDef("Status", Range("1", "1"), "NavSatStatus"),
+                    type=TypeDef(
+                        "NavSatStatusStatus", Range("1", "1"), ".NavSatStatus"
+                    ),
                     name="status",
                     description="",
                 ),
                 FieldDef(
-                    type=TypeDef("Service", Range("1", "1"), "NavSatStatus"),
+                    type=TypeDef(
+                        "NavSatStatusService", Range("1", "1"), ".NavSatStatus"
+                    ),
                     name="service",
                     description="",
                 ),
             ],
             enums=[
                 EnumDef(
-                    name="Status",
+                    name="NavSatStatusStatus",
                     literals=[
                         ConstantDef(
                             type=TypeDef("int8", Range("1", "1")),
@@ -563,7 +567,7 @@ uint16 service"""
                     description="",
                 ),
                 EnumDef(
-                    name="Service",
+                    name="NavSatStatusService",
                     literals=[
                         ConstantDef(
                             type=TypeDef("uint16", Range("1", "1")),
@@ -601,7 +605,7 @@ uint16 service"""
 
 def test_MessageDef_class(sample_class_def: MessageDef) -> None:
     msg_path = SAMPLE_CLASS_PATH
-    msg_def = MessageDef.from_file(msg_path)
+    msg_def = MessageDef.from_file("", msg_path)
     expected = sample_class_def
 
     assert msg_def == expected
@@ -609,7 +613,7 @@ def test_MessageDef_class(sample_class_def: MessageDef) -> None:
 
 def test_MessageDef_enum(sample_enum_def: MessageDef) -> None:
     msg_path = SAMPLE_ENUM_PATH
-    msg_def = MessageDef.from_file(msg_path)
+    msg_def = MessageDef.from_file("", msg_path)
     expected = sample_enum_def
 
     assert msg_def == expected
@@ -617,7 +621,7 @@ def test_MessageDef_enum(sample_enum_def: MessageDef) -> None:
 
 def test_MessageDef_class_enum(sample_class_enum_def: MessageDef) -> None:
     msg_path = SAMPLE_CLASS_ENUM_PATH
-    msg_def = MessageDef.from_file(msg_path)
+    msg_def = MessageDef.from_file("", msg_path)
     expected = sample_class_enum_def
 
     assert msg_def == expected

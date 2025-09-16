@@ -18,6 +18,7 @@ Read the [full documentation on Github pages](https://dbinfrago.github.io/capell
 
 # Examples
 
+## Import of ROS Messages
 Import local ROS .msg files to Capella model layer's root data package:
 
 ```sh
@@ -39,7 +40,12 @@ import \
 -l la
 ```
 
-Export local Capella model layer's root data package as ROS .msg files:
+## Export of Capella Classes as ROS2 Messages
+Pleas mind: If classes don't follow the ROS2 naming conventions, their names as well as property, enumeration value and
+package names will be converted accordingly.
+### Export by layer
+Export local Capella model layer's root data package as ROS .msg files. All msg files will be exported in a single
+package:
 
 ```sh
 python -m capella_ros_tools \
@@ -48,8 +54,8 @@ export \
 -l la \
 -o tests/data/melody_msgs
 ```
-
-Export remote Capella model layer's root data package as ROS .msg files:
+Export remote Capella model layer's root data package as ROS .msg files. All msg files will be exported in a single
+package:
 
 ```sh
 python -m capella_ros_tools \
@@ -58,6 +64,53 @@ export \
 -l sa \
 -o tests/data/coffee_msgs
 ```
+### Custom Export
+Use the custom exporter using a config file:
+````yaml
+packages:
+    asdf: <capella_pkg_uuid>
+build_ins:
+    ros_pkg: <capella_build_in_pkg_uuid>
+custom_pkg:
+    "abc":
+      - <capella_cls1_uuid>
+    "xyz":
+      - <capella_cls2_uuid>
+custom_types:
+    Bitset16: int16
+    Bitset32: int32
+````
+This will generate three ROS packages. Package `asdf` will contain all classes listed in `capella_pkg` and sub-packages.
+Package `abc` will contain `capella_cls1` and `xyz` will contain `capella_cls2`. If those classes use other classes as
+types in their properties, these classes will be pulled in. In the `build_ins` section data packages can be defined,
+which can be considered as build-in. So in this example, classes which are located in `capella_build_in_pkg` will not
+be pulled into the packages and will be considered as available. These classes will be referenced using `ros_pkg` as ROS
+package name. In `custom_types` a mapping of Capella types to ROS types can be provided for custom capella types.
+```sh
+python -m capella_ros_tools \
+export \
+-m tests/data/melody_model_60 \
+-c config.yaml \
+-o tests/data/melody_msgs
+```
+The config file may also be provided as a jinja2 template, which will be rendered to the yaml described above during the
+run. The jinja2 template will be rendered with the model provided in variable `model`. This way complex configurations
+stay maintainable:
+````yaml
+packages: {}
+build_ins:
+    {% for pkg in model.search("DataPkg").by_name("ROS-Msgs").packages %}
+    {{pkg.name}}: {{pkg.uuid}}
+    {% endfor %}
+custom_pkg:
+    "abc":
+      - <capella_cls1_uuid>
+    "xyz":
+      - <capella_cls2_uuid>
+custom_types:
+    Bitset16: int16
+    Bitset32: int32
+````
 
 # Installation
 

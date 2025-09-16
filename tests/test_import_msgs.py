@@ -86,12 +86,13 @@ def test_convert_enum(importer: Importer) -> None:
         ],
     )
     expected = {
-        "promise_id": "MyMessage.MyEnum",
+        "promise_id": ".MyMessage.MyEnum",
         "find": {
             "name": "MyEnum",
         },
         "set": {
             "description": "An example enum",
+            "domain_type": decl.Promise(".uint8"),
         },
         "sync": {
             "literals": [
@@ -121,10 +122,10 @@ def test_convert_enum(importer: Importer) -> None:
         },
     }
 
-    actual = importer._convert_enum("MyMessage", enum_def)
+    actual = importer._convert_enum("", "MyMessage", enum_def)
 
     assert decl.dump([actual]) == decl.dump([expected])
-    assert "MyMessage.MyEnum" in importer._promise_ids
+    assert ".MyMessage.MyEnum" in importer._promise_ids
 
 
 def test_convert_class(importer: Importer) -> None:
