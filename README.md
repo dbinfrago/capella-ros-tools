@@ -41,7 +41,7 @@ import \
 ```
 
 ## Export of Capella Classes as ROS2 Messages
-Pleas mind: If classes don't follow the ROS2 naming conventions, their names as well as property, enumeration value and
+Please mind: If classes don't follow the ROS2 naming conventions, their names as well as property, enumeration value and
 package names will be converted accordingly.
 ### Export by layer
 Export local Capella model layer's root data package as ROS .msg files. All msg files will be exported in a single
@@ -69,7 +69,7 @@ Use the custom exporter using a config file:
 ````yaml
 packages:
     asdf: <capella_pkg_uuid>
-build_ins:
+built_ins:
     ros_pkg: <capella_build_in_pkg_uuid>
 custom_pkg:
     "abc":
@@ -82,8 +82,8 @@ custom_types:
 ````
 This will generate three ROS packages. Package `asdf` will contain all classes listed in `capella_pkg` and sub-packages.
 Package `abc` will contain `capella_cls1` and `xyz` will contain `capella_cls2`. If those classes use other classes as
-types in their properties, these classes will be pulled in. In the `build_ins` section data packages can be defined,
-which can be considered as build-in. So in this example, classes which are located in `capella_build_in_pkg` will not
+types in their properties, these classes will be pulled in. In the `built_ins` section data packages can be defined,
+which can be considered as built-in. So in this example, classes which are located in `capella_build_in_pkg` will not
 be pulled into the packages and will be considered as available. These classes will be referenced using `ros_pkg` as ROS
 package name. In `custom_types` a mapping of Capella types to ROS types can be provided for custom capella types.
 ```sh
@@ -98,7 +98,7 @@ run. The jinja2 template will be rendered with the model provided in variable `m
 stay maintainable:
 ````yaml
 packages: {}
-build_ins:
+built_ins:
     {% for pkg in model.search("DataPkg").by_name("ROS-Msgs").packages %}
     {{pkg.name}}: {{pkg.uuid}}
     {% endfor %}

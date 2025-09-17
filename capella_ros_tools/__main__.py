@@ -197,7 +197,8 @@ def import_msgs(
     help="Decide whether experimental cmake files should be generated.",
     envvar="CAPELLA_ROS_TOOLS_GENERATE_CMAKE",
 )
-def configured_export(
+def export(
+    *,
     model: capellambse.MelodyModel,
     config: pathlib.Path | None,
     layer: str | None,
@@ -217,20 +218,18 @@ def configured_export(
         elif layer:
             root_package = getattr(model, layer).data_package
         else:
-            logger.error(
+            raise RuntimeError(
                 "Neither config nor root package nor layer specified."
             )
-            return -1
         if not isinstance(root_package, capellambse.model.ModelElement):
-            logger.error("Failed to find root package.")
-            return -1
+            raise RuntimeError("Failed to find root package.")
         conf = exporter.ExporterConfig(
             packages={
                 exporter.Exporter.make_snake_case(
                     root_package.name
                 ): root_package.uuid
             },
-            build_ins={},
+            built_ins={},
             custom_packages={},
             custom_types={},
         )
@@ -241,7 +240,7 @@ def configured_export(
 
     _exporter = exporter.Exporter(
         conf.packages,
-        conf.build_ins,
+        conf.built_ins,
         conf.custom_packages,
         conf.custom_types,
         model,

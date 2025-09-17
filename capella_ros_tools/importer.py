@@ -1,6 +1,7 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing ROS messages to a Capella data package."""
+
 import json
 import os
 import pathlib
@@ -62,7 +63,7 @@ class Importer:
         name: str,
         path: str,
         msg_description_regex: str | None = None,
-        **kwargs,
+        **kwargs: t.Any,
     ) -> None:
         root = filehandler.get_filehandler(path, **kwargs).rootdir
         msg_description_pattern = None
@@ -208,7 +209,7 @@ class Importer:
                 literal_yml["set"]["description"] = literal.description
             literals.append(literal_yml)
 
-        types = set(lit.type.name for lit in enum_def.literals)
+        types = {lit.type.name for lit in enum_def.literals}
         assert len(types) == 1, "All values of an Enum must have the same type"
         promise_ref = f"{pkg_name}.{types.pop()}"
         self._promise_id_refs[promise_ref] = None

@@ -1,12 +1,12 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 """Tool for exporting a Capella data package to ROS messages."""
+
 import dataclasses
 import itertools
 import pathlib
 import re
 import typing
-from collections import abc as cabc
 from collections import defaultdict, deque
 from html.parser import HTMLParser
 
@@ -38,26 +38,24 @@ ROS_TYPES = [
 UINT_REGEX = re.compile(r"^uint(\d+)")
 INT_REGEX = re.compile(r"^int(\d+)")
 FLOAT_REGEX = re.compile(r"^float(\d+)")
+INT_LENGTHS = [8, 16, 32, 64]
+FLOAT_LENGTHS = [32, 64]
 
 
-def int_bytes(length: int):
+def int_bytes(length: int) -> int:
     """Return ROS byte length for integers."""
-    if length <= 8:
-        return 8
-    if length <= 16:
-        return 16
-    if length <= 32:
-        return 32
-    if length <= 64:
-        return 64
+    for int_length in INT_LENGTHS:
+        if length <= int_length:
+            return int_length
+    raise ValueError(f"Invalid integer length {length}")
 
 
-def float_bytes(length: int):
+def float_bytes(length: int) -> int:
     """Return ROS byte length for floats."""
-    if length <= 32:
-        return 32
-    if length <= 64:
-        return 64
+    for float_length in FLOAT_LENGTHS:
+        if length <= float_length:
+            return float_length
+    raise ValueError(f"Invalid float length {length}")
 
 
 @dataclasses.dataclass
@@ -82,11 +80,11 @@ class ClassData:
 class MyHTMLParser(HTMLParser):
     """An HTML parser to convert an HTML string to a list of plain strings."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.text_list = []
+        self.text_list: list[str] = []
 
-    def handle_data(self, data: str):
+    def handle_data(self, data: str) -> None:
         """Process data and fill the text list."""
         if data.strip():  # Skipping empty strings
             self.text_list.append(data.strip())
@@ -98,7 +96,9 @@ class Exporter:
     packages: dict[str, str]  # mapping from ROS pkg name to capella pkg uuid
     build_ins: dict[str, str]  # maps build in ROS pkgs to capella pkg uuids
     package_uuids: list[str]  # list of all pkg uuids
-    custom_pkg: dict[str, list[str]]  # maps ROS pkg names to capella cls uuids
+    custom_pkg: dict[
+        str, list[information.Class]
+    ]  # maps ROS pkg names to capella classes
     custom_types: dict[str, str]  # maps custom capella types to ros types
 
     def __init__(
@@ -108,9 +108,9 @@ class Exporter:
         custom_pkg: dict[str, list[str]],
         custom_types: dict[str, str],
         model: capellambse.MelodyModel,
-        generate_cmake: bool,
+        generate_cmake: bool,  # noqa: FBT001
         pkg_postfix: str | None = None,
-    ):
+    ) -> None:
         self.generate_cmake = generate_cmake
         self.model = model
         self.packages = packages
@@ -131,10 +131,10 @@ class Exporter:
     def _get_package_classes(
         self,
         package: information.DataPkg,
-        classes: capellambse.model.ElementList | None = None,
-    ):
+        classes: list[information.Class] | None = None,
+    ) -> list[information.Class]:
         if classes is None:
-            classes = package.classes
+            classes = list(package.classes)
         else:
             classes += package.classes
 
@@ -144,10 +144,10 @@ class Exporter:
 
         return classes
 
-    def _collect_pure_packages(self):
-        package_class_mapping: dict[
-            str, typing.Iterable[information.Class]
-        ] = {}
+    def _collect_pure_packages(
+        self,
+    ) -> dict[str, list[information.Class]]:
+        package_class_mapping: dict[str, list[information.Class]] = {}
         for package_name, uuid in self.packages.items():
             package_class_mapping[package_name] = self._get_package_classes(
                 self.model.by_uuid(uuid)
@@ -160,7 +160,7 @@ class Exporter:
         cls: information.Class,
         class_package_mapping: dict[str, str],
         dependency_classes: list[information.Class],
-    ):
+    ) -> None:
         for prop in cls.properties:
             _type = prop.type
             if isinstance(_type, information.Class):
@@ -177,9 +177,11 @@ class Exporter:
 
     def _get_missing_dependencies(
         self,
-        package_class_mapping: dict[str, cabc.Iterable[information.Class]],
+        package_class_mapping: typing.Mapping[
+            str, typing.Iterable[information.Class]
+        ],
         class_package_mapping: dict[str, str],
-    ):
+    ) -> dict[str, list[information.Class]]:
         dependency_classes: dict[str, list[information.Class]] = {}
         for pkg, classes in package_class_mapping.items():
             cls_dependencies: list[information.Class] = []
@@ -190,14 +192,14 @@ class Exporter:
                 )
         return dependency_classes
 
-    def _make_doc_str(self, markup: str):
+    def _make_doc_str(self, markup: str) -> list[str]:
         parser = MyHTMLParser()
         parser.feed(markup)
 
         return parser.text_list
 
     @staticmethod
-    def make_snake_case(name: str):
+    def make_snake_case(name: str) -> str:
         """Convert all cases to snake_case."""
         name = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
         name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
@@ -209,7 +211,7 @@ class Exporter:
         return re.sub("_$", "", name)
 
     @staticmethod
-    def make_camel_case(name: str):
+    def make_camel_case(name: str) -> str:
         """Convert all cases to CamelCase."""
         temp_parts = re.split(r"[^a-zA-Z0-9]+", name)
         parts = []
@@ -229,7 +231,7 @@ class Exporter:
 
         return camel_case_name
 
-    def _make_type_name(self, _type: information.datatype.DataType):
+    def _make_type_name(self, _type: information.datatype.DataType) -> str:
         type_name = _type.name
         if ros_type := self.custom_types.get(type_name):
             return ros_type
@@ -257,9 +259,9 @@ class Exporter:
         cls: information.Class,
         current_pkg: str,
         class_package_mapping: dict[str, str],
-        pkg_cls_uuids,
+        pkg_cls_uuids: typing.Iterable[str],
         pkg_dependencies: set[str],
-    ):
+    ) -> ClassData:
         cls_data = ClassData(
             self.make_camel_case(cls.name),
             self._make_doc_str(cls.description),
@@ -267,54 +269,16 @@ class Exporter:
         for prop in cls.properties:
             _type = prop.type
             prop_name = self.make_snake_case(prop.name)
-            if isinstance(_type, information.datatype.DataType):
-                if isinstance(_type, information.datatype.Enumeration):
-                    if _type.domain_type:
-                        type_name = self._make_type_name(_type.domain_type)
-                    else:
-                        logger.warning(
-                            "Primitive type of %s should be added as "
-                            "domain_type, will use int32 instead",
-                            _type.name,
-                        )
-                        type_name = "int32"
-                    for val in _type.owned_literals:
-                        cls_data.literals.append(
-                            LiteralData(
-                                type_name,
-                                f"{prop_name.upper()}_{self.make_snake_case(val.name).upper()}",
-                                val.value.value,
-                                self._make_doc_str(val.description),
-                            )
-                        )
-                else:
-                    type_name = self._make_type_name(_type)
-            elif isinstance(_type, information.Class):
-                pkg = ""
-                build_in = False
-                if _type.uuid not in pkg_cls_uuids:
-                    if cls_pkg := class_package_mapping.get(_type.uuid):
-                        if cls_pkg != current_pkg:
-                            pkg_dependencies.add(cls_pkg)
-                            build_in = cls_pkg in self.build_ins
-                            if not build_in:
-                                cls_pkg += self.pkg_postfix
-                            pkg = f"{cls_pkg}/"
-                    else:
-                        logger.error(
-                            "Class %s was referenced in %s, but not found",
-                            _type.name,
-                            cls.name,
-                        )
-
-                type_name = pkg + (
-                    _type.name
-                    if build_in
-                    else self.make_camel_case(_type.name)
-                )
-            else:
-                logger.error("Unknown type for property %s of class %s")
-                type_name = "unknown"
+            type_name = self._handle_property_type(
+                _type,
+                class_package_mapping,
+                cls,
+                cls_data,
+                current_pkg,
+                pkg_cls_uuids,
+                pkg_dependencies,
+                prop_name,
+            )
 
             try:
                 card = (prop.min_card.value, prop.max_card.value)
@@ -339,7 +303,66 @@ class Exporter:
 
         return cls_data
 
-    def _collect_build_in_classes(self):
+    def _handle_property_type(
+        self,
+        _type: capellambse.model.ModelElement,
+        class_package_mapping: dict[str, str],
+        cls: information.Class,
+        cls_data: ClassData,
+        current_pkg: str,
+        pkg_cls_uuids: typing.Iterable[str],
+        pkg_dependencies: set[str],
+        prop_name: str,
+    ) -> str:
+        if isinstance(_type, information.datatype.DataType):
+            if isinstance(_type, information.datatype.Enumeration):
+                if _type.domain_type:
+                    type_name = self._make_type_name(_type.domain_type)
+                else:
+                    logger.warning(
+                        "Primitive type of %s should be added as "
+                        "domain_type, will use int32 instead",
+                        _type.name,
+                    )
+                    type_name = "int32"
+                for val in _type.owned_literals:
+                    cls_data.literals.append(
+                        LiteralData(
+                            type_name,
+                            f"{prop_name.upper()}_{self.make_snake_case(val.name).upper()}",
+                            val.value.value,
+                            self._make_doc_str(val.description),
+                        )
+                    )
+            else:
+                type_name = self._make_type_name(_type)
+        elif isinstance(_type, information.Class):
+            pkg = ""
+            build_in = False
+            if _type.uuid not in pkg_cls_uuids:
+                if cls_pkg := class_package_mapping.get(_type.uuid):
+                    if cls_pkg != current_pkg:
+                        pkg_dependencies.add(cls_pkg)
+                        build_in = cls_pkg in self.build_ins
+                        if not build_in:
+                            cls_pkg += self.pkg_postfix
+                        pkg = f"{cls_pkg}/"
+                else:
+                    logger.error(
+                        "Class %s was referenced in %s, but not found",
+                        _type.name,
+                        cls.name,
+                    )
+
+            type_name = pkg + (
+                _type.name if build_in else self.make_camel_case(_type.name)
+            )
+        else:
+            logger.error("Unknown type for property %s of class %s")
+            type_name = "unknown"
+        return type_name
+
+    def _collect_build_in_classes(self) -> dict[str, str]:
         cls_to_pkg_mapping: dict[str, str] = {}
         for pkg_name, uuid in self.build_ins.items():
             for cls in self._get_package_classes(self.model.by_uuid(uuid)):
@@ -347,7 +370,9 @@ class Exporter:
 
         return cls_to_pkg_mapping
 
-    def prepare_export_data(self):
+    def prepare_export_data(
+        self,
+    ) -> tuple[dict[str, list[ClassData]], dict[str, set[str]]]:
         """Collect export data for all defined packages."""
         package_class_mapping = self._collect_pure_packages()
         package_class_mapping |= self.custom_pkg
@@ -363,7 +388,7 @@ class Exporter:
         seen_classes = set()
         duplicate_classes_uuids = set()
         multi_dependency_classes = []
-        for p, clss in dependency_classes.items():
+        for clss in dependency_classes.values():
             for cls in clss:
                 if cls.uuid in seen_classes:
                     if cls.uuid not in duplicate_classes_uuids:
@@ -442,10 +467,10 @@ class Exporter:
         out_dir: pathlib.Path,
         project_name: str,
         data_packages: dict[str, list[ClassData]],
-        dependencies: dict[str, typing.Iterable],
+        dependencies: dict[str, set[str]],
         contact_email: str,
         maintainer: str,
-    ):
+    ) -> None:
         """Export the given packages including CMake and package.xml files."""
         for pkg, msgs in data_packages.items():
             self._render_package(out_dir, pkg, msgs)
@@ -463,7 +488,7 @@ class Exporter:
 
     def _render_package(
         self, out_dir: pathlib.Path, name: str, msgs: list[ClassData]
-    ):
+    ) -> None:
         """Render the given messages for the given package."""
         pkg_dir = out_dir / name / "msg"
         pkg_dir.mkdir(parents=True, exist_ok=True)
@@ -480,7 +505,7 @@ class Exporter:
         dependencies: typing.Iterable,
         contact_email: str,
         maintainer: str,
-    ):
+    ) -> None:
         pkg_dir = out_dir / name
         pkg_dir.mkdir(parents=True, exist_ok=True)
         if self.generate_cmake:
@@ -493,7 +518,7 @@ class Exporter:
                 "utf-8",
             )
         xml_template = self.jinja_env.get_template("package.xml.j2")
-        xml_path = pkg_dir / f"package.xml"
+        xml_path = pkg_dir / "package.xml"
         xml_path.write_text(
             xml_template.render(
                 pkg_name=name + self.pkg_postfix,
@@ -508,10 +533,10 @@ class Exporter:
         self,
         out_dir: pathlib.Path,
         project_name: str,
-        dependencies: dict[str, typing.Iterable],
+        dependencies: typing.Mapping[str, typing.Iterable],
         contact_email: str,
         maintainer: str,
-    ):
+    ) -> None:
         directories = topological_sort(dependencies)
         if self.generate_cmake:
             cmake_template = self.jinja_env.get_template("cmake_top_level.j2")
@@ -523,7 +548,7 @@ class Exporter:
                 "utf-8",
             )
         xml_template = self.jinja_env.get_template("top_level_package.xml.j2")
-        xml_path = out_dir / f"package.xml"
+        xml_path = out_dir / "package.xml"
         xml_path.write_text(
             xml_template.render(
                 project_name=project_name,
@@ -538,7 +563,7 @@ class ExporterConfig(pydantic.BaseModel):
     """Config for a customized exporter."""
 
     packages: dict[str, str]
-    build_ins: dict[str, str]
+    built_ins: dict[str, str]
     custom_packages: dict[str, list[str]]
     custom_types: dict[str, str]
 
@@ -556,7 +581,9 @@ def load_config(
     return ExporterConfig(**content)
 
 
-def topological_sort(dependencies: dict[str, typing.Iterable]):
+def topological_sort(
+    dependencies: typing.Mapping[str, typing.Iterable[str]],
+) -> list[str]:
     """Sort the packages in a way that dependencies are listed first."""
     # Create an adjacency list and count of in-degrees
     adj_list: defaultdict[str, set[str]] = defaultdict(set)
@@ -570,7 +597,7 @@ def topological_sort(dependencies: dict[str, typing.Iterable]):
                 in_degrees[package] += 1
 
     # Ensure all packages are in the in-degree dictionary
-    for package in dependencies.keys():
+    for package in dependencies:
         if package not in in_degrees:
             in_degrees[package] = 0
 
@@ -579,7 +606,7 @@ def topological_sort(dependencies: dict[str, typing.Iterable]):
         [pkg for pkg, degree in in_degrees.items() if degree == 0]
     )
 
-    sorted_packages = []
+    sorted_packages: list[str] = []
     while zero_in_degree:
         package = zero_in_degree.popleft()
         sorted_packages.append(package)
