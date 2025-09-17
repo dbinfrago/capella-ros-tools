@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for exporting a Capella data package to ROS messages."""
 
+import collections
 import dataclasses
 import itertools
 import pathlib
 import re
-import typing
-from collections import defaultdict, deque
-from html.parser import HTMLParser
+import typing as t
+from html import parser
 
 import capellambse
 import jinja2
@@ -77,7 +77,7 @@ class ClassData:
     literals: list[LiteralData] = dataclasses.field(default_factory=list)
 
 
-class MyHTMLParser(HTMLParser):
+class MyHTMLParser(parser.HTMLParser):
     """An HTML parser to convert an HTML string to a list of plain strings."""
 
     def __init__(self) -> None:
@@ -177,9 +177,7 @@ class Exporter:
 
     def _get_missing_dependencies(
         self,
-        package_class_mapping: typing.Mapping[
-            str, typing.Iterable[information.Class]
-        ],
+        package_class_mapping: t.Mapping[str, t.Iterable[information.Class]],
         class_package_mapping: dict[str, str],
     ) -> dict[str, list[information.Class]]:
         dependency_classes: dict[str, list[information.Class]] = {}
@@ -259,7 +257,7 @@ class Exporter:
         cls: information.Class,
         current_pkg: str,
         class_package_mapping: dict[str, str],
-        pkg_cls_uuids: typing.Iterable[str],
+        pkg_cls_uuids: t.Iterable[str],
         pkg_dependencies: set[str],
     ) -> ClassData:
         cls_data = ClassData(
@@ -310,7 +308,7 @@ class Exporter:
         cls: information.Class,
         cls_data: ClassData,
         current_pkg: str,
-        pkg_cls_uuids: typing.Iterable[str],
+        pkg_cls_uuids: t.Iterable[str],
         pkg_dependencies: set[str],
         prop_name: str,
     ) -> str:
@@ -505,7 +503,7 @@ class Exporter:
         self,
         out_dir: pathlib.Path,
         name: str,
-        dependencies: typing.Iterable,
+        dependencies: t.Iterable,
         contact_email: str,
         maintainer: str,
     ) -> None:
@@ -536,7 +534,7 @@ class Exporter:
         self,
         out_dir: pathlib.Path,
         project_name: str,
-        dependencies: typing.Mapping[str, typing.Iterable],
+        dependencies: t.Mapping[str, t.Iterable],
         contact_email: str,
         maintainer: str,
     ) -> None:
@@ -585,12 +583,16 @@ def load_config(
 
 
 def topological_sort(
-    dependencies: typing.Mapping[str, typing.Iterable[str]],
+    dependencies: t.Mapping[str, t.Iterable[str]],
 ) -> list[str]:
     """Sort the packages in a way that dependencies are listed first."""
     # Create an adjacency list and count of in-degrees
-    adj_list: defaultdict[str, set[str]] = defaultdict(set)
-    in_degrees: defaultdict[str, int] = defaultdict(int)
+    adj_list: collections.defaultdict[str, set[str]] = collections.defaultdict(
+        set
+    )
+    in_degrees: collections.defaultdict[str, int] = collections.defaultdict(
+        int
+    )
 
     # Initialize the adjacency list and in-degrees count correctly
     for package, deps in dependencies.items():
@@ -605,7 +607,7 @@ def topological_sort(
             in_degrees[package] = 0
 
     # Find all packages with no incoming edges
-    zero_in_degree = deque(
+    zero_in_degree = collections.deque(
         [pkg for pkg, degree in in_degrees.items() if degree == 0]
     )
 

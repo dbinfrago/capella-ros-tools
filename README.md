@@ -22,8 +22,7 @@ Read the [full documentation on Github pages](https://dbinfrago.github.io/capell
 Import local ROS .msg files to Capella model layer's root data package:
 
 ```sh
-python -m capella_ros_tools \
-import \
+capella-ros-tools import \
 -i tests/data/data_model/example_msgs \
 -m tests/data/empty_project_60 \
 -l la \
@@ -33,8 +32,7 @@ import \
 Import remote ROS .msg files to Capella model layer's root data package:
 
 ```sh
-python -m capella_ros_tools \
-import \
+capella-ros-tools import \
 -i git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss \
 -m tests/data/empty_project_60 \
 -l la
@@ -48,8 +46,7 @@ Export local Capella model layer's root data package as ROS .msg files. All msg 
 package:
 
 ```sh
-python -m capella_ros_tools \
-export \
+capella-ros-tools export \
 -m tests/data/melody_model_60 \
 -l la \
 -o tests/data/melody_msgs
@@ -58,8 +55,7 @@ Export remote Capella model layer's root data package as ROS .msg files. All msg
 package:
 
 ```sh
-python -m capella_ros_tools \
-export \
+capella-ros-tools export \
 -m git+https://github.com/DSD-DBS/coffee-machine \
 -l sa \
 -o tests/data/coffee_msgs
@@ -87,8 +83,7 @@ which can be considered as built-in. So in this example, classes which are locat
 be pulled into the packages and will be considered as available. These classes will be referenced using `ros_pkg` as ROS
 package name. In `custom_types` a mapping of Capella types to ROS types can be provided for custom capella types.
 ```sh
-python -m capella_ros_tools \
-export \
+capella-ros-tools export \
 -m tests/data/melody_model_60 \
 -c config.yaml \
 -o tests/data/melody_msgs
