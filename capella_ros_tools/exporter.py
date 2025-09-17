@@ -550,9 +550,10 @@ def load_config(
     if config.name.endswith(".j2"):
         assert model is not None, "For jinja configs the model is mandatory"
         template = jinja2.Template(config.read_text("utf-8"))
-        return yaml.safe_load(template.render(model=model))
-
-    return ExporterConfig(**yaml.safe_load(config.read_text("utf-8")))
+        content = yaml.safe_load(template.render(model=model))
+    else:
+        content = yaml.safe_load(config.read_text("utf-8"))
+    return ExporterConfig(**content)
 
 
 def topological_sort(dependencies: dict[str, typing.Iterable]):

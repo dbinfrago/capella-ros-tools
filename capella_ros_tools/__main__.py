@@ -212,8 +212,24 @@ def configured_export(
     if config:
         conf = exporter.load_config(config, model)
     else:
+        if root:
+            root_package = model.search("DataPkg").by_uuid(str(root))
+        elif layer:
+            root_package = getattr(model, layer).data_package
+        else:
+            logger.error(
+                "Neither config nor root package nor layer specified."
+            )
+            return -1
+        if not isinstance(root_package, capellambse.model.ModelElement):
+            logger.error("Failed to find root package.")
+            return -1
         conf = exporter.ExporterConfig(
-            packages={},
+            packages={
+                exporter.Exporter.make_snake_case(
+                    root_package.name
+                ): root_package.uuid
+            },
             build_ins={},
             custom_packages={},
             custom_types={},
@@ -221,22 +237,6 @@ def configured_export(
     if conf.packages and (root or layer):
         logger.warning(
             "Your config has packages defined, will ignore root/layer for that reason."
-        )
-    else:
-        if root:
-            root_package = model.search("DataPkg").by_uuid(str(root))
-        elif layer:
-            root_package = getattr(model, layer).data_package
-        else:
-            logger.error(
-                "Neither packages in config nor root package nor layer specified."
-            )
-            return -1
-        if not isinstance(root_package, capellambse.model.ModelElement):
-            logger.error("Failed to find root package.")
-            return -1
-        conf.packages[exporter.Exporter.make_snake_case(root_package.name)] = (
-            root_package.uuid
         )
 
     _exporter = exporter.Exporter(
