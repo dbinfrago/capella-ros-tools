@@ -122,8 +122,8 @@ class Exporter:
             for pkg, uuids in custom_pkg.items()
         }
         self.jinja_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(
-                pathlib.Path(__file__).parent / "export_templates"
+            loader=jinja2.PackageLoader(
+                __name__.rsplit(".", 1)[0], "export_templates"
             )
         )
         self.pkg_postfix = pkg_postfix or "_interface_msgs"
@@ -358,7 +358,11 @@ class Exporter:
                 _type.name if build_in else self.make_camel_case(_type.name)
             )
         else:
-            logger.error("Unknown type for property %s of class %s")
+            logger.error(
+                "Unknown type for property %r of class %s",
+                type(_type).__name__,
+                cls.name,
+            )
             type_name = "unknown"
         return type_name
 
@@ -390,12 +394,11 @@ class Exporter:
         multi_dependency_classes = []
         for clss in dependency_classes.values():
             for cls in clss:
-                if cls.uuid in seen_classes:
-                    if cls.uuid not in duplicate_classes_uuids:
-                        multi_dependency_classes.append(cls)
-                    duplicate_classes_uuids.add(cls.uuid)
-                else:
+                if cls.uuid not in seen_classes:
                     seen_classes.add(cls.uuid)
+                elif cls.uuid not in duplicate_classes_uuids:
+                    duplicate_classes_uuids.add(cls.uuid)
+                    multi_dependency_classes.append(cls)
 
         result: dict[str, list[ClassData]] = {}
         pkg_dependencies: dict[str, set[str]] = {}
