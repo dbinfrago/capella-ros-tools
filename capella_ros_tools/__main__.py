@@ -168,28 +168,6 @@ def import_msgs(
     help="Output directory for the .msg files.",
 )
 @click.option(
-    "--contact-email",
-    type=str,
-    default="dummy@dummy",
-    help="E-Mail address to be placed in the package.xml files.",
-    envvar="CAPELLA_ROS_TOOLS_CONTACT_EMAIL",
-)
-@click.option(
-    "--maintainer",
-    type=str,
-    default="Dummy Company",
-    help="Name of the maintainer used in the package.xml files.",
-    envvar="CAPELLA_ROS_TOOLS_MAINTAINER",
-)
-@click.option(
-    "-p",
-    "--project-name",
-    type=str,
-    default="custom_ros_msgs",
-    help="Project name being used in CMake and package.xml files.",
-    envvar="CAPELLA_ROS_TOOLS_PROJECT_NAME",
-)
-@click.option(
     "--generate-cmake",
     type=bool,
     default=False,
@@ -204,9 +182,6 @@ def export(
     layer: str | None,
     root: str | None,
     output: pathlib.Path,
-    contact_email: str,
-    maintainer: str,
-    project_name: str,
     generate_cmake: bool,
 ) -> None:
     """Export Capella data package to ROS messages."""
@@ -225,7 +200,7 @@ def export(
             raise RuntimeError("Failed to find root package.")
         conf = exporter.ExporterConfig(
             packages={
-                exporter.Exporter.make_snake_case(
+                exporter.RosExportHelper.make_snake_case(
                     root_package.name
                 ): root_package.uuid
             },
@@ -245,15 +220,16 @@ def export(
         conf.custom_types,
         model,
         generate_cmake,
+        conf.pkg_postfix,
     )
     export_data, dependency_map = _exporter.prepare_export_data()
     _exporter.export_ros_pkgs(
         output,
-        project_name,
+        conf.project_name,
         export_data,
         dependency_map,
-        contact_email,
-        maintainer,
+        conf.contact_email,
+        conf.maintainer,
     )
 
 

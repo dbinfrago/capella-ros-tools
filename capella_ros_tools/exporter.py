@@ -18,6 +18,12 @@ from capellambse.metamodel import information
 
 from . import logger
 
+PACKAGE_XML = "package.xml"
+C_MAKE_LISTS_TXT = "CMakeLists.txt"
+GENERIC_PKG_NAME = "generic"
+UNKNOWN_TYPE = "unknown"
+DEFAULT_ENUM_TYPE = "int32"
+PACKAGE_PATH = "export_templates"
 ROS_TYPES = [
     "bool",
     "byte",
@@ -34,28 +40,70 @@ ROS_TYPES = [
     "float64",
     "string",
 ]
+INT_LENGTHS = [8, 16, 32, 64]
+FLOAT_LENGTHS = [32, 64]
 
 UINT_REGEX = re.compile(r"^uint(\d+)")
 INT_REGEX = re.compile(r"^int(\d+)")
 FLOAT_REGEX = re.compile(r"^float(\d+)")
-INT_LENGTHS = [8, 16, 32, 64]
-FLOAT_LENGTHS = [32, 64]
 
 
-def int_bytes(length: int) -> int:
-    """Return ROS byte length for integers."""
-    for int_length in INT_LENGTHS:
-        if length <= int_length:
-            return int_length
-    raise ValueError(f"Invalid integer length {length}")
+class RosExportHelper:
+    @staticmethod
+    def int_bytes(length: int) -> int:
+        """Return ROS byte length for integers."""
+        for int_length in INT_LENGTHS:
+            if length <= int_length:
+                return int_length
+        raise ValueError(f"Invalid integer length {length}")
 
+    @staticmethod
+    def float_bytes(length: int) -> int:
+        """Return ROS byte length for floats."""
+        for float_length in FLOAT_LENGTHS:
+            if length <= float_length:
+                return float_length
+        raise ValueError(f"Invalid float length {length}")
 
-def float_bytes(length: int) -> int:
-    """Return ROS byte length for floats."""
-    for float_length in FLOAT_LENGTHS:
-        if length <= float_length:
-            return float_length
-    raise ValueError(f"Invalid float length {length}")
+    @staticmethod
+    def make_doc_str(markup: str) -> list[str]:
+        _parser = LineSeparationHTMLParser()
+        _parser.feed(markup)
+
+        return _parser.text_list
+
+    @staticmethod
+    def make_snake_case(name: str) -> str:
+        """Convert all cases to snake_case."""
+        name = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
+        name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        name = name.lower()
+        # Replace invalid characters with underscores
+        name = re.sub("[^a-z0-9_]", "_", name)
+        name = re.sub("^[^a-z]+", "", name)
+        name = re.sub("_+", "_", name)
+        return re.sub("_$", "", name)
+
+    @staticmethod
+    def make_camel_case(name: str) -> str:
+        """Convert all cases to CamelCase."""
+        temp_parts = re.split(r"[^a-zA-Z0-9]+", name)
+        parts = []
+        for part in temp_parts:
+            if not part:
+                continue
+            parts.extend(re.findall(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+", part))
+
+        words = [word for word in parts if word]
+
+        camel_case_name = "".join(
+            w if w.isdigit() else w.capitalize() for w in words
+        )
+
+        if not camel_case_name or not camel_case_name[0].isalpha():
+            camel_case_name = "A" + camel_case_name
+
+        return camel_case_name
 
 
 @dataclasses.dataclass
@@ -77,7 +125,7 @@ class ClassData:
     literals: list[LiteralData] = dataclasses.field(default_factory=list)
 
 
-class MyHTMLParser(parser.HTMLParser):
+class LineSeparationHTMLParser(parser.HTMLParser):
     """An HTML parser to convert an HTML string to a list of plain strings."""
 
     def __init__(self) -> None:
@@ -123,10 +171,10 @@ class Exporter:
         }
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader(
-                __name__.rsplit(".", 1)[0], "export_templates"
+                __name__.rsplit(".", 1)[0], PACKAGE_PATH
             )
         )
-        self.pkg_postfix = pkg_postfix or "_interface_msgs"
+        self.pkg_postfix = pkg_postfix or ""
 
     def _get_package_classes(
         self,
@@ -190,45 +238,6 @@ class Exporter:
                 )
         return dependency_classes
 
-    def _make_doc_str(self, markup: str) -> list[str]:
-        parser = MyHTMLParser()
-        parser.feed(markup)
-
-        return parser.text_list
-
-    @staticmethod
-    def make_snake_case(name: str) -> str:
-        """Convert all cases to snake_case."""
-        name = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
-        name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
-        name = name.lower()
-        # Replace invalid characters with underscores
-        name = re.sub("[^a-z0-9_]", "_", name)
-        name = re.sub("^[^a-z]+", "", name)
-        name = re.sub("_+", "_", name)
-        return re.sub("_$", "", name)
-
-    @staticmethod
-    def make_camel_case(name: str) -> str:
-        """Convert all cases to CamelCase."""
-        temp_parts = re.split(r"[^a-zA-Z0-9]+", name)
-        parts = []
-        for part in temp_parts:
-            if not part:
-                continue
-            parts.extend(re.findall(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+", part))
-
-        words = [word for word in parts if word]
-
-        camel_case_name = "".join(
-            w if w.isdigit() else w.capitalize() for w in words
-        )
-
-        if not camel_case_name or not camel_case_name[0].isalpha():
-            camel_case_name = "A" + camel_case_name
-
-        return camel_case_name
-
     def _make_type_name(self, _type: information.datatype.DataType) -> str:
         type_name = _type.name
         if ros_type := self.custom_types.get(type_name):
@@ -238,15 +247,15 @@ class Exporter:
             return type_name
 
         if match := UINT_REGEX.match(type_name):
-            length = int_bytes(int(match.group(1)))
+            length = RosExportHelper.int_bytes(int(match.group(1)))
             return f"uint{length}"
 
         if match := INT_REGEX.match(type_name):
-            length = int_bytes(int(match.group(1)))
+            length = RosExportHelper.int_bytes(int(match.group(1)))
             return f"int{length}"
 
         if match := FLOAT_REGEX.match(type_name):
-            length = float_bytes(int(match.group(1)))
+            length = RosExportHelper.float_bytes(int(match.group(1)))
             return f"float{length}"
 
         logger.error("Type %s is unknown.", type_name)
@@ -261,12 +270,12 @@ class Exporter:
         pkg_dependencies: set[str],
     ) -> ClassData:
         cls_data = ClassData(
-            self.make_camel_case(cls.name),
-            self._make_doc_str(cls.description),
+            RosExportHelper.make_camel_case(cls.name),
+            RosExportHelper.make_doc_str(cls.description),
         )
         for prop in cls.properties:
             _type = prop.type
-            prop_name = self.make_snake_case(prop.name)
+            prop_name = RosExportHelper.make_snake_case(prop.name)
             type_name = self._handle_property_type(
                 _type,
                 class_package_mapping,
@@ -295,7 +304,7 @@ class Exporter:
                 LiteralData(
                     type_name,
                     prop_name,
-                    docstr=self._make_doc_str(prop.description),
+                    docstr=RosExportHelper.make_doc_str(prop.description),
                 )
             )
 
@@ -322,14 +331,14 @@ class Exporter:
                         "domain_type, will use int32 instead",
                         _type.name,
                     )
-                    type_name = "int32"
+                    type_name = DEFAULT_ENUM_TYPE
                 for val in _type.owned_literals:
                     cls_data.literals.append(
                         LiteralData(
                             type_name,
-                            f"{prop_name.upper()}_{self.make_snake_case(val.name).upper()}",
+                            f"{prop_name.upper()}_{RosExportHelper.make_snake_case(val.name).upper()}",
                             val.value.value,
-                            self._make_doc_str(val.description),
+                            RosExportHelper.make_doc_str(val.description),
                         )
                     )
             else:
@@ -353,15 +362,17 @@ class Exporter:
                     )
 
             type_name = pkg + (
-                _type.name if build_in else self.make_camel_case(_type.name)
+                _type.name
+                if build_in
+                else RosExportHelper.make_camel_case(_type.name)
             )
         else:
-            logger.error(
+            logger.warning(
                 "Unknown type for property %r of class %s",
                 type(_type).__name__,
                 cls.name,
             )
-            type_name = "unknown"
+            type_name = UNKNOWN_TYPE
         return type_name
 
     def _collect_build_in_classes(self) -> dict[str, str]:
@@ -376,9 +387,17 @@ class Exporter:
         self,
     ) -> tuple[dict[str, list[ClassData]], dict[str, set[str]]]:
         """Collect export data for all defined packages."""
-        package_class_mapping = self._collect_pure_packages()
-        package_class_mapping |= self.custom_pkg
         class_package_mapping = self._collect_build_in_classes()
+        package_class_mapping = self._collect_pure_packages()
+        # Built-in classes overwrite the mapping of classes from the config
+        # E.g. PointCloud2 is defined as part of a custom package. If it is
+        # also part of a built-in package, it won't be exported but referenced
+        package_class_mapping |= {
+            package: [
+                cls for cls in classes if cls.uuid not in class_package_mapping
+            ]
+            for package, classes in self.custom_pkg.items()
+        }
         class_package_mapping |= {
             cls.uuid: pkg_name
             for pkg_name, classes in package_class_mapping.items()
@@ -410,7 +429,7 @@ class Exporter:
                 ]
                 for pkg, clss in dependency_classes.items()
             }
-            pkg = "generic"
+            pkg = GENERIC_PKG_NAME
             pkg_dependencies[pkg] = set()
             result[pkg] = []
             for cls in multi_dependency_classes:
@@ -511,7 +530,7 @@ class Exporter:
         pkg_dir.mkdir(parents=True, exist_ok=True)
         if self.generate_cmake:
             cmake_template = self.jinja_env.get_template("cmake_pkg_level.j2")
-            cmake_path = pkg_dir / "CMakeLists.txt"
+            cmake_path = pkg_dir / C_MAKE_LISTS_TXT
             cmake_path.write_text(
                 cmake_template.render(
                     pkg_name=name + self.pkg_postfix, dependencies=dependencies
@@ -519,7 +538,7 @@ class Exporter:
                 "utf-8",
             )
         xml_template = self.jinja_env.get_template("package.xml.j2")
-        xml_path = pkg_dir / "package.xml"
+        xml_path = pkg_dir / PACKAGE_XML
         xml_path.write_text(
             xml_template.render(
                 pkg_name=name + self.pkg_postfix,
@@ -541,7 +560,7 @@ class Exporter:
         directories = topological_sort(dependencies)
         if self.generate_cmake:
             cmake_template = self.jinja_env.get_template("cmake_top_level.j2")
-            cmake_path = out_dir / "CMakeLists.txt"
+            cmake_path = out_dir / C_MAKE_LISTS_TXT
             cmake_path.write_text(
                 cmake_template.render(
                     project_name=project_name, directories=directories
@@ -567,6 +586,10 @@ class ExporterConfig(pydantic.BaseModel):
     built_ins: dict[str, str]
     custom_packages: dict[str, list[str]]
     custom_types: dict[str, str]
+    contact_email: str = "dummy@dummy"
+    maintainer: str = "Dummy Company"
+    project_name: str = "custom_ros_msgs"
+    pkg_postfix: str = ""
 
 
 def load_config(
