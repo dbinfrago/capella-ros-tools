@@ -222,12 +222,9 @@ def export(
         generate_cmake,
         conf.pkg_postfix,
     )
-    export_data, dependency_map = _exporter.prepare_export_data()
     _exporter.export_ros_pkgs(
         output,
         conf.project_name,
-        export_data,
-        dependency_map,
         conf.contact_email,
         conf.maintainer,
     )

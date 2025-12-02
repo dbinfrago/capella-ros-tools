@@ -105,478 +105,39 @@ class RosExportHelper:
 
         return camel_case_name
 
-
-@dataclasses.dataclass
-class LiteralData:
-    """Data for class properties and enum values."""
-
-    type: str
-    name: str
-    value: str | None = None
-    docstr: list[str] = dataclasses.field(default_factory=list)
-
-
-@dataclasses.dataclass
-class ClassData:
-    """Data for a class."""
-
-    name: str
-    docstr: list[str] = dataclasses.field(default_factory=list)
-    literals: list[LiteralData] = dataclasses.field(default_factory=list)
-
-
-class LineSeparationHTMLParser(parser.HTMLParser):
-    """An HTML parser to convert an HTML string to a list of plain strings."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.text_list: list[str] = []
-
-    def handle_data(self, data: str) -> None:
-        """Process data and fill the text list."""
-        if data.strip():  # Skipping empty strings
-            self.text_list.append(data.strip())
-
-
-class Exporter:
-    """The exporter class."""
-
-    packages: dict[str, str]  # mapping from ROS pkg name to capella pkg uuid
-    build_ins: dict[str, str]  # maps build in ROS pkgs to capella pkg uuids
-    package_uuids: list[str]  # list of all pkg uuids
-    custom_pkg: dict[
-        str, list[information.Class]
-    ]  # maps ROS pkg names to capella classes
-    custom_types: dict[str, str]  # maps custom capella types to ros types
-
-    def __init__(
-        self,
-        packages: dict[str, str],
-        build_ins: dict[str, str],
-        custom_pkg: dict[str, list[str]],
-        custom_types: dict[str, str],
-        model: capellambse.MelodyModel,
-        generate_cmake: bool,  # noqa: FBT001
-        pkg_postfix: str | None = None,
-    ) -> None:
-        self.generate_cmake = generate_cmake
-        self.model = model
-        self.packages = packages
-        self.build_ins = build_ins
-        self.package_uuids = list(packages.values()) + list(build_ins.values())
-        self.custom_types = custom_types
-        self.custom_pkg = {
-            pkg: [self.model.by_uuid(uuid) for uuid in uuids]
-            for pkg, uuids in custom_pkg.items()
-        }
-        self.jinja_env = jinja2.Environment(
-            loader=jinja2.PackageLoader(
-                __name__.rsplit(".", 1)[0], PACKAGE_PATH
-            )
-        )
-        self.pkg_postfix = pkg_postfix or ""
-
-    def _get_package_classes(
-        self,
-        package: information.DataPkg,
-        classes: list[information.Class] | None = None,
-    ) -> list[information.Class]:
-        if classes is None:
-            classes = list(package.classes)
-        else:
-            classes += package.classes
-
-        for sub_pkg in package.packages:
-            if sub_pkg.uuid not in self.package_uuids:
-                self._get_package_classes(sub_pkg, classes)
-
-        return classes
-
-    def _collect_pure_packages(
-        self,
-    ) -> dict[str, list[information.Class]]:
-        package_class_mapping: dict[str, list[information.Class]] = {}
-        for package_name, uuid in self.packages.items():
-            package_class_mapping[package_name] = self._get_package_classes(
-                self.model.by_uuid(uuid)
-            )
-
-        return package_class_mapping
-
-    def _get_cls_dependencies(
-        self,
-        cls: information.Class,
-        class_package_mapping: dict[str, str],
-        dependency_classes: list[information.Class],
-    ) -> None:
-        for prop in cls.properties:
-            _type = prop.type
-            if isinstance(_type, information.Class):
-                if (
-                    _type.uuid in class_package_mapping
-                    or _type in dependency_classes
-                ):
-                    continue
-
-                dependency_classes.append(_type)
-                self._get_cls_dependencies(
-                    _type, class_package_mapping, dependency_classes
-                )
-
-    def _get_missing_dependencies(
-        self,
-        package_class_mapping: t.Mapping[str, t.Iterable[information.Class]],
-        class_package_mapping: dict[str, str],
-    ) -> dict[str, list[information.Class]]:
-        dependency_classes: dict[str, list[information.Class]] = {}
-        for pkg, classes in package_class_mapping.items():
-            cls_dependencies: list[information.Class] = []
-            dependency_classes[pkg] = cls_dependencies
-            for cls in classes:
-                self._get_cls_dependencies(
-                    cls, class_package_mapping, cls_dependencies
-                )
-        return dependency_classes
-
-    def _make_type_name(self, _type: information.datatype.DataType) -> str:
-        type_name = _type.name
-        if ros_type := self.custom_types.get(type_name):
-            return ros_type
-
-        if type_name in ROS_TYPES:
-            return type_name
-
-        if match := UINT_REGEX.match(type_name):
-            length = RosExportHelper.int_bytes(int(match.group(1)))
-            return f"uint{length}"
-
-        if match := INT_REGEX.match(type_name):
-            length = RosExportHelper.int_bytes(int(match.group(1)))
-            return f"int{length}"
-
-        if match := FLOAT_REGEX.match(type_name):
-            length = RosExportHelper.float_bytes(int(match.group(1)))
-            return f"float{length}"
-
-        logger.error("Type %s is unknown.", type_name)
-        return type_name
-
-    def _create_class_data(
-        self,
-        cls: information.Class,
-        current_pkg: str,
-        class_package_mapping: dict[str, str],
-        pkg_cls_uuids: t.Iterable[str],
-        pkg_dependencies: set[str],
-    ) -> ClassData:
-        cls_data = ClassData(
-            RosExportHelper.make_camel_case(cls.name),
-            RosExportHelper.make_doc_str(cls.description),
-        )
-        for prop in cls.properties:
-            _type = prop.type
-            prop_name = RosExportHelper.make_snake_case(prop.name)
-            type_name = self._handle_property_type(
-                _type,
-                class_package_mapping,
-                cls,
-                cls_data,
-                current_pkg,
-                pkg_cls_uuids,
-                pkg_dependencies,
-                prop_name,
-            )
-
-            try:
-                card = (prop.min_card.value, prop.max_card.value)
-            except AttributeError:
-                card = ("1", "1")
-
-            if card != ("1", "1"):
-                if card[1] == "*":
-                    type_name += "[]"
-                elif card[0] == card[1]:
-                    type_name += f"[{card[0]}]"
-                else:
-                    type_name += f"[<={card[1]}]"
-
-            cls_data.literals.append(
-                LiteralData(
-                    type_name,
-                    prop_name,
-                    docstr=RosExportHelper.make_doc_str(prop.description),
-                )
-            )
-
-        return cls_data
-
-    def _handle_property_type(
-        self,
-        _type: capellambse.model.ModelElement,
-        class_package_mapping: dict[str, str],
-        cls: information.Class,
-        cls_data: ClassData,
-        current_pkg: str,
-        pkg_cls_uuids: t.Iterable[str],
-        pkg_dependencies: set[str],
-        prop_name: str,
+    @staticmethod
+    def type_name_for_datatype(
+        dt: information.datatype.DataType, custom_types: dict[str, str]
     ) -> str:
-        if isinstance(_type, information.datatype.DataType):
-            if isinstance(_type, information.datatype.Enumeration):
-                if _type.domain_type:
-                    type_name = self._make_type_name(_type.domain_type)
-                else:
-                    logger.warning(
-                        "Primitive type of %s should be added as "
-                        "domain_type, will use int32 instead",
-                        _type.name,
-                    )
-                    type_name = DEFAULT_ENUM_TYPE
-                for val in _type.owned_literals:
-                    cls_data.literals.append(
-                        LiteralData(
-                            type_name,
-                            f"{prop_name.upper()}_{RosExportHelper.make_snake_case(val.name).upper()}",
-                            val.value.value,
-                            RosExportHelper.make_doc_str(val.description),
-                        )
-                    )
-            else:
-                type_name = self._make_type_name(_type)
-        elif isinstance(_type, information.Class):
-            pkg = ""
-            build_in = False
-            if _type.uuid not in pkg_cls_uuids:
-                if cls_pkg := class_package_mapping.get(_type.uuid):
-                    if cls_pkg != current_pkg:
-                        pkg_dependencies.add(cls_pkg)
-                        build_in = cls_pkg in self.build_ins
-                        if not build_in:
-                            cls_pkg += self.pkg_postfix
-                        pkg = f"{cls_pkg}/"
-                else:
-                    logger.error(
-                        "Class %s was referenced in %s, but not found",
-                        _type.name,
-                        cls.name,
-                    )
+        """Create type name from data type."""
+        name = dt.name
+        if ros := custom_types.get(name):
+            return ros
+        if name in ROS_TYPES:
+            return name
+        if m := UINT_REGEX.match(name):
+            return f"uint{RosExportHelper.int_bytes(int(m.group(1)))}"
+        if m := INT_REGEX.match(name):
+            return f"int{RosExportHelper.int_bytes(int(m.group(1)))}"
+        if m := FLOAT_REGEX.match(name):
+            return f"float{RosExportHelper.float_bytes(int(m.group(1)))}"
+        logger.error("Type %s is unknown.", name)
+        return name
 
-            type_name = pkg + (
-                _type.name
-                if build_in
-                else RosExportHelper.make_camel_case(_type.name)
-            )
-        else:
-            logger.warning(
-                "Unknown type for property %r of class %s",
-                type(_type).__name__,
-                cls.name,
-            )
-            type_name = UNKNOWN_TYPE
-        return type_name
-
-    def _collect_build_in_classes(self) -> dict[str, str]:
-        cls_to_pkg_mapping: dict[str, str] = {}
-        for pkg_name, uuid in self.build_ins.items():
-            for cls in self._get_package_classes(self.model.by_uuid(uuid)):
-                cls_to_pkg_mapping[cls.uuid] = pkg_name
-
-        return cls_to_pkg_mapping
-
-    def prepare_export_data(
-        self,
-    ) -> tuple[dict[str, list[ClassData]], dict[str, set[str]]]:
-        """Collect export data for all defined packages."""
-        class_package_mapping = self._collect_build_in_classes()
-        package_class_mapping = self._collect_pure_packages()
-        # Built-in classes overwrite the mapping of classes from the config
-        # E.g. PointCloud2 is defined as part of a custom package. If it is
-        # also part of a built-in package, it won't be exported but referenced
-        package_class_mapping |= {
-            package: [
-                cls for cls in classes if cls.uuid not in class_package_mapping
-            ]
-            for package, classes in self.custom_pkg.items()
-        }
-        class_package_mapping |= {
-            cls.uuid: pkg_name
-            for pkg_name, classes in package_class_mapping.items()
-            for cls in classes
-        }
-        dependency_classes = self._get_missing_dependencies(
-            package_class_mapping, class_package_mapping
-        )
-        seen_classes = set()
-        duplicate_classes_uuids = set()
-        multi_dependency_classes = []
-        for clss in dependency_classes.values():
-            for cls in clss:
-                if cls.uuid not in seen_classes:
-                    seen_classes.add(cls.uuid)
-                elif cls.uuid not in duplicate_classes_uuids:
-                    duplicate_classes_uuids.add(cls.uuid)
-                    multi_dependency_classes.append(cls)
-
-        result: dict[str, list[ClassData]] = {}
-        pkg_dependencies: dict[str, set[str]] = {}
-
-        if multi_dependency_classes:
-            dependency_classes = {
-                pkg: [
-                    cls
-                    for cls in clss
-                    if cls.uuid not in duplicate_classes_uuids
-                ]
-                for pkg, clss in dependency_classes.items()
-            }
-            pkg = GENERIC_PKG_NAME
-            pkg_dependencies[pkg] = set()
-            result[pkg] = []
-            for cls in multi_dependency_classes:
-                class_package_mapping[cls.uuid] = pkg
-                result[pkg].append(
-                    self._create_class_data(
-                        cls,
-                        pkg,
-                        class_package_mapping,
-                        duplicate_classes_uuids,
-                        pkg_dependencies[pkg],
-                    )
-                )
-
-        for pkg, classes in package_class_mapping.items():
-            pkg_dependencies[pkg] = set()
-            pkg_cls_uuids = [
-                cls.uuid
-                for cls in itertools.chain(
-                    classes, dependency_classes.get(pkg, [])
-                )
-            ]
-            cls_uuids = set()
-            result[pkg] = []
-            for cls in classes:
-                if cls.uuid not in cls_uuids:
-                    cls_uuids.add(cls.uuid)
-                    result[pkg].append(
-                        self._create_class_data(
-                            cls,
-                            pkg,
-                            class_package_mapping,
-                            pkg_cls_uuids,
-                            pkg_dependencies[pkg],
-                        )
-                    )
-
-            for cls in dependency_classes.get(pkg, []):
-                if cls.uuid not in cls_uuids:
-                    cls_uuids.add(cls.uuid)
-                    result[pkg].append(
-                        self._create_class_data(
-                            cls,
-                            pkg,
-                            class_package_mapping,
-                            pkg_cls_uuids,
-                            pkg_dependencies[pkg],
-                        )
-                    )
-
-        return result, pkg_dependencies
-
-    def export_ros_pkgs(
-        self,
-        out_dir: pathlib.Path,
-        project_name: str,
-        data_packages: dict[str, list[ClassData]],
-        dependencies: dict[str, set[str]],
-        contact_email: str,
-        maintainer: str,
-    ) -> None:
-        """Export the given packages including CMake and package.xml files."""
-        for pkg, msgs in data_packages.items():
-            self._render_package(out_dir, pkg, msgs)
-            self._write_pkg_information(
-                out_dir,
-                pkg,
-                dependencies.get(pkg, []),
-                contact_email,
-                maintainer,
-            )
-
-        self._write_top_level_information(
-            out_dir, project_name, dependencies, contact_email, maintainer
-        )
-
-    def _render_package(
-        self, out_dir: pathlib.Path, name: str, msgs: list[ClassData]
-    ) -> None:
-        """Render the given messages for the given package."""
-        pkg_dir = out_dir / name / "msg"
-        pkg_dir.mkdir(parents=True, exist_ok=True)
-        template = self.jinja_env.get_template("ros-msg.j2")
-        for msg in msgs:
-            ros_msg = template.render(msg=msg)
-            ros_path = pkg_dir / f"{msg.name}.msg"
-            ros_path.write_text(ros_msg, "utf-8")
-
-    def _write_pkg_information(
-        self,
-        out_dir: pathlib.Path,
-        name: str,
-        dependencies: t.Iterable,
-        contact_email: str,
-        maintainer: str,
-    ) -> None:
-        pkg_dir = out_dir / name
-        pkg_dir.mkdir(parents=True, exist_ok=True)
-        if self.generate_cmake:
-            cmake_template = self.jinja_env.get_template("cmake_pkg_level.j2")
-            cmake_path = pkg_dir / C_MAKE_LISTS_TXT
-            cmake_path.write_text(
-                cmake_template.render(
-                    pkg_name=name + self.pkg_postfix, dependencies=dependencies
-                ),
-                "utf-8",
-            )
-        xml_template = self.jinja_env.get_template("package.xml.j2")
-        xml_path = pkg_dir / PACKAGE_XML
-        xml_path.write_text(
-            xml_template.render(
-                pkg_name=name + self.pkg_postfix,
-                dependencies=dependencies,
-                contact_email=contact_email,
-                maintainer=maintainer,
-            ),
-            "utf-8",
-        )
-
-    def _write_top_level_information(
-        self,
-        out_dir: pathlib.Path,
-        project_name: str,
-        dependencies: t.Mapping[str, t.Iterable],
-        contact_email: str,
-        maintainer: str,
-    ) -> None:
-        directories = topological_sort(dependencies)
-        if self.generate_cmake:
-            cmake_template = self.jinja_env.get_template("cmake_top_level.j2")
-            cmake_path = out_dir / C_MAKE_LISTS_TXT
-            cmake_path.write_text(
-                cmake_template.render(
-                    project_name=project_name, directories=directories
-                ),
-                "utf-8",
-            )
-        xml_template = self.jinja_env.get_template("top_level_package.xml.j2")
-        xml_path = out_dir / "package.xml"
-        xml_path.write_text(
-            xml_template.render(
-                project_name=project_name,
-                contact_email=contact_email,
-                maintainer=maintainer,
-            ),
-            "utf-8",
-        )
+    @staticmethod
+    def apply_cardinality(prop: information.Property, base_type: str) -> str:
+        """Add cardinality to an existing property name."""
+        try:
+            min_c, max_c = prop.min_card.value, prop.max_card.value
+        except AttributeError:
+            return base_type
+        if (min_c, max_c) == ("1", "1"):
+            return base_type
+        if max_c == "*":
+            return f"{base_type}[]"
+        if min_c == max_c:
+            return f"{base_type}[{min_c}]"
+        return f"{base_type}[<={max_c}]"
 
 
 class ExporterConfig(pydantic.BaseModel):
@@ -652,3 +213,393 @@ def topological_sort(
         sorted_packages.extend(remaining_packages)
 
     return sorted_packages
+
+
+@dataclasses.dataclass
+class LiteralData:
+    """Data for class properties and enum values."""
+
+    type: str
+    name: str
+    value: str | None = None
+    docstr: list[str] = dataclasses.field(default_factory=list)
+
+
+@dataclasses.dataclass
+class ClassData:
+    """Data for a class."""
+
+    name: str
+    docstr: list[str] = dataclasses.field(default_factory=list)
+    literals: list[LiteralData] = dataclasses.field(default_factory=list)
+
+
+class LineSeparationHTMLParser(parser.HTMLParser):
+    """An HTML parser to convert an HTML string to a list of plain strings."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.text_list: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        """Process data and fill the text list."""
+        if data.strip():  # Skipping empty strings
+            self.text_list.append(data.strip())
+
+
+class Exporter:
+    """Simplified exporter: prepares data on init, exports ROS pkgs."""
+
+    data_packages: dict[str, list[ClassData]]
+    dependencies: dict[str, set[str]]
+
+    def __init__(
+        self,
+        packages: dict[str, str],
+        built_ins: dict[str, str],
+        custom_pkg: dict[str, list[str]],
+        custom_types: dict[str, str],
+        model: capellambse.MelodyModel,
+        generate_cmake: bool,  # noqa: FBT001
+        pkg_postfix: str | None = None,
+    ) -> None:
+        self.generate_cmake = generate_cmake
+        self.pkg_postfix = pkg_postfix or ""
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.PackageLoader(
+                __name__.rsplit(".", 1)[0], PACKAGE_PATH
+            )
+        )
+        self.data_packages, self.dependencies = self._prepare(
+            packages, built_ins, custom_pkg, custom_types, model
+        )
+
+    # ---------- Preparation ----------
+
+    def _prepare(
+        self,
+        packages: dict[str, str],
+        built_ins: dict[str, str],
+        custom_pkg: dict[str, list[str]],
+        custom_types: dict[str, str],
+        model: capellambse.MelodyModel,
+    ) -> tuple[dict[str, list[ClassData]], dict[str, set[str]]]:
+        stop_uuids = set(packages.values()) | set(built_ins.values())
+        resolved_custom = {
+            p: [model.by_uuid(u) for u in uuids]
+            for p, uuids in custom_pkg.items()
+        }
+
+        # Collect built-in map and per-package classes
+        class_to_pkg: dict[str, str] = {}
+        package_classes: dict[str, list[information.Class]] = {}
+        for pkg_name, uuid in built_ins.items():
+            classes = self._walk_classes(model.by_uuid(uuid), stop_uuids)
+            for c in classes:
+                class_to_pkg[c.uuid] = pkg_name
+        for pkg_name, uuid in packages.items():
+            package_classes[pkg_name] = self._walk_classes(
+                model.by_uuid(uuid), stop_uuids
+            )
+        for pkg_name, classes in resolved_custom.items():
+            package_classes[pkg_name] = [
+                c for c in classes if c.uuid not in class_to_pkg
+            ]  # exclude built-ins
+
+        # Extend class_to_pkg with all package classes
+        for pkg_name, classes in package_classes.items():
+            for c in classes:
+                class_to_pkg[c.uuid] = pkg_name
+
+        deps_by_pkg, multi_dep, dup_ids = self._collect_all_deps(
+            package_classes, class_to_pkg
+        )
+        messages_by_pkg: dict[str, list[ClassData]] = {}
+        pkg_deps: dict[str, set[str]] = {}
+
+        # Generic package for multiply referenced deps
+        if multi_dep:
+            generic = GENERIC_PKG_NAME
+            pkg_deps[generic] = set()
+            messages_by_pkg[generic] = [
+                self._build_class_data(
+                    c,
+                    generic,
+                    class_to_pkg,
+                    dup_ids,
+                    pkg_deps[generic],
+                    custom_types,
+                    built_ins,
+                )
+                for c in multi_dep
+            ]
+            for c in multi_dep:
+                class_to_pkg[c.uuid] = generic
+            deps_by_pkg = {
+                pkg: [c for c in classes if c.uuid not in dup_ids]
+                for pkg, classes in deps_by_pkg.items()
+            }
+
+        for pkg_name, classes in package_classes.items():
+            pkg_deps[pkg_name] = set()
+            all_cls_uuids = [
+                c.uuid
+                for c in itertools.chain(
+                    classes, deps_by_pkg.get(pkg_name, [])
+                )
+            ]
+            seen: set[str] = set()
+            bucket: list[ClassData] = []
+            for c in itertools.chain(classes, deps_by_pkg.get(pkg_name, [])):
+                if c.uuid in seen:
+                    continue
+                seen.add(c.uuid)
+                bucket.append(
+                    self._build_class_data(
+                        c,
+                        pkg_name,
+                        class_to_pkg,
+                        all_cls_uuids,
+                        pkg_deps[pkg_name],
+                        custom_types,
+                        built_ins,
+                    )
+                )
+            messages_by_pkg[pkg_name] = bucket
+
+        return messages_by_pkg, pkg_deps
+
+    def _walk_classes(
+        self,
+        pkg: information.DataPkg,
+        stop_uuids: set[str],
+        out: list[information.Class] | None = None,
+    ) -> list[information.Class]:
+        out = list(pkg.classes) if out is None else (out + list(pkg.classes))
+        for sub in pkg.packages:
+            if sub.uuid not in stop_uuids:
+                self._walk_classes(sub, stop_uuids, out)
+        return out
+
+    def _collect_cls_deps(
+        self,
+        cls: information.Class,
+        class_to_pkg: dict[str, str],
+        bucket: list[information.Class],
+    ) -> None:
+        for prop in cls.properties:
+            _type = prop.type
+            if isinstance(_type, information.Class):
+                if _type.uuid in class_to_pkg or _type in bucket:
+                    continue
+                bucket.append(_type)
+                self._collect_cls_deps(_type, class_to_pkg, bucket)
+
+    def _collect_all_deps(
+        self,
+        package_classes: t.Mapping[str, t.Iterable[information.Class]],
+        class_to_pkg: dict[str, str],
+    ) -> tuple[
+        dict[str, list[information.Class]], list[information.Class], set[str]
+    ]:
+        deps: dict[str, list[information.Class]] = {}
+        seen: set[str] = set()
+        dup_ids: set[str] = set()
+        multi: list[information.Class] = []
+        for pkg, classes in package_classes.items():
+            bucket: list[information.Class] = []
+            for c in classes:
+                self._collect_cls_deps(c, class_to_pkg, bucket)
+            deps[pkg] = bucket
+            for c in bucket:
+                if c.uuid in seen and c.uuid not in dup_ids:
+                    dup_ids.add(c.uuid)
+                    multi.append(c)
+                else:
+                    seen.add(c.uuid)
+        return deps, multi, dup_ids
+
+    # ---------- Class and type handling ----------
+
+    def _build_class_data(
+        self,
+        cls: information.Class,
+        current_pkg: str,
+        class_to_pkg: dict[str, str],
+        pkg_cls_uuids: t.Iterable[str],
+        pkg_deps: set[str],
+        custom_types: dict[str, str],
+        built_ins: dict[str, str],
+    ) -> ClassData:
+        data = ClassData(
+            RosExportHelper.make_camel_case(cls.name),
+            RosExportHelper.make_doc_str(cls.description),
+        )
+        for prop in cls.properties:
+            prop_name = RosExportHelper.make_snake_case(prop.name)
+            base_type = self._prop_type_name(
+                prop.type,
+                class_to_pkg,
+                cls,
+                data,
+                current_pkg,
+                pkg_cls_uuids,
+                pkg_deps,
+                prop_name,
+                custom_types,
+                built_ins,
+            )
+            full_type = RosExportHelper.apply_cardinality(prop, base_type)
+            data.literals.append(
+                LiteralData(
+                    full_type,
+                    prop_name,
+                    docstr=RosExportHelper.make_doc_str(prop.description),
+                )
+            )
+        return data
+
+    def _prop_type_name(
+        self,
+        prop_type: capellambse.model.ModelElement,
+        class_to_pkg: dict[str, str],
+        ctx_cls: information.Class,
+        data: ClassData,
+        current_pkg: str,
+        pkg_cls_uuids: t.Iterable[str],
+        pkg_deps: set[str],
+        prop_name: str,
+        custom_types: dict[str, str],
+        built_ins: dict[str, str],
+    ) -> str:
+        if isinstance(prop_type, information.datatype.Enumeration):
+            if prop_type.domain_type:
+                base = RosExportHelper.type_name_for_datatype(
+                    prop_type.domain_type, custom_types
+                )
+            else:
+                logger.warning(
+                    "Primitive type of %s should be added as domain_type, will use int32 instead",
+                    prop_type.name,
+                )
+                base = DEFAULT_ENUM_TYPE
+            for val in prop_type.owned_literals:
+                data.literals.append(
+                    LiteralData(
+                        base,
+                        f"{prop_name.upper()}_{RosExportHelper.make_snake_case(val.name).upper()}",
+                        val.value.value,
+                        RosExportHelper.make_doc_str(val.description),
+                    )
+                )
+            return base
+        if isinstance(prop_type, information.datatype.DataType):
+            return RosExportHelper.type_name_for_datatype(
+                prop_type, custom_types
+            )
+        if isinstance(prop_type, information.Class):
+            prefix = ""
+            is_builtin = False
+            if prop_type.uuid not in pkg_cls_uuids:
+                ref_pkg = class_to_pkg.get(prop_type.uuid)
+                if ref_pkg and ref_pkg != current_pkg:
+                    pkg_deps.add(ref_pkg)
+                    is_builtin = ref_pkg in built_ins
+                    if not is_builtin:
+                        ref_pkg += self.pkg_postfix
+                    prefix = f"{ref_pkg}/"
+                elif ref_pkg is None:
+                    logger.error(
+                        "Class %s was referenced in %s, but not found",
+                        prop_type.name,
+                        ctx_cls.name,
+                    )
+            name = (
+                prop_type.name
+                if is_builtin
+                else RosExportHelper.make_camel_case(prop_type.name)
+            )
+            return prefix + name
+        logger.warning(
+            "Unknown type for property %r of class %s",
+            type(prop_type).__name__,
+            ctx_cls.name,
+        )
+        return UNKNOWN_TYPE
+
+    # ---------- Export ----------
+
+    def export_ros_pkgs(
+        self,
+        out_dir: pathlib.Path,
+        project_name: str,
+        contact_email: str,
+        maintainer: str,
+    ) -> None:
+        for pkg, msgs in self.data_packages.items():
+            self._render_package(out_dir, pkg, msgs)
+            self._write_pkg_information(
+                out_dir,
+                pkg,
+                self.dependencies.get(pkg, []),
+                contact_email,
+                maintainer,
+            )
+        self._write_top_level_information(
+            out_dir, project_name, self.dependencies, contact_email, maintainer
+        )
+
+    def _render_package(
+        self, out_dir: pathlib.Path, name: str, msgs: list[ClassData]
+    ) -> None:
+        pkg_dir = out_dir / name / "msg"
+        pkg_dir.mkdir(parents=True, exist_ok=True)
+        template = self.jinja_env.get_template("ros-msg.j2")
+        for msg in msgs:
+            (pkg_dir / f"{msg.name}.msg").write_text(
+                template.render(msg=msg), "utf-8"
+            )
+
+    def _write_pkg_information(
+        self,
+        out_dir: pathlib.Path,
+        name: str,
+        dependencies: t.Iterable,
+        contact_email: str,
+        maintainer: str,
+    ) -> None:
+        pkg_dir = out_dir / name
+        pkg_dir.mkdir(parents=True, exist_ok=True)
+        if self.generate_cmake:
+            cmake = self.jinja_env.get_template("cmake_pkg_level.j2").render(
+                pkg_name=name + self.pkg_postfix, dependencies=dependencies
+            )
+            (pkg_dir / C_MAKE_LISTS_TXT).write_text(cmake, "utf-8")
+        xml = self.jinja_env.get_template("package.xml.j2").render(
+            pkg_name=name + self.pkg_postfix,
+            dependencies=dependencies,
+            contact_email=contact_email,
+            maintainer=maintainer,
+        )
+        (pkg_dir / PACKAGE_XML).write_text(xml, "utf-8")
+
+    def _write_top_level_information(
+        self,
+        out_dir: pathlib.Path,
+        project_name: str,
+        dependencies: t.Mapping[str, t.Iterable],
+        contact_email: str,
+        maintainer: str,
+    ) -> None:
+        dirs = topological_sort(dependencies)
+        if self.generate_cmake:
+            cmake = self.jinja_env.get_template("cmake_top_level.j2").render(
+                project_name=project_name, directories=dirs
+            )
+            (out_dir / C_MAKE_LISTS_TXT).write_text(cmake, "utf-8")
+        xml = self.jinja_env.get_template("top_level_package.xml.j2").render(
+            project_name=project_name,
+            contact_email=contact_email,
+            maintainer=maintainer,
+        )
+        (out_dir / "package.xml").write_text(xml, "utf-8")
