@@ -160,14 +160,16 @@ def sample_class_enum_def() -> MessageDef:
                 type=TypeDef(
                     "SampleClassEnumStatus",
                     Range("1", "1"),
-                    "SampleClassEnum",
+                    ".SampleClassEnum",
                 ),
                 name="status",
                 description="The property status is of type "
                 "SampleClassEnumStatus. ",
             ),
             FieldDef(
-                type=TypeDef("Color", Range("1", "1"), "SampleClassEnum"),
+                type=TypeDef(
+                    "SampleClassEnumColor", Range("1", "1"), ".SampleClassEnum"
+                ),
                 name="color",
                 description="The property color is of type Color. ",
             ),
@@ -210,7 +212,7 @@ def sample_class_enum_def() -> MessageDef:
                 "enum description of SampleClassEnumStatus. ",
             ),
             EnumDef(
-                name="Color",
+                name="SampleClassEnumColor",
                 literals=[
                     ConstantDef(
                         type=TypeDef("uint8", Range("1", "1"), None),

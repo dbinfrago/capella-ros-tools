@@ -32,6 +32,8 @@ classifiers = [
 dependencies = [
   "capellambse>=0.6.6,<0.7",
   "click",
+  "jinja2",
+  "pydantic"
 ]
 
 [project.urls]
@@ -52,6 +54,7 @@ dev = [
   "python-lsp-server[rope]>=1.12.2",
   "reuse==5.0.2",
   "ruff==0.12.0",
+  "types-pyyaml>=6.0.12.20250915",
 ]
 
 docs = [
@@ -65,6 +68,9 @@ docs = [
   "sphinx-copybutton>=0.5.2",
   "tomli>=2.2.1 ; python_full_version < '3.11'",
 ]
+
+[project.scripts]
+capella-ros-tools = "capella_ros_tools.__main__:cli"
 
 [tool.coverage.run]
 branch = true

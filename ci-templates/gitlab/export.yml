@@ -1,0 +1,23 @@
+# Copyright DB InfraGO AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+variables:
+  CAPELLA_ROS_TOOLS_MODEL: "."
+  # Define one of these
+  # CAPELLA_ROS_TOOLS_LAYER: "LA"
+  # CAPELLA_ROS_TOOLS_ROOT_PACKAGE - UUID of the package to get classes from
+  # CAPELLA_ROS_TOOLS_EXPORT_CONFIG - Path to config file
+  # Optional variables:
+  # CAPELLA_ROS_TOOLS_VERSION - Use a specific version of the ROS tools
+  # CAPELLA_ROS_TOOLS_CONTACT_EMAIL - E-Mail address to be placed in the package.xml files
+  # CAPELLA_ROS_TOOLS_PROJECT_NAME - Project name being used in CMake and package.xml files
+  # CAPELLA_ROS_TOOLS_GENERATE_CMAKE - Set to generate experimental cmake files
+  # CAPELLA_ROS_TOOLS_MAINTAINER - Name of the maintainer used in the package.xml files
+
+capella_ros_exporter:
+  script:
+    - pip install "capella-ros-tools{CAPELLA_ROS_TOOLS_VERSION:+==$CAPELLA_ROS_TOOLS_VERSION}"
+    - capella-ros-tools export -o ros-export
+  artifacts:
+    paths:
+      - ros-export

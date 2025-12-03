@@ -94,10 +94,11 @@
         enumerations:
         - find:
             name: SampleEnumValue
-          promise_id: SampleEnum.SampleEnumValue
+          promise_id: package1.SampleEnum.SampleEnumValue
           set:
             description: 'SampleEnum.msg This block comment is added to the enum description
               of SampleEnumValue. '
+            domain_type: !promise 'package1.uint8'
           sync:
             literals:
             - find:
@@ -132,11 +133,12 @@
                   value: '3'
         - find:
             name: SampleEnum
-          promise_id: SampleEnum.SampleEnum
+          promise_id: package1.SampleEnum.SampleEnum
           set:
             description: 'This block comment is added to the enum description of SampleEnum.
               In a file, there can only be one or no enum whose literal names do not
               share a common prefix. '
+            domain_type: !promise 'package1.uint8'
           sync:
             literals:
             - find:
@@ -180,38 +182,6 @@
                 min_card: !new_object
                   _type: LiteralNumericValue
                   value: '1'
-        - find:
-            navigable_members:
-            - !promise 'package1.SampleClass.sample_field4'
-          sync:
-            members:
-            - find:
-                type: !promise 'package1.SampleClass'
-              set:
-                _type: Property
-                kind: ASSOCIATION
-                max_card: !new_object
-                  _type: LiteralNumericValue
-                  value: '1'
-                min_card: !new_object
-                  _type: LiteralNumericValue
-                  value: '1'
-        - find:
-            navigable_members:
-            - !promise 'package1.SampleClass.sample_field5'
-          sync:
-            members:
-            - find:
-                type: !promise 'package1.SampleClass'
-              set:
-                _type: Property
-                kind: ASSOCIATION
-                max_card: !new_object
-                  _type: LiteralNumericValue
-                  value: '1'
-                min_card: !new_object
-                  _type: LiteralNumericValue
-                  value: '1'
     - find:
         name: package2
       sync:
@@ -236,7 +206,7 @@
                 min_card: !new_object
                   _type: LiteralNumericValue
                   value: '1'
-                type: !promise 'SampleClassEnum.SampleClassEnumStatus'
+                type: !promise 'package2.SampleClassEnum.SampleClassEnumStatus'
             - find:
                 name: color
               promise_id: package2.SampleClassEnum.color
@@ -249,7 +219,7 @@
                 min_card: !new_object
                   _type: LiteralNumericValue
                   value: '1'
-                type: !promise 'SampleClassEnum.Color'
+                type: !promise 'package2.SampleClassEnum.SampleClassEnumColor'
             - find:
                 name: field
               promise_id: package2.SampleClassEnum.field
@@ -265,9 +235,10 @@
         enumerations:
         - find:
             name: SampleClassEnumStatus
-          promise_id: SampleClassEnum.SampleClassEnumStatus
+          promise_id: package2.SampleClassEnum.SampleClassEnumStatus
           set:
             description: 'This block comment is added to the enum description of SampleClassEnumStatus. '
+            domain_type: !promise 'package2.uint8'
           sync:
             literals:
             - find:
@@ -295,10 +266,11 @@
                   _type: LiteralNumericValue
                   value: '3'
         - find:
-            name: Color
-          promise_id: SampleClassEnum.Color
+            name: SampleClassEnumColor
+          promise_id: package2.SampleClassEnum.SampleClassEnumColor
           set:
             description: 'This block comment is added to the enum description of Color. '
+            domain_type: !promise 'package2.uint8'
           sync:
             literals:
             - find:
@@ -358,6 +330,12 @@
 - parent: !promise 'package1.SampleClass.sample_field3'
   set:
     kind: UNSET
+- parent: !promise 'package1.SampleClass.sample_field4'
+  set:
+    kind: UNSET
+- parent: !promise 'package1.SampleClass.sample_field5'
+  set:
+    kind: UNSET
 - parent: !promise 'package2.SampleClassEnum.field'
   set:
     kind: UNSET
@@ -372,6 +350,14 @@
             _type: NumericType
             name: uint8
           promise_id: package1.uint8
+        - find:
+            _type: NumericType
+            name: SampleEnum
+          promise_id: SampleEnum.SampleEnum
+        - find:
+            _type: NumericType
+            name: SampleEnumValue
+          promise_id: SampleEnum.SampleEnumValue
         - find:
             _type: NumericType
             name: uint8
