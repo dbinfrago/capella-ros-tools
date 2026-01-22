@@ -25,12 +25,15 @@ def export(
     for cls_obj in current_pkg.classes:
         fields = []
         for prop_obj in cls_obj.owned_properties:
-            try:
+            if prop_obj.min_card and prop_obj.max_card:
                 card = data_model.Range(
                     prop_obj.min_card.value, prop_obj.max_card.value
                 )
-            except AttributeError:
+            else:
                 card = data_model.Range("1", "1")
+            assert prop_obj.type is not None, (
+                f"Property {prop_obj.name} has no type?"
+            )
             type_def = data_model.TypeDef(name=prop_obj.type.name, card=card)
             prop_def = data_model.FieldDef(
                 type=type_def,
@@ -51,13 +54,13 @@ def export(
     for enum_obj in current_pkg.enumerations:
         literals = []
         for i, lit_obj in enumerate(enum_obj.owned_literals):
-            try:
+            if lit_obj.value and lit_obj.value.type is not None:
                 type_name = lit_obj.value.type.name
-            except AttributeError:
+            else:
                 type_name = "uint8"
-            try:
+            if lit_obj.value and lit_obj.value.value is not None:
                 literal_value = lit_obj.value.value
-            except AttributeError:
+            else:
                 literal_value = i
             type_def = data_model.TypeDef(
                 type_name, data_model.Range("1", "1")
